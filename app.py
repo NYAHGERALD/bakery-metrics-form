@@ -1,22 +1,25 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'v@^i4N9r#2LjkU7!XzYp0aE&$RmW'
-
 app.permanent_session_lifetime = timedelta(minutes=15)
 
 @app.before_request
 def make_session_permanent():
     session.permanent = True
 
-
 # Google Sheets setup
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+creds = ServiceAccountCredentials.from_json_keyfile_name(cred_path, scope)
 client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
 
@@ -125,8 +128,8 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+
 
 
