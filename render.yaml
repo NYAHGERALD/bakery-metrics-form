@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: bakery-metrics-app
+    env: python
+    buildCommand: ""
+    startCommand: python app.py
