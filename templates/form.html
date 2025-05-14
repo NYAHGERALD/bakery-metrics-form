@@ -37,9 +37,12 @@
         <div class="card shadow p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3>Bakery Daily Metrics Submission</h3>
-                <form action="/logout" method="POST">
-                    <button class="btn btn-outline-danger btn-sm">Log Out</button>
-                </form>
+                <div class="d-flex gap-2">
+                    <a href="/report" class="btn btn-outline-primary btn-sm">📊 Bakery Metrics Report</a>
+                    <form action="/logout" method="POST">
+                     <button class="btn btn-outline-danger btn-sm">Log Out</button>
+                    </form>
+                </div>
             </div>
 
             <p class="text-muted">Please fill out all required fields before submitting.</p>

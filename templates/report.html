@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bakery Metrics Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .green { color: green; font-weight: bold; }
+    .red { color: red; font-weight: bold; }
+    .card {
+      box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+      border-radius: 12px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .floating-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #0d6efd;
+      color: white;
+      border-radius: 50%;
+      padding: 15px;
+      box-shadow: 0 0 1rem rgba(0,0,0,0.3);
+      font-size: 1.25rem;
+      z-index: 999;
+    }
+    .floating-btn:hover {
+      background-color: #0b5ed7;
+      color: #fff;
+    }
+    thead th {
+      background: linear-gradient(to right, #dee2e6, #f8f9fa);
+    }
+    tbody td:nth-child(1),
+    tbody td:nth-child(2),
+    tbody td:nth-child(3),
+    tbody td:nth-child(6) {
+      background: linear-gradient(to right, #fdfdfd, #f3f3f3);
+    }
+    .logo {
+      max-width: 160px;
+      height: auto;
+    }
+    .chart-container {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 2 / 1;
+      position: relative;
+    }
+    .chart-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="text-center my-4">
+    <h1 class="display-4 fw-bold text-uppercase text-primary" style="text-shadow: 1px 1px 2px #999;">
+      Bakery Metrics Report
+    </h1>
+  </div>
+
+  <div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+      <img src="/static/DON%20MIGUEL.png" alt="Bakery Logo" class="logo">
+      <a href="/form" class="btn btn-outline-secondary shadow-sm">⬅️ Back to Form</a>
+    </div>
+
+    <div class="alert alert-info shadow-sm mb-4" role="alert">
+      This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste — for each shift and line. Use the selectors below to view results by week, day, and shift.
+    </div>
+
+    <div class="card p-4 mb-4">
+      <div class="row g-3">
+        <div class="col-lg-4 col-md-6 col-12">
+          <label class="form-label">Select Week</label>
+          <select id="week" class="form-select shadow-sm">
+            {% for week in week_names %}
+              <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-4 col-md-6 col-12">
+          <label class="form-label">Select Day</label>
+          <select id="day" class="form-select shadow-sm">
+            <option>Monday</option>
+            <option>Tuesday</option>
+            <option>Wednesday</option>
+            <option>Thursday</option>
+            <option>Friday</option>
+          </select>
+        </div>
+        <div class="col-lg-4 col-md-12 col-12">
+          <label class="form-label">Select Shift</label>
+          <select id="shift" class="form-select shadow-sm">
+            <option>First Shift</option>
+            <option>Second Shift</option>
+            <option>Both Shift</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-3 table-responsive">
+      <table class="table table-bordered text-center align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>KPIs</th>
+            <th>LINE</th>
+            <th>TARGET</th>
+            <th>METRIC</th>
+            <th>WEEK AVERAGE</th>
+            <th>UNIT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td rowspan="3">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td></tr>
+          <tr><td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td></tr>
+          <tr><td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td></tr>
+
+          <tr><td rowspan="3">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td></tr>
+          <tr><td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td></tr>
+          <tr><td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td></tr>
+
+          <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>3.75%</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>%</td></tr>
+          <tr><td>DIE CUT 2</td><td>3.75%</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>%</td></tr>
+          <tr><td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="metricsChart"></canvas>
+    </div>
+  </div>
+
+  <button class="floating-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <script>
+    const set = (id, value, threshold, reverse = false) => {
+      const cell = document.getElementById(id);
+      cell.textContent = value;
+      const numeric = parseFloat(value);
+      if (!isNaN(numeric)) {
+        const pass = reverse ? numeric < threshold : numeric >= threshold;
+        cell.className = pass ? 'green' : 'red';
+      } else {
+        cell.className = '';
+      }
+    };
+
+    async function fetchReport() {
+      const week = document.getElementById('week').value;
+      const day = document.getElementById('day').value;
+      const shift = document.getElementById('shift').value;
+
+      const res = await fetch(`/api/report?week=${week}&day=${day}&shift=${shift}`);
+      const data = await res.json();
+
+      const oeeAvg = [data.oee1Avg, data.oee2Avg, data.oeeTotalAvg];
+      const poundsAvg = [data.pounds1Avg, data.pounds2Avg, data.poundsTotalAvg];
+      const wasteAvg = [data.waste1Avg, data.waste2Avg, data.wasteTotalAvg];
+
+      set('oee1', data.oee1, 70);
+      set('oee2', data.oee2, 70);
+      set('oeeTotal', data.oeeTotal, 70);
+
+      set('pounds1', data.pounds1);
+      set('pounds2', data.pounds2);
+      set('poundsTotal', data.poundsTotal);
+
+      set('waste1', data.waste1, 3.75, true);
+      set('waste2', data.waste2, 3.75, true);
+      set('wasteTotal', data.wasteTotal, 3.75, true);
+
+      set('oee1Avg', data.oee1Avg, 70);
+      set('oee2Avg', data.oee2Avg, 70);
+      set('oeeTotalAvg', data.oeeTotalAvg, 70);
+
+      set('pounds1Avg', data.pounds1Avg);
+      set('pounds2Avg', data.pounds2Avg);
+      set('poundsTotalAvg', data.poundsTotalAvg);
+
+      set('waste1Avg', data.waste1Avg, 3.75, true);
+      set('waste2Avg', data.waste2Avg, 3.75, true);
+      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true);
+
+      updateChart(oeeAvg, poundsAvg, wasteAvg);
+    }
+
+    let chart;
+    function updateChart(oee, pounds, waste) {
+      const ctx = document.getElementById('metricsChart').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Die Cut 1', 'Die Cut 2', 'Total'],
+          datasets: [
+            {
+              label: 'OEE (%)',
+              data: oee,
+              backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(54, 162, 235, 0.7)']
+            },
+            {
+              label: 'Pounds (LB)',
+              data: pounds,
+              backgroundColor: ['rgba(255, 206, 86, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(255, 206, 86, 0.7)']
+            },
+            {
+              label: 'Waste (%)',
+              data: waste,
+              backgroundColor: ['rgba(255, 99, 132, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(255, 99, 132, 0.7)']
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Weekly Averages' }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await fetchReport();
+      document.getElementById('week').addEventListener('change', fetchReport);
+      document.getElementById('day').addEventListener('change', fetchReport);
+      document.getElementById('shift').addEventListener('change', fetchReport);
+    });
+  </script>
+
+  <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">
+    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
