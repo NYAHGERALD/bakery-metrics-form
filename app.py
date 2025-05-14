@@ -51,8 +51,8 @@ def make_session_permanent():
 # Google Sheets setup
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-#creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
-creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/credentials.json', scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+#creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/credentials.json', scope)
 client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
 
