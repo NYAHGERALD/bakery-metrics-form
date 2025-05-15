@@ -14,6 +14,8 @@
     }
     .green { color: green; font-weight: bold; }
     .red { color: red; font-weight: bold; }
+    .bg-light-red { background-color: #f8d7da !important; }
+    .bg-light-green { background-color: #d1e7dd !important; }
     .card {
       box-shadow: 0 0 1rem rgba(0,0,0,0.1);
       border-radius: 12px;
@@ -158,17 +160,30 @@
   </button>
 
   <script>
-    const set = (id, value, threshold, reverse = false) => {
+    const set = (id, value, threshold = null, reverse = false, applyBg = false) => {
       const cell = document.getElementById(id);
-      cell.textContent = value;
-      const numeric = parseFloat(value);
+      let cleanValue = (typeof value === 'string' ? value : String(value)).replace(/,/g, '').trim();
+      let numeric = parseFloat(cleanValue);
+
+      cell.textContent = cleanValue;
+      cell.className = '';
+
       if (!isNaN(numeric)) {
-        const pass = reverse ? numeric < threshold : numeric >= threshold;
-        cell.className = pass ? 'green' : 'red';
-      } else {
-        cell.className = '';
+        const fail = threshold !== null ? (reverse ? numeric > threshold : numeric < threshold) : false;
+
+        // ✅ Background color
+        if (applyBg && threshold !== null) {
+          cell.classList.add(fail ? 'bg-light-red' : 'bg-light-green');
+        }
+
+        // ✅ Text color
+        cell.classList.add(fail ? 'red' : 'green');
       }
     };
+
+
+
+
 
     async function fetchReport() {
       const week = document.getElementById('week').value;
@@ -178,35 +193,43 @@
       const res = await fetch(`/api/report?week=${week}&day=${day}&shift=${shift}`);
       const data = await res.json();
 
-      const oeeAvg = [data.oee1Avg, data.oee2Avg, data.oeeTotalAvg];
-      const poundsAvg = [data.pounds1Avg, data.pounds2Avg, data.poundsTotalAvg];
-      const wasteAvg = [data.waste1Avg, data.waste2Avg, data.wasteTotalAvg];
+      // ✅ OEE - METRIC
+      set('oee1', data.oee1, 70, false, true);
+      set('oee2', data.oee2, 70, false, true);
+      set('oeeTotal', data.oeeTotal, 70, false, true);
 
-      set('oee1', data.oee1, 70);
-      set('oee2', data.oee2, 70);
-      set('oeeTotal', data.oeeTotal, 70);
-
+      // ✅ POUNDS - no background color
       set('pounds1', data.pounds1);
       set('pounds2', data.pounds2);
       set('poundsTotal', data.poundsTotal);
 
-      set('waste1', data.waste1, 3.75, true);
-      set('waste2', data.waste2, 3.75, true);
-      set('wasteTotal', data.wasteTotal, 3.75, true);
+      // ✅ WASTE - METRIC (only TOTAL)
+      set('waste1', data.waste1);  // no formatting
+      set('waste2', data.waste2);  // no formatting
+      set('wasteTotal', data.wasteTotal, 3.75, true, true); // ✅ only TOTAL
 
-      set('oee1Avg', data.oee1Avg, 70);
-      set('oee2Avg', data.oee2Avg, 70);
-      set('oeeTotalAvg', data.oeeTotalAvg, 70);
+      // ✅ WEEK AVERAGE - OEE
+      set('oee1Avg', data.oee1Avg, 70, false, true);
+      set('oee2Avg', data.oee2Avg, 70, false, true);
+      set('oeeTotalAvg', data.oeeTotalAvg, 70, false, true);
 
+      // ✅ WEEK AVERAGE - POUNDS
       set('pounds1Avg', data.pounds1Avg);
       set('pounds2Avg', data.pounds2Avg);
       set('poundsTotalAvg', data.poundsTotalAvg);
 
-      set('waste1Avg', data.waste1Avg, 3.75, true);
-      set('waste2Avg', data.waste2Avg, 3.75, true);
-      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true);
+      // ✅ WEEK AVERAGE - WASTE (only TOTAL)
+      set('waste1Avg', data.waste1Avg);  // no formatting
+      set('waste2Avg', data.waste2Avg);  // no formatting
+      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true, true); // ✅ only TOTAL
 
-      updateChart(oeeAvg, poundsAvg, wasteAvg);
+
+
+      updateChart(
+        [data.oee1Avg, data.oee2Avg, data.oeeTotalAvg],
+        [data.pounds1Avg, data.pounds2Avg, data.poundsTotalAvg],
+        [data.waste1Avg, data.waste2Avg, data.wasteTotalAvg]
+      );
     }
 
     let chart;
