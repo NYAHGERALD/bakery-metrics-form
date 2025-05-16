@@ -47,8 +47,14 @@ def verify_email():
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
         email_list = sheet.col_values(1)[1:]
         if email.lower() in [e.lower() for e in email_list]:
+            index = [e.lower() for e in email_list].index(email.lower()) + 2  # row index, A2 = index 2
+            first_name = sheet.cell(index, 2).value  # Column B
+            last_name = sheet.cell(index, 3).value   # Column C
+            full_name = f"{first_name} {last_name}"
+            
             session['verified'] = True
             session['user_email'] = email
+            session['user_full_name'] = full_name
             return redirect(url_for('form'))
         else:
             flash("Sorry, this email has no permission for submitting Bakery metrics.", "danger")
@@ -62,7 +68,12 @@ def form():
     if not session.get('verified'):
         return redirect(url_for('home'))
     latest_week = get_latest_week_sheet()
-    return render_template('form.html', latest_week=latest_week)
+    return render_template(
+        'form.html',
+        latest_week=latest_week,
+        user_full_name=session.get('user_full_name', 'User')
+    )
+
 
 @app.route('/report')
 def report():
@@ -81,7 +92,13 @@ def report():
 
     week_names.sort(key=extract_week_start, reverse=True)
     default_week = week_names[0] if week_names else ""
-    return render_template('report.html', week_names=week_names, default_week=default_week)
+    return render_template(
+        'report.html',
+        week_names=week_names,
+        default_week=default_week,
+        user_full_name=session.get('user_full_name', 'User')
+    )
+
 
 @app.route('/logout', methods=['POST'])
 def logout():

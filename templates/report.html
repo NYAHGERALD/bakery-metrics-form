@@ -7,24 +7,54 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  <!-- jsPDF and html2canvas for PDF download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
     body {
-      background-color: #f0f2f5;
+
+      background-color: #F2F2F2;
       font-family: 'Segoe UI', sans-serif;
     }
-    .green { color: green; font-weight: bold; }
-    .red { color: red; font-weight: bold; }
-    .bg-light-red { background-color: #f8d7da !important; }
-    .bg-light-green { background-color: #d1e7dd !important; }
+
+    .green {
+      color: green !important;
+      font-weight: bold;
+    }
+
+    .red {
+      color: red !important;
+      font-weight: bold;
+    }
+
+    .bg-light-red {
+      background-color: #f8d7da !important;
+    }
+
+    .bg-light-green {
+      background-color: #d1e7dd !important;
+    }
+
     .card {
-      box-shadow: 0 0 1rem rgba(0,0,0,0.1);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
       border-radius: 12px;
       animation: fadeIn 0.5s ease-in-out;
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .floating-btn {
       position: fixed;
       bottom: 20px;
@@ -33,26 +63,31 @@
       color: white;
       border-radius: 50%;
       padding: 12px;
-      box-shadow: 0 0 1rem rgba(0,0,0,0.3);
+      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
       font-size: 1.25rem;
       z-index: 999;
     }
+
     .floating-btn:hover {
       background-color: #0b5ed7;
     }
+
     thead th {
       background: linear-gradient(to right, #dee2e6, #f8f9fa);
     }
+
     tbody td:nth-child(1),
     tbody td:nth-child(2),
     tbody td:nth-child(3),
     tbody td:nth-child(6) {
       background: linear-gradient(to right, #fdfdfd, #f3f3f3);
     }
+
     .logo {
       max-width: 140px;
       height: auto;
     }
+
     .chart-container {
       margin-top: 30px;
       width: 100%;
@@ -60,21 +95,32 @@
       aspect-ratio: 2 / 1;
       position: relative;
     }
+
     .chart-container canvas {
       width: 100% !important;
       height: 100% !important;
     }
+
     @media (max-width: 576px) {
       .display-4 {
         font-size: 1.8rem;
       }
+
       .chart-container {
         aspect-ratio: 1.5 / 1;
       }
     }
   </style>
+
 </head>
 <body>
+
+
+  <div class="user-info d-flex align-items-center gap-3 ps-3 pt-3 mb-4">
+    <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar" class="rounded-circle shadow" style="width: 50px; height: 50px; object-fit: cover;">
+    <h5 class="mb-0 text-capitalize">{{ user_full_name }}</h5>
+  </div>
+
   <div class="text-center my-4 px-3">
     <h1 class="display-4 fw-bold text-uppercase text-primary" style="text-shadow: 1px 1px 2px #999;">
       Bakery Metrics Report
@@ -143,16 +189,33 @@
           <tr><td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td></tr>
           <tr><td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td></tr>
 
-          <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>3.75%</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>%</td></tr>
-          <tr><td>DIE CUT 2</td><td>3.75%</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>%</td></tr>
+          <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td></tr>
+          <tr><td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td></tr>
           <tr><td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div class="chart-container">
-      <canvas id="metricsChart"></canvas>
+    <!-- New chart sections -->
+    <div class="chart-container mb-4" id="chartOEEWrapper">
+      <h5 class="text-center fw-bold mb-2">OEE (%)</h5>
+      <canvas id="chartOEE"></canvas>
     </div>
+    <div class="chart-container mb-4" id="chartPoundsWrapper">
+      <h5 class="text-center fw-bold mb-2">Pounds (LB)</h5>
+      <canvas id="chartPounds"></canvas>
+    </div>
+    <div class="chart-container mb-4" id="chartWasteWrapper">
+      <h5 class="text-center fw-bold mb-2">Waste (%)</h5>
+      <canvas id="chartWaste"></canvas>
+    </div>
+
+    <div class="text-center mt-3">
+      <button onclick="downloadChartsAsPDF()" class="btn btn-primary shadow-sm">
+        📄 Download Charts as PDF
+      </button>
+    </div>
+
   </div>
 
   <button class="floating-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
@@ -160,28 +223,26 @@
   </button>
 
   <script>
-    const set = (id, value, threshold = null, reverse = false, applyBg = false) => {
+    
+    const set = (id, value, threshold = null, reverse = false) => {
       const cell = document.getElementById(id);
-      let cleanValue = (typeof value === 'string' ? value : String(value)).replace(/,/g, '').trim();
-      let numeric = parseFloat(cleanValue);
+      const cleanValue = typeof value === 'string' ? value.trim().replace(/,/g, '') : value;
+      const numeric = Number(cleanValue);
 
+      // Reset content and remove previous classes
       cell.textContent = cleanValue;
-      cell.className = '';
+      cell.classList.remove('red', 'green', 'bg-warning');
 
-      if (!isNaN(numeric)) {
-        const fail = threshold !== null ? (reverse ? numeric > threshold : numeric < threshold) : false;
-
-        // ✅ Background color
-        if (applyBg && threshold !== null) {
-          cell.classList.add(fail ? 'bg-light-red' : 'bg-light-green');
-        }
-
-        // ✅ Text color
-        cell.classList.add(fail ? 'red' : 'green');
+      // If not a number, show warning and skip formatting
+      if (isNaN(numeric)) {
+        console.warn(`Non-numeric value in cell #${id}:`, value);
+        cell.classList.add('bg-warning');
+        return;
       }
+
+      const fail = threshold !== null ? (reverse ? numeric > threshold : numeric < threshold) : false;
+      cell.classList.add(fail ? 'red' : 'green');
     };
-
-
 
 
 
@@ -194,24 +255,24 @@
       const data = await res.json();
 
       // ✅ OEE - METRIC
-      set('oee1', data.oee1, 70, false, true);
-      set('oee2', data.oee2, 70, false, true);
-      set('oeeTotal', data.oeeTotal, 70, false, true);
+      set('oee1', data.oee1, 70);
+      set('oee2', data.oee2, 70);
+      set('oeeTotal', data.oeeTotal, 70);
 
-      // ✅ POUNDS - no background color
+      // ✅ POUNDS
       set('pounds1', data.pounds1);
       set('pounds2', data.pounds2);
       set('poundsTotal', data.poundsTotal);
 
       // ✅ WASTE - METRIC (only TOTAL)
-      set('waste1', data.waste1);  // no formatting
-      set('waste2', data.waste2);  // no formatting
-      set('wasteTotal', data.wasteTotal, 3.75, true, true); // ✅ only TOTAL
+      set('waste1', data.waste1);
+      set('waste2', data.waste2);
+      set('wasteTotal', data.wasteTotal, 3.75, true);
 
       // ✅ WEEK AVERAGE - OEE
-      set('oee1Avg', data.oee1Avg, 70, false, true);
-      set('oee2Avg', data.oee2Avg, 70, false, true);
-      set('oeeTotalAvg', data.oeeTotalAvg, 70, false, true);
+      set('oee1Avg', data.oee1Avg, 70);
+      set('oee2Avg', data.oee2Avg, 70);
+      set('oeeTotalAvg', data.oeeTotalAvg, 70);
 
       // ✅ WEEK AVERAGE - POUNDS
       set('pounds1Avg', data.pounds1Avg);
@@ -219,9 +280,10 @@
       set('poundsTotalAvg', data.poundsTotalAvg);
 
       // ✅ WEEK AVERAGE - WASTE (only TOTAL)
-      set('waste1Avg', data.waste1Avg);  // no formatting
-      set('waste2Avg', data.waste2Avg);  // no formatting
-      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true, true); // ✅ only TOTAL
+      set('waste1Avg', data.waste1Avg);
+      set('waste2Avg', data.waste2Avg);
+      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true);
+
 
 
 
@@ -232,32 +294,81 @@
       );
     }
 
-    let chart;
-    function updateChart(oee, pounds, waste) {
-      const ctx = document.getElementById('metricsChart').getContext('2d');
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
+    let chartOEE, chartPounds, chartWaste;
+
+    function createChart(ctx, label, data, color, format) {
+      return new Chart(ctx, {
         type: 'bar',
         data: {
           labels: ['Die Cut 1', 'Die Cut 2', 'Total'],
-          datasets: [
-            { label: 'OEE (%)', data: oee, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
-            { label: 'Pounds (LB)', data: pounds, backgroundColor: 'rgba(255, 206, 86, 0.7)' },
-            { label: 'Waste (%)', data: waste, backgroundColor: 'rgba(255, 99, 132, 0.7)' }
-          ]
+          datasets: [{
+            label: label,
+            data: data,
+            backgroundColor: color
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: 'Weekly Averages' }
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => `${label}: ${format(context.parsed.y)}`
+              }
+            },
+            datalabels: {
+              color: '#000',
+              anchor: 'end',
+              align: 'top',
+              font: { weight: 'bold' },
+              formatter: format
+            }
           },
           scales: {
-            y: { beginAtZero: true }
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Value',
+                font: { weight: 'bold' }
+              }
+            }
           }
-        }
+        },
+        plugins: [ChartDataLabels]
       });
+    }
+
+    function updateChart(oee, pounds, waste) {
+      // Destroy previous charts
+      if (chartOEE) chartOEE.destroy();
+      if (chartPounds) chartPounds.destroy();
+      if (chartWaste) chartWaste.destroy();
+
+      chartOEE = createChart(
+        document.getElementById('chartOEE'),
+        'OEE (%)',
+        oee.map(Number),
+        'rgba(54, 162, 235, 0.7)',
+        val => val.toFixed(1)
+      );
+
+      chartPounds = createChart(
+        document.getElementById('chartPounds'),
+        'Pounds (LB)',
+        pounds.map(Number),
+        'rgba(255, 206, 86, 0.7)',
+        val => Number(val).toLocaleString()
+      );
+
+      chartWaste = createChart(
+        document.getElementById('chartWaste'),
+        'Waste (%)',
+        waste.map(Number),
+        'rgba(255, 99, 132, 0.7)',
+        val => val.toFixed(2)
+      );
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -266,6 +377,30 @@
       document.getElementById('day').addEventListener('change', fetchReport);
       document.getElementById('shift').addEventListener('change', fetchReport);
     });
+
+
+
+    async function downloadChartsAsPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const chartIDs = ['chartOEEWrapper', 'chartPoundsWrapper', 'chartWasteWrapper'];
+
+      for (let i = 0; i < chartIDs.length; i++) {
+        const canvas = await html2canvas(document.getElementById(chartIDs[i]));
+        const imgData = canvas.toDataURL('image/png');
+        const width = pdf.internal.pageSize.getWidth() - 40;
+        const height = (canvas.height * width) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 20, 40, width, height);
+        if (i < chartIDs.length - 1) pdf.addPage();
+      }
+
+      pdf.save('Bakery_Weekly_Metrics.pdf');
+    }
+
+
+
+
+
   </script>
 
   <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">
