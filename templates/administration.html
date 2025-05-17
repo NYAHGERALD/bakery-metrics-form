@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .dashboard-container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .header-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .admin-id {
+      display: flex;
+      align-items: center;
+    }
+    .floating-table {
+      overflow-x: auto;
+      margin-top: 1.5rem;
+    }
+    .floating-table table {
+      min-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="text-center">
+    <img src="/static/DON MIGUEL.png" style="width: 220px;">
+    <h4 class="mt-2">WELCOME TO ADMIN DASHBOARD</h4>
+    <p>Please use this Dashboard to manage user accounts and access</p>
+  </div>
+
+  <div class="container dashboard-container">
+    <div class="header-box mb-4">
+      <div class="admin-id">
+        <img src="/static/default-avatar.png" class="avatar">
+        <strong id="adminName">Admin</strong>
+      </div>
+      <div>
+        
+        <a href="/" class="btn btn-outline-danger ms-2">🚪 Logout</a>
+      </div>
+    </div>
+
+    <!-- Key Generator -->
+    <label>Generated Access Key</label>
+    <div class="input-group mb-3">
+      <input id="generatedKey" class="form-control" readonly>
+      <button class="btn btn-outline-secondary" onclick="copyKey(this)"><i class="fas fa-copy"></i> <span>Copy Key</span></button>
+    </div>
+    <button class="btn btn-primary mb-4" onclick="generateKey()">🎲 Generate Key</button>
+
+    <!-- Register Key -->
+    <label>Input Access Key</label>
+    <div class="input-group mb-3">
+      <input id="inputKey" class="form-control" placeholder="Enter access key" maxlength="13">
+      <button class="btn btn-outline-secondary" onclick="pasteKey()"><i class="fas fa-paste"></i> Paste Key</button>
+    </div>
+    <button class="btn btn-success mb-3" onclick="registerKey()">✅ Register Key</button>
+    <div id="keyMessage" class="alert d-none"></div>
+    <div class="text-center">
+      <p>USER ACCOUNTS - See all the available users in the Bakery Department</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-3">
+      <input id="searchInput" class="form-control" placeholder="Search by Last name" oninput="searchUser()">
+    </div>
+
+    <!-- Users Table -->
+    <div class="floating-table">
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Access Key</th>
+          </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Dropdown and Remove -->
+    <div class="mt-4">
+      <label>Select User</label>
+      <select id="userDropdown" class="form-select mb-2"></select>
+      <button class="btn btn-danger" onclick="confirmRemove()">🗑 Remove User</button>
+    </div>
+  </div>
+
+  <script>
+    let clipboardKey = "";
+    let allUsers = [];
+
+    function generateKey() {
+      const key = [...Array(13)].map(() => "0123456789ABCDEF"[Math.floor(Math.random() * 16)]).join("");
+      document.getElementById("generatedKey").value = key;
+      clipboardKey = key;
+    }
+
+    function copyKey(btn) {
+      const key = document.getElementById("generatedKey").value;
+      if (!key) return;
+      navigator.clipboard.writeText(key).then(() => {
+        btn.querySelector("span").textContent = "Copied!";
+        setTimeout(() => btn.querySelector("span").textContent = "Copy Key", 2000);
+      });
+    }
+
+    function pasteKey() {
+      document.getElementById("inputKey").value = clipboardKey;
+    }
+
+    async function registerKey() {
+      const key = document.getElementById("inputKey").value.trim();
+      const message = document.getElementById("keyMessage");
+      message.classList.add("d-none");
+      if (!key || key.length < 13) {
+        return showMessage("Access key must be at least 13 characters.", "danger");
+      }
+      const res = await fetch("/api/register-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key })
+      });
+      const data = await res.json();
+      showMessage(data.message, data.status);
+      loadUsers();
+    }
+
+    function showMessage(msg, type) {
+      const box = document.getElementById("keyMessage");
+      box.textContent = msg;
+      box.className = `alert alert-${type}`;
+      box.classList.remove("d-none");
+    }
+
+    async function loadUsers() {
+      const res = await fetch("/api/users");
+      const data = await res.json();
+      allUsers = data.users;
+      renderTable(allUsers);
+
+      const dropdown = document.getElementById("userDropdown");
+      dropdown.innerHTML = "";
+      data.dropdown.forEach(d => {
+        const opt = document.createElement("option");
+        opt.textContent = d;
+        opt.value = d.split("_")[0];
+        dropdown.appendChild(opt);
+      });
+
+      const name = allUsers[0]?.first || "Admin";
+      document.getElementById("adminName").textContent = name;
+    }
+
+    function renderTable(users) {
+      const table = document.getElementById("userTable");
+      table.innerHTML = "";
+      users.forEach(u => {
+        const row = `<tr><td>${u.email}</td><td>${u.first}</td><td>${u.last}</td><td>${u.key}</td></tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    function searchUser() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = allUsers.filter(user => user.last.toLowerCase().includes(searchTerm));
+      renderTable(filtered);
+    }
+
+    function confirmRemove() {
+      const key = document.getElementById("userDropdown").value;
+      if (!key) return;
+      if (confirm("Are you sure you want to remove this user? They will no longer have access to your site.")) {
+        fetch("/api/remove-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key })
+        }).then(res => res.json()).then(data => {
+          alert(data.message);
+          loadUsers();
+        });
+      }
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

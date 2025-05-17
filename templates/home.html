@@ -102,6 +102,8 @@
       </form>
       <a href="/set-password" class="d-block mt-3 text-primary">I forgot my password</a>
       <a href="/register" class="d-block mt-2 text-primary">New user? Create an account</a>
+      <a href="{{ url_for('admin_login') }}" class="btn btn-outline-dark mt-2">Admin Login</a>
+
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

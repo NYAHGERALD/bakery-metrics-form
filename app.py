@@ -96,6 +96,46 @@ def verify_email():
 # ✅ Place this inside your Flask app file (e.g. app.py), preferably below your existing routes
 # or wherever your other @app.route definitions are located
 
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'GET':
+        return render_template('admin_login.html')
+
+    email = request.form.get('email', '').strip().lower()
+    password = request.form.get('password', '').strip()
+
+    if not email or not password:
+        flash("Email and password are required.", "danger")
+        return render_template('admin_login.html')
+
+    try:
+        admin_sheet = client.open_by_key(SPREADSHEET_ID).worksheet("admin_accounts")
+        data = admin_sheet.get_all_values()
+
+        for row in data[1:]:  # Skip header
+            row_email = row[0].strip().lower() if len(row) > 0 else ''
+            row_password = row[3] if len(row) > 3 else ''
+            if email == row_email and password == row_password:
+                session['admin_verified'] = True
+                session['admin_email'] = email
+                return redirect(url_for('administration'))
+
+        flash("Please check your password or email and enter again.", "danger")
+        return render_template('admin_login.html')
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        return render_template('admin_login.html')
+
+@app.route('/administration')
+def administration():
+    if not session.get('admin_verified'):
+        flash("Please log in as an admin to continue.", "danger")
+        return redirect(url_for('admin_login'))
+
+    return render_template('administration.html')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
@@ -107,9 +147,11 @@ def register():
     email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '').strip()
     confirm_password = request.form.get('confirm_password', '').strip()
+    access_key = request.form.get('access_key', '').strip()
 
-    if not all([first_name, last_name, email, password, confirm_password]):
-        flash("All fields are required.", "danger")
+    # Validation
+    if not all([first_name, last_name, email, password, confirm_password, access_key]):
+        flash("All fields are required, including Access Key.", "danger")
         return render_template('register.html')
 
     if password != confirm_password:
@@ -120,23 +162,33 @@ def register():
         flash("Password must be at least 6 characters and include a special character.", "danger")
         return render_template('register.html')
 
+    if len(access_key) < 13:
+        flash("Access key must be at least 13 characters long.", "danger")
+        return render_template('register.html')
+
     try:
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
-        email_list = sheet.col_values(1)
+        data = sheet.get_all_values()
+        access_keys = [row[5].strip() if len(row) > 5 else '' for row in data]
 
-        if email in [e.lower() for e in email_list]:
+        if email in [e[0].strip().lower() for e in data if len(e) > 0]:
             flash("This email is already registered.", "warning")
             return render_template('register.html')
 
-        next_row = len(email_list) + 1
-        sheet.update(f"A{next_row}:D{next_row}", [[email, first_name, last_name, password]])
+        # Check if access key exists and get row number
+        if access_key not in access_keys:
+            flash("Access key not valid. Please contact your manager.", "danger")
+            return render_template('register.html')
 
+        row_number = access_keys.index(access_key) + 1  # 1-based row
+        sheet.update(f"A{row_number}:E{row_number}", [[email, first_name, last_name, password, access_key]])
 
         return render_template('confirmation.html', success=True, name=first_name)
 
     except Exception as e:
         flash(f"An error occurred: {e}", "danger")
         return render_template('register.html')
+
 
 
 @app.route('/set-password', methods=['GET', 'POST'])
@@ -194,7 +246,82 @@ def set_password():
         return render_template('set_password.html')
 
 
+# --- ADMIN API ROUTES ---
+@app.route('/api/register-key', methods=['POST'])
+def api_register_key():
+    data = request.get_json()
+    key = data.get("key", "").strip()
+    if len(key) < 13:
+        return jsonify({"message": "Access key must be at least 13 characters.", "status": "danger"})
 
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        all_rows = sheet.get_all_values()
+
+        key_exists = any(row[5] == key for row in all_rows if len(row) > 5)
+        if key_exists:
+            return jsonify({"message": "This key is already registered.", "status": "warning"})
+
+        for idx, row in enumerate(all_rows, start=1):
+            if len(row) < 6 or not row[5]:
+                sheet.update_cell(idx, 6, key)
+                return jsonify({"message": "Key successfully registered.", "status": "success"})
+
+        next_row = len(all_rows) + 1
+        sheet.update_cell(next_row, 6, key)
+        return jsonify({"message": "Key successfully registered.", "status": "success"})
+
+    except Exception as e:
+        return jsonify({"message": f"Error: {str(e)}", "status": "danger"})
+
+@app.route('/api/users')
+def api_get_users():
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        data = sheet.get_all_values()[1:]
+
+        users = []
+        dropdown = []
+
+        for row in data:
+            email = row[0] if len(row) > 0 else ""
+            first = row[1] if len(row) > 1 else ""
+            last = row[2] if len(row) > 2 else ""
+            key = row[5] if len(row) > 5 else ""
+
+            if key:
+                users.append({"email": email, "first": first, "last": last, "key": key})
+                dropdown.append(f"{key}_{last}")
+
+        return jsonify({"users": users, "dropdown": dropdown})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/remove-user', methods=['POST'])
+def api_remove_user():
+    data = request.get_json()
+    key = data.get("key")
+
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        all_rows = sheet.get_all_values()
+
+        for idx, row in enumerate(all_rows, start=1):
+            if len(row) > 5 and row[5] == key:
+                sheet.update(f"A{idx}:F{idx}", [["" for _ in range(6)]])
+                return jsonify({"message": "This user has been removed. Thank you!", "status": "success"})
+
+        return jsonify({"message": "Key not found.", "status": "danger"})
+
+    except Exception as e:
+        return jsonify({"message": f"Error: {str(e)}", "status": "danger"})
+
+@app.route('/admin/report')
+def admin_to_report():
+    return redirect(url_for('report'))
+
+#End of ADMIN API
 
 
 
@@ -314,6 +441,9 @@ def api_report():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
