@@ -33,47 +33,224 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/credentia
 client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
 
+# Helper to get latest week sheet name
+def get_latest_week_sheet():
+    spreadsheet = client.open_by_key(SPREADSHEET_ID)
+    sheet_names = spreadsheet.worksheets()
+    pattern = re.compile(r"(\d{2}-\d{2}-\d{4})_\d{2}-\d{2}-\d{4}")
+
+    def extract_date(sheet):
+        match = pattern.match(sheet.title)
+        if match:
+            return datetime.strptime(match.group(1), "%m-%d-%Y")
+        return datetime.min
+
+    sorted_sheets = sorted(sheet_names, key=extract_date, reverse=True)
+    return sorted_sheets[0].title if sorted_sheets else ""
+
 @app.route('/')
 def home():
     return render_template('home.html')
 
 @app.route('/verify-email', methods=['POST'])
 def verify_email():
-    email = request.form.get('email')
-    if not email:
-        flash("Email is required.", "error")
+    email = request.form.get('email', '').strip().lower()
+    password = request.form.get('password', '').strip()
+
+    if not email or not password:
+        flash("Email and password are required.", "danger")
         return redirect(url_for('home'))
+
     try:
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
         email_list = sheet.col_values(1)[1:]
-        if email.lower() in [e.lower() for e in email_list]:
-            index = [e.lower() for e in email_list].index(email.lower()) + 2  # row index, A2 = index 2
-            first_name = sheet.cell(index, 2).value  # Column B
-            last_name = sheet.cell(index, 3).value   # Column C
-            full_name = f"{first_name} {last_name}"
-            
-            session['verified'] = True
-            session['user_email'] = email
-            session['user_full_name'] = full_name
-            return redirect(url_for('form'))
-        else:
-            flash("Sorry, this email has no permission for submitting Bakery metrics.", "danger")
+
+        if email not in [e.lower() for e in email_list]:
+            flash("Email not found or unauthorized.", "danger")
             return redirect(url_for('home'))
-    except Exception as e:
-        flash(f"Something went wrong: {e}", "error")
+
+        index = [e.lower() for e in email_list].index(email) + 2
+        row = sheet.row_values(index)
+        first_name = row[1] if len(row) > 1 else ''
+        last_name = row[2] if len(row) > 2 else ''
+        full_name = f"{first_name} {last_name}"
+        stored_password = row[3] if len(row) > 3 else ''
+
+        session['user_email'] = email
+        session['user_full_name'] = full_name
+
+        if stored_password == "tortilla#" and password == "tortilla#":
+            return redirect(url_for('set_password'))
+
+        if stored_password == password:
+            session['verified'] = True
+            return redirect(url_for('form'))
+
+        flash("Incorrect password.", "danger")
         return redirect(url_for('home'))
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        return redirect(url_for('home'))
+
+# ✅ Place this inside your Flask app file (e.g. app.py), preferably below your existing routes
+# or wherever your other @app.route definitions are located
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+
+    # POST: Handle form submission
+    first_name = request.form.get('first_name', '').strip()
+    last_name = request.form.get('last_name', '').strip()
+    email = request.form.get('email', '').strip().lower()
+    password = request.form.get('password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+
+    if not all([first_name, last_name, email, password, confirm_password]):
+        flash("All fields are required.", "danger")
+        return render_template('register.html')
+
+    if password != confirm_password:
+        flash("Passwords do not match.", "danger")
+        return render_template('register.html')
+
+    if len(password) < 6 or not re.search(r"[@#$%&]", password):
+        flash("Password must be at least 6 characters and include a special character.", "danger")
+        return render_template('register.html')
+
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        email_list = sheet.col_values(1)
+
+        if email in [e.lower() for e in email_list]:
+            flash("This email is already registered.", "warning")
+            return render_template('register.html')
+
+        next_row = len(email_list) + 1
+        sheet.update(f"A{next_row}:D{next_row}", [[email, first_name, last_name, password]])
+
+
+        return render_template('confirmation.html', success=True, name=first_name)
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        return render_template('register.html')
+
+
+@app.route('/set-password', methods=['GET', 'POST'])
+def set_password():
+    if request.method == 'GET':
+        return render_template('set_password.html')
+
+    email = session.get('user_email') or request.form.get('email', '')
+    email = email.strip().lower()
+    old_password = request.form.get('old_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    # Validation Checks
+    if not email:
+        flash("Session expired. Please log in again.", "danger")
+        return render_template('password_confirmation.html', user_name=session.get('user_full_name', 'User'))
+
+    if not old_password or not new_password or not confirm_password:
+        flash("All fields are required.", "danger")
+        return render_template('set_password.html')
+
+    if new_password != confirm_password:
+        flash("New passwords do not match.", "danger")
+        return render_template('set_password.html')
+
+    if len(new_password) < 6 or not re.search(r"[@#$%&]", new_password):
+        flash("Password must be at least 6 characters and include a special character (@, #, $, %, &).", "danger")
+        return render_template('set_password.html')
+
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        data = sheet.get_all_values()
+
+        for i, row in enumerate(data[1:], start=2):  # Skip header
+            row_email = row[0].strip().lower() if len(row) > 0 else ''
+            row_password = row[3] if len(row) > 3 else ''
+
+            if row_email == email:
+                if row_password == old_password:
+                    sheet.update_cell(i, 4, new_password)
+                    session['verified'] = True
+                    flash("Password updated successfully.", "success")
+                    return render_template('password_confirmation.html')
+
+                else:
+                    flash("Old password is incorrect.", "danger")
+                    return render_template('set_password.html')
+
+        flash("Email not found in our records.", "danger")
+        return render_template('set_password.html')
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "danger")
+        return render_template('set_password.html')
+
+
+
+
+
 
 @app.route('/form')
 def form():
     if not session.get('verified'):
         return redirect(url_for('home'))
     latest_week = get_latest_week_sheet()
-    return render_template(
-        'form.html',
-        latest_week=latest_week,
-        user_full_name=session.get('user_full_name', 'User')
-    )
+    return render_template('form.html', latest_week=latest_week, user_full_name=session.get('user_full_name', 'User'))
 
+@app.route('/submit', methods=['POST'])
+def submit():
+    if not session.get('verified'):
+        return redirect(url_for('home'))
+
+    week = request.form.get('week')
+    day = request.form.get('day')
+    submitted_by = request.form.get('submitted_by')
+    local_timestamp = request.form.get('local_timestamp')
+
+    column_map = day_column_map
+
+    if not week or not day or day not in column_map:
+        return "❌ Invalid week or day provided.", 400
+
+    col = column_map[day]
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet(week)
+    except Exception as e:
+        return f"❌ Sheet/tab not found: {week}. Error: {e}", 404
+
+    metric_map = {
+        "oee_–_die_cut_1_(1st_shift)": 6,
+        "oee_–_die_cut_2_(1st_shift)": 7,
+        "pounds_–_die_cut_1_(1st_shift)": 9,
+        "pounds_–_die_cut_2_(1st_shift)": 10,
+        "waste_–_die_cut_1_(1st_shift)": 12,
+        "waste_–_die_cut_2_(1st_shift)": 13,
+        "oee_–_die_cut_1_(2nd_shift)": 20,
+        "oee_–_die_cut_2_(2nd_shift)": 21,
+        "pounds_–_die_cut_1_(2nd_shift)": 23,
+        "pounds_–_die_cut_2_(2nd_shift)": 24,
+        "waste_–_die_cut_1_(2nd_shift)": 26,
+        "waste_–_die_cut_2_(2nd_shift)": 27
+    }
+
+    updated = False
+    for field_name, row in metric_map.items():
+        value = request.form.get(field_name)
+        if value and value.strip():
+            current_value = sheet.acell(f"{col}{row}").value
+            if not current_value or current_value.strip() == "0":
+                sheet.update_acell(f"{col}{row}", value)
+                updated = True
+
+    return render_template('confirmation.html', success=updated, name=submitted_by, timestamp=local_timestamp)
 
 @app.route('/report')
 def report():
@@ -92,13 +269,7 @@ def report():
 
     week_names.sort(key=extract_week_start, reverse=True)
     default_week = week_names[0] if week_names else ""
-    return render_template(
-        'report.html',
-        week_names=week_names,
-        default_week=default_week,
-        user_full_name=session.get('user_full_name', 'User')
-    )
-
+    return render_template('report.html', week_names=week_names, default_week=default_week, user_full_name=session.get('user_full_name', 'User'))
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -144,23 +315,5 @@ def api_report():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-def get_latest_week_sheet():
-    spreadsheet = client.open_by_key(SPREADSHEET_ID)
-    sheet_names = spreadsheet.worksheets()
-    pattern = re.compile(r"(\d{2}-\d{2}-\d{4})_\d{2}-\d{2}-\d{4}")
-
-    def extract_date(sheet):
-        match = pattern.match(sheet.title)
-        if match:
-            return datetime.strptime(match.group(1), "%m-%d-%Y")
-        return datetime.min
-
-    sorted_sheets = sorted(sheet_names, key=extract_date, reverse=True)
-    return sorted_sheets[0].title if sorted_sheets else ""
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
-
-
-
