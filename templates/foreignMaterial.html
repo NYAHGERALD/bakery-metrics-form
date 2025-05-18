@@ -210,7 +210,7 @@
       const imgFormData = new FormData();
       imgFormData.append("image", imageBlobs[i]);
 
-      const imgUploadRes = await fetch("https://script.google.com/macros/s/AKfycbxNt9dj4c5Jq948azcKx239woB_tvCUeMrRPezXMVRvoeLDko-nyRPMlcr0LUlzzEHkxQ/exec", {
+      const imgUploadRes = await fetch("https://script.google.com/macros/s/AKfycbwiWb2RJNwCyyDdsbCkaNgEu0LOLIggLiBU7JDkPbyq/dev", {
         method: "POST",
         body: imgFormData,
       });
@@ -228,7 +228,7 @@
     data.imageUrls = imageUrls;
 
     // Send all data
-    const saveRes = await fetch("https://script.google.com/macros/s/AKfycbxNt9dj4c5Jq948azcKx239woB_tvCUeMrRPezXMVRvoeLDko-nyRPMlcr0LUlzzEHkxQ/exec", {
+    const saveRes = await fetch("https://script.google.com/macros/s/AKfycbwiWb2RJNwCyyDdsbCkaNgEu0LOLIggLiBU7JDkPbyq/dev", {
       method: "POST",
       body: JSON.stringify(data),
       headers: {
