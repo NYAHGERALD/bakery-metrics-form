@@ -21,10 +21,15 @@
       margin-top: 2rem;
       animation: fadeIn 0.8s ease-in-out;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    @keyframes floatIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
+    .animated {
+      animation: floatIn 0.8s ease-in-out;
+    }
+
     .avatar {
       width: 50px;
       height: 50px;
@@ -75,11 +80,11 @@
       <button class="btn btn-outline-secondary" onclick="copyKey(this)"><i class="fas fa-copy"></i> <span>Copy Key</span></button>
     </div>
     <button class="btn btn-primary mb-4" onclick="generateKey()">🎲 Generate Key</button>
-
+    <p></p>
     <!-- Register Key -->
     <label>Input Access Key</label>
     <div class="input-group mb-3">
-      <input id="inputKey" class="form-control" placeholder="Enter access key" maxlength="13">
+      <input id="inputKey" class="form-control" placeholder="Click Paste Key" maxlength="13">
       <button class="btn btn-outline-secondary" onclick="pasteKey()"><i class="fas fa-paste"></i> Paste Key</button>
     </div>
     <button class="btn btn-success mb-3" onclick="registerKey()">✅ Register Key</button>
@@ -115,6 +120,42 @@
       <button class="btn btn-danger" onclick="confirmRemove()">🗑 Remove User</button>
     </div>
   </div>
+
+
+  <!-- 🧾 Bakery Metrics Submission Logs -->
+  <hr class="my-5">
+  <div class="px-3 px-md-5">
+
+    <!-- Title -->
+    <h5 class="text-center fw-bold mb-4 animated" style="animation: fadeIn 0.8s ease-in-out;">
+      📊 Bakery Metrics Submission Logs
+    </h5>
+
+    <!-- Email Search Bar -->
+    <div class="mb-3">
+      <input id="logSearchInput" class="form-control form-control-lg shadow-sm" placeholder="🔍 Search by User Email..." oninput="searchLogs()" style="border-radius: 8px;">
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive rounded shadow-sm animated fadeIn">
+      <table class="table table-hover table-bordered bg-white align-middle text-nowrap">
+        <thead class="table-dark text-white">
+          <tr>
+            <th>Submitted By</th>
+            <th>User Email</th>
+            <th>Date & Time</th>
+            <th>Message</th>
+            <th>Week</th>
+            <th>Day</th>
+          </tr>
+        </thead>
+        <tbody id="submissionLogsBody">
+          <!-- Dynamic rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 
   <script>
     let clipboardKey = "";
@@ -213,6 +254,55 @@
     }
 
     loadUsers();
+
+    // Fetch and display logs
+    async function loadSubmissionLogs() {
+      const res = await fetch('/api/submission-logs');
+      const data = await res.json();
+      window.allLogs = data.logs;  // Store for search
+
+      const body = document.getElementById("submissionLogsBody");
+      body.innerHTML = "";
+
+      data.logs.forEach(log => {
+        const row = `
+          <tr>
+            <td>${log.name}</td>
+            <td>${log.email}</td>
+            <td>${log.timestamp}</td>
+            <td>${log.message}</td>
+            <td>${log.week}</td>
+            <td>${log.day}</td>
+          </tr>`;
+        body.innerHTML += row;
+      });
+    }
+
+    // Search filter for logs
+    function searchLogs() {
+      const term = document.getElementById("logSearchInput").value.toLowerCase();
+      const filtered = window.allLogs.filter(log => log.email.toLowerCase().includes(term));
+
+      const body = document.getElementById("submissionLogsBody");
+      body.innerHTML = "";
+
+      filtered.forEach(log => {
+        const row = `
+          <tr>
+            <td>${log.name}</td>
+            <td>${log.email}</td>
+            <td>${log.timestamp}</td>
+            <td>${log.message}</td>
+            <td>${log.week}</td>
+            <td>${log.day}</td>
+          </tr>`;
+        body.innerHTML += row;
+      });
+    }
+
+    // Call this when the page loads
+    loadSubmissionLogs();
+
 
   </script>
   <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">

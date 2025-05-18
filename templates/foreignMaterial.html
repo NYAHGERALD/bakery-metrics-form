@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foreign Material Report</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #daddf0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .container {
+      max-width: 1100px;
+      padding: 2rem;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea {
+      border: none;
+      box-shadow: none;
+      background-color: #f8f9fa;
+    }
+
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    .form-table td, .form-table th {
+      border: 1px solid #ccc;
+      padding: 1rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .section-title {
+      font-weight: bold;
+      background-color: #e9ecef;
+      text-align: center;
+    }
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .image-preview img {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    }
+    .floating-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    @media (max-width: 768px) {
+      .form-table, .form-table td, .form-table th {
+        display: block;
+        width: 100%;
+      }
+      .form-table th {
+        background-color: #f1f1f1;
+      }
+      
+    }
+    .form-control.no-border,
+    textarea.no-border {
+      border: none !important;
+      background-color: #f8f9fa; /* matches page background */
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center mb-4">FOREIGN MATERIAL REPORT</h2>
+
+    <div class="mb-3">
+      <input type="text" id="searchDate" class="form-control" placeholder="Search reports by date (YYYY-MM-DD)">
+    </div>
+
+    <form id="foreignMaterialForm">
+      <table class="form-table">
+        <tr><th>Date:</th><td><input name="date" type="date"></td><th>Department:</th><td><input name="department" type="text"></td><th>Line:</th><td><input name="line" type="text"></td></tr>
+        <tr><th>Time:</th><td><input name="time" type="text"></td><th>Raw Material Source:</th><td colspan="3"><input name="raw_material_source" type="text"></td></tr>
+        <tr><th colspan="2">Name of Product/Item Number:</th><td colspan="4"><input name="product_name" type="text"></td></tr>
+        <tr><th colspan="2">Individuals Involved:</th><td colspan="4"><input name="individuals" type="text"></td></tr>
+        <tr><th colspan="2">Product Code(s)/Batch/Lot Involved:</th><td colspan="2"><input name="product_code" type="text"></td><th>Amount:</th><td><input name="amount" type="text"></td></tr>
+      </table>
+
+      <table class="form-table">
+        <tr class="section-title"><td colspan="6">2. Describe in detail the foreign material/object. Include size and hardness.</td></tr>
+        <tr><td colspan="4"><textarea name="description" rows="4"></textarea></td><td>Initials:<br><input name="initials_2" type="text"></td><td>Date:<br><input name="date_2" type="date"></td></tr>
+        <tr class="section-title"><td colspan="6">3. Identify the cause of this incident. How/Why did it occur?</td></tr>
+        <tr><td colspan="4"><textarea name="cause" rows="4"></textarea></td><td>Initials:<br><input name="initials_3" type="text"></td><td>Date:<br><input name="date_3" type="date"></td></tr>
+        <tr class="section-title"><td colspan="6">4. What action was taken when the incident was noted?</td></tr>
+        <tr><td colspan="4"><textarea name="action_taken" rows="4"></textarea></td><td>Initials:<br><input name="initials_4" type="text"></td><td>Date:<br><input name="date_4" type="date"></td></tr>
+        <tr class="section-title"><td colspan="6">5. What actions were taken to verify corrective actions (QC)?</td></tr>
+        <tr><td colspan="4"><textarea name="verification" rows="4"></textarea></td><td>Initials:<br><input name="initials_5" type="text"></td><td>Date:<br><input name="date_5" type="date"></td></tr>
+        <tr><td colspan="6">Was Maintenance Work Completed: Y/N <input name="maintenance_done" type="text"> Maintenance Initials: <input name="maintenance_initials" type="text"></td></tr>
+        <tr class="section-title"><td colspan="6">6. Was product placed on hold?</td></tr>
+        <tr><td colspan="6">Yes <input name="hold_yes" type="checkbox"> No <input name="hold_no" type="checkbox"> Item #'s Held: <input name="items_held" type="text"></td></tr>
+        <tr><td colspan="6">
+          If Yes, explain:<br><textarea name="hold_reason" rows="3"></textarea><br>
+          If No, explain:<br><textarea name="no_hold_reason" rows="3"></textarea><br>
+          Initials: <input name="initials_6" type="text"> Date: <input name="date_6" type="date">
+        </td></tr>
+        <tr class="section-title"><td colspan="6">7. Screening process used (QC)?</td></tr>
+        <tr><td colspan="4"><textarea name="screening" rows="3"></textarea></td><td>Initials:<br><input name="initials_7" type="text"></td><td>Date:<br><input name="date_7" type="date"></td></tr>
+        <tr class="section-title"><td colspan="6">8. Final disposition of product / justification:</td></tr>
+        <tr><td colspan="4"><textarea name="disposition" rows="3"></textarea></td><td>Initials:<br><input name="initials_8" type="text"></td><td>Date:<br><input name="date_8" type="date"></td></tr>
+        <tr><td colspan="6">Date(s) of disposition: <input name="disposition_dates" type="text"> Initials: <input name="final_initials" type="text"></td></tr>
+        <tr class="section-title"><td colspan="6">9. Preventive Measures</td></tr>
+        <tr><td colspan="4"><textarea name="prevention" rows="3"></textarea></td><td>Initials:<br><input name="initials_9" type="text"></td><td>Date:<br><input name="date_9" type="date"></td></tr>
+        <tr><td colspan="6">Corporate Notified: YES/NO <input name="notified" type="text"> Person(s): <input name="notified_person" type="text"> Date: <input name="notified_date" type="date"></td></tr>
+      </table>
+
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Upload Photos of the Incident</label>
+        <input type="file" accept="image/*" id="imageInput" class="form-control">
+        <div class="image-preview" id="imagePreview"></div>
+      </div>
+
+      <button type="button" class="btn btn-success btn-lg floating-btn" id="saveReport">💾 Save Report</button>
+    </form>
+  </div>
+
+  <div class="modal fade" id="cropperModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Crop Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="cropImagePreview" style="max-width: 100%; max-height: 80vh;">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="confirmCrop">Crop & Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script>
+    const form = document.getElementById("foreignMaterialForm");
+    //const imageInput = document.getElementById("imageInput");
+    const imagePreview = document.getElementById("imagePreview");
+    const cropperModal = new bootstrap.Modal(document.getElementById("cropperModal"));
+    const cropImagePreview = document.getElementById("cropImagePreview");
+    let cropper;
+    let imageBlobs = [];
+
+    imageInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        cropImagePreview.src = reader.result;
+        cropperModal.show();
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropImagePreview, { aspectRatio: NaN, viewMode: 1 });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("confirmCrop").addEventListener("click", () => {
+      const canvas = cropper.getCroppedCanvas({ width: 900 });
+      canvas.toBlob(blob => {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(blob);
+        imagePreview.appendChild(img);
+        imageBlobs.push(blob);
+        cropperModal.hide();
+        imageInput.value = "";
+      });
+    });
+  </script>
+  <script>
+  document.getElementById("saveReport").addEventListener("click", async () => {
+    const formData = new FormData(form);
+
+    // Append text fields to an object
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    // Upload images one by one and get URLs
+    const imageUrls = [];
+    for (let i = 0; i < imageBlobs.length; i++) {
+      const imgFormData = new FormData();
+      imgFormData.append("image", imageBlobs[i]);
+
+      const imgUploadRes = await fetch("https://script.google.com/macros/s/AKfycbxNt9dj4c5Jq948azcKx239woB_tvCUeMrRPezXMVRvoeLDko-nyRPMlcr0LUlzzEHkxQ/exec", {
+        method: "POST",
+        body: imgFormData,
+      });
+
+      const imgJson = await imgUploadRes.json();
+      if (imgJson.status === "success") {
+        imageUrls.push(imgJson.imageUrl);
+      } else {
+        alert("Image upload failed.");
+        return;
+      }
+    }
+
+    // Attach image URLs to data
+    data.imageUrls = imageUrls;
+
+    // Send all data
+    const saveRes = await fetch("https://script.google.com/macros/s/AKfycbxNt9dj4c5Jq948azcKx239woB_tvCUeMrRPezXMVRvoeLDko-nyRPMlcr0LUlzzEHkxQ/exec", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    const result = await saveRes.json();
+    if (result.status === "success") {
+      alert("Report saved successfully!");
+      form.reset();
+      imagePreview.innerHTML = "";
+      imageBlobs = [];
+    } else {
+      alert("Failed to save report. Please try again.");
+    }
+  });
+  </script>
+
+  
+</body>
+</html>
+
+

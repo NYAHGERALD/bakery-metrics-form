@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 import re
@@ -48,6 +49,19 @@ def get_latest_week_sheet():
     sorted_sheets = sorted(sheet_names, key=extract_date, reverse=True)
     return sorted_sheets[0].title if sorted_sheets else ""
 
+
+def log_submission(name, email, timestamp, message, week=None, day=None):
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("submit_logs")
+        row = [name, email, timestamp, message, week, day]
+        sheet.append_row(row, value_input_option="USER_ENTERED")
+    except Exception as e:
+        print("❌ Failed to log submission:", e)
+
+
+
+
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -77,6 +91,7 @@ def verify_email():
         stored_password = row[3] if len(row) > 3 else ''
 
         session['user_email'] = email
+        session['email'] = email  # ✅ Add this line here
         session['user_full_name'] = full_name
 
         if stored_password == "tortilla#" and password == "tortilla#":
@@ -134,6 +149,35 @@ def administration():
         return redirect(url_for('admin_login'))
 
     return render_template('administration.html')
+
+
+@app.route('/api/submission-logs')
+def get_submission_logs():
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("submit_logs")
+        values = sheet.get_all_values()
+
+        if len(values) <= 1:
+            return jsonify({"logs": []})  # Empty or only header
+
+        logs = []
+        for row in values[1:]:  # Skip the header row
+            logs.append({
+                "name": row[0] if len(row) > 0 else '',
+                "email": row[1] if len(row) > 1 else '',
+                "timestamp": row[2] if len(row) > 2 else '',
+                "message": row[3] if len(row) > 3 else '',
+                "week": row[4] if len(row) > 4 else '',
+                "day": row[5] if len(row) > 5 else ''
+            })
+
+        return jsonify({"logs": logs})
+
+    except Exception as e:
+        print("⚠️ Error in /api/submission-logs:", e)
+        return jsonify({"logs": [], "error": str(e)})
+
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -377,7 +421,23 @@ def submit():
                 sheet.update_acell(f"{col}{row}", value)
                 updated = True
 
+
+    message = "✅ Submission successful." if updated else "⚠️ No data was submitted (already exists)."
+    
+    # Log submission with extra info
+    user_email = session.get('email', 'Unknown')
+    log_submission(submitted_by, user_email, local_timestamp, message, week=week, day=day)
+
+
     return render_template('confirmation.html', success=updated, name=submitted_by, timestamp=local_timestamp)
+
+
+@app.route('/foreign-material')
+def foreign_material():
+    return render_template('foreignMaterial.html')
+
+
+
 
 @app.route('/report')
 def report():
