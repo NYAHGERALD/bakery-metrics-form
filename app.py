@@ -6,6 +6,14 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import re
+import io
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+
+
+
+
+
 
 # --- Setup ---
 day_column_map = {
@@ -33,6 +41,8 @@ scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/credentials.json', scope)
 client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
+SHEET_NAME = "Foreign Material Reports"
+GOOGLE_DRIVE_FOLDER_ID = "1O5-wG6PWFTXI-gldzZhqknp03gxyXRyv"  # create or reuse "FM-Images" folder
 
 # Helper to get latest week sheet name
 def get_latest_week_sheet():
@@ -59,6 +69,32 @@ def log_submission(name, email, timestamp, message, week=None, day=None):
         print("❌ Failed to log submission:", e)
 
 
+def upload_image_to_drive(image_file):
+    creds_drive = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+    drive_service = build('drive', 'v3', credentials=creds_drive)
+
+    file_metadata = {
+        'name': image_file.filename,
+        'parents': [GOOGLE_DRIVE_FOLDER_ID]
+    }
+
+    image_stream = io.BytesIO(image_file.read())
+    media = MediaIoBaseUpload(image_stream, mimetype=image_file.mimetype)
+
+    uploaded_file = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
+
+    # Make the image public
+    drive_service.permissions().create(
+        fileId=uploaded_file['id'],
+        body={'type': 'anyone', 'role': 'reader'}
+    ).execute()
+
+    image_url = f"https://drive.google.com/uc?id={uploaded_file['id']}"
+    return image_url
 
 
 
@@ -457,6 +493,114 @@ def report():
     week_names.sort(key=extract_week_start, reverse=True)
     default_week = week_names[0] if week_names else ""
     return render_template('report.html', week_names=week_names, default_week=default_week, user_full_name=session.get('user_full_name', 'User'))
+
+
+@app.route('/api/load-reports')
+def load_reports():
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
+        values = sheet.get_all_values()
+        header = values[0]
+        report_name_col = header.index("Name your report")
+        date_col = 0  # column A
+
+        options = []
+        for i, row in enumerate(values[1:], start=2):  # skip header
+            name = row[report_name_col] if len(row) > report_name_col else ""
+            date = row[date_col] if len(row) > date_col else ""
+            if name:
+                label = f"{name} - {date}"
+                options.append({"label": label, "row": i})
+
+        return jsonify({"reports": options})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/submit-foreign-material', methods=['POST'])
+def submit_foreign_material():
+    try:
+        form_data = request.form.to_dict()
+        image = request.files.get('image')
+        image_url = upload_image_to_drive(image) if image else ""
+
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
+
+        # Explicit mapping of fields to column numbers (A=1, B=2, ..., AT=46)
+        field_to_column = {
+            "date": 1,
+            "department": 2,
+            "line": 3,
+            "time": 4,
+            "raw_material_source": 5,
+            "product_name": 6,
+            "individuals": 7,
+            "product_code": 8,
+            "amount": 9,
+            "description": 10,
+            "initials_2": 11,
+            "date_2": 12,
+            "cause": 13,
+            "initials_3": 14,
+            "date_3": 15,
+            "action_taken": 16,
+            "initials_4": 17,
+            "date_4": 18,
+            "verification": 19,
+            "initials_5": 20,
+            "date_5": 21,
+            "maintenance_done": 22,
+            "maintenance_initials": 23,
+            "hold_yes": 24,
+            "hold_no": 25,
+            "items_held": 26,
+            "hold_reason": 27,
+            "no_hold_reason": 28,
+            "initials_6": 29,
+            "date_6": 30,
+            "screening": 31,
+            "initials_7": 32,
+            "date_7": 33,
+            "disposition": 34,
+            "initials_8": 35,
+            "date_8": 36,
+            "disposition_dates": 37,
+            "final_initials": 38,
+            "prevention": 39,
+            "initials_9": 40,
+            "date_9": 41,
+            "notified": 42,
+            "notified_person": 43,
+            "notified_date": 44,
+            "image_url": 45,
+            "report_name": 46,
+        }
+
+        # Determine whether to update or append
+        # Prepare row values in order of columns 1 to 46
+        row_values = []
+        for col in range(1, 47):  # 1 to 46 inclusive
+            key = next((k for k, v in field_to_column.items() if v == col), None)
+            if key:
+                value = image_url if key == "image_url" else form_data.get(key, "")
+                row_values.append(value)
+            else:
+                row_values.append("")
+
+        # Write the entire row at once (single API call)
+        cell_range = f"A{row_index}:AT{row_index}"
+        sheet.update(cell_range, [row_values])
+
+
+    except Exception as e:
+        print("Error in structured save:", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+
+
 
 @app.route('/logout', methods=['POST'])
 def logout():
