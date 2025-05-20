@@ -9,9 +9,7 @@ import re
 import io
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
-
-
-
+import uuid
 
 
 
@@ -43,6 +41,8 @@ client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
 SHEET_NAME = "Foreign Material Reports"
 GOOGLE_DRIVE_FOLDER_ID = "1O5-wG6PWFTXI-gldzZhqknp03gxyXRyv"  # create or reuse "FM-Images" folder
+
+drive_service = build('drive', 'v3', credentials=creds)
 
 # Helper to get latest week sheet name
 def get_latest_week_sheet():
@@ -521,80 +521,51 @@ def load_reports():
 @app.route('/submit-foreign-material', methods=['POST'])
 def submit_foreign_material():
     try:
-        form_data = request.form.to_dict()
-        image = request.files.get('image')
-        image_url = upload_image_to_drive(image) if image else ""
+        fields_raw = request.form.get("fields")
+        if not fields_raw:
+            return jsonify({"status": "error", "message": "No form data received."}), 400
 
+        form_data = eval(fields_raw) if isinstance(fields_raw, str) else fields_raw
+
+        # Validate it's a dictionary
+        if not isinstance(form_data, dict):
+            return jsonify({"status": "error", "message": "Invalid form structure."}), 400
+
+        # Define field order
+        FIELD_KEYS = [
+            "reportDate", "time", "line", "department", "productName", "individualsInvolved",
+            "productCode", "amount", "foreignMaterialDescription", "initials-foreignMaterialDescription", "Date-foreignMaterialDescription",
+            "possibleSource", "initials-possibleSource", "date-possibleSource",
+            "correctiveAction", "initials-correctiveAction", "date-correctiveAction",
+            "correctiveActionImplemented", "initials-correctiveActionImplemented", "date-correctiveActionImplemented",
+            "maintenanceWork", "initials-maintenanceWork",
+            "ProductOnHold", "initials-ProductOnHold", "date-ProductOnHold",
+            "screeningProcess", "initials-screeningProcess", "date-screeningProcess",
+            "dispositionOfProduct", "initials-dispositionOfProduct", "date-dispositionOfProduct",
+            "disposeDate", "initials-disposeDate",
+            "re-occurring", "initials-re-occurring", "date-re-occurring",
+            "corporateNotified", "date-corporateNotified",
+            "reportName"
+        ]
+
+        # Create row in fixed order
+        row_data = [form_data.get(key, "") for key in FIELD_KEYS]
+
+        # Upload images and append URLs
+        for file_key in request.files:
+            image_file = request.files[file_key]
+            if image_file:
+                image_url = upload_image_to_drive(image_file)
+                row_data.append(image_url)
+
+        # ✅ ✅ THIS IS WHERE YOU PLACE IT:
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
+        sheet.append_row(row_data, value_input_option="RAW")  # <- PLACE IT HERE
 
-        # Explicit mapping of fields to column numbers (A=1, B=2, ..., AT=46)
-        field_to_column = {
-            "date": 1,
-            "department": 2,
-            "line": 3,
-            "time": 4,
-            "raw_material_source": 5,
-            "product_name": 6,
-            "individuals": 7,
-            "product_code": 8,
-            "amount": 9,
-            "description": 10,
-            "initials_2": 11,
-            "date_2": 12,
-            "cause": 13,
-            "initials_3": 14,
-            "date_3": 15,
-            "action_taken": 16,
-            "initials_4": 17,
-            "date_4": 18,
-            "verification": 19,
-            "initials_5": 20,
-            "date_5": 21,
-            "maintenance_done": 22,
-            "maintenance_initials": 23,
-            "hold_yes": 24,
-            "hold_no": 25,
-            "items_held": 26,
-            "hold_reason": 27,
-            "no_hold_reason": 28,
-            "initials_6": 29,
-            "date_6": 30,
-            "screening": 31,
-            "initials_7": 32,
-            "date_7": 33,
-            "disposition": 34,
-            "initials_8": 35,
-            "date_8": 36,
-            "disposition_dates": 37,
-            "final_initials": 38,
-            "prevention": 39,
-            "initials_9": 40,
-            "date_9": 41,
-            "notified": 42,
-            "notified_person": 43,
-            "notified_date": 44,
-            "image_url": 45,
-            "report_name": 46,
-        }
-
-        # Determine whether to update or append
-        # Prepare row values in order of columns 1 to 46
-        row_values = []
-        for col in range(1, 47):  # 1 to 46 inclusive
-            key = next((k for k, v in field_to_column.items() if v == col), None)
-            if key:
-                value = image_url if key == "image_url" else form_data.get(key, "")
-                row_values.append(value)
-            else:
-                row_values.append("")
-
-        # Write the entire row at once (single API call)
-        cell_range = f"A{row_index}:AT{row_index}"
-        sheet.update(cell_range, [row_values])
-
+        return jsonify({"status": "success"}), 200
 
     except Exception as e:
-        print("Error in structured save:", e)
+        print("❌ Error saving foreign material report:", e)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
