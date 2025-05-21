@@ -569,6 +569,58 @@ def submit_foreign_material():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+@app.route('/get-report-names', methods=['GET'])
+def get_report_names():
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("Foreign Material Reports")
+        data = sheet.get_all_records()
+
+        report_list = []
+        for row in data:
+            name = row.get("reportName", "").strip()
+            date = row.get("reportDate", "").strip()
+            if name and date:
+                report_list.append(f"{name}-{date}")
+
+        return jsonify({"status": "success", "reports": report_list})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+
+
+@app.route('/get-report-data', methods=['GET'])
+def get_report_data():
+    try:
+        report_key = request.args.get('report', '').strip()
+        if not report_key:
+            return jsonify({"status": "error", "message": "Missing report key."})
+
+        report_name = report_key.split('-20')[0].strip()
+
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("Foreign Material Reports")
+        records = sheet.get_all_records()
+
+        for row in records:
+            if row.get("reportName", "").strip() == report_name:
+                # Gather all image links (assuming they are named like image0, image1, image2...)
+                # Extract all image URLs from any column that includes 'image_url'
+                images = []
+                for key, value in row.items():
+                    if 'image_url' in key.lower() and isinstance(value, str) and value.strip().startswith('http'):
+                        images.append(value.strip())
+
+                row['images'] = images
+                return jsonify({"status": "success", "data": row})
+
+        return jsonify({"status": "error", "message": "Report not found."})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
+
+
+
+
+
 
 
 
