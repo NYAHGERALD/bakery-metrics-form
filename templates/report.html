@@ -110,6 +110,49 @@
         aspect-ratio: 1.5 / 1;
       }
     }
+
+
+    #metricsTableWrapper * {
+     
+      opacity: 1 !important;
+      background: #d9eeef !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+
+    #metricsTableWrapper table, 
+    #metricsTableWrapper th, 
+    #metricsTableWrapper td {
+      border: 1px solid #000 !important;
+    }
+
+    #metricsTableWrapper thead th {
+      background-color: #0d6efd !important; /* Bootstrap primary blue */
+      color: white !important;
+      font-weight: bold !important;
+      border: 1px solid #000 !important;
+    }
+
+    .form-select {
+      appearance: none; /* Removes default arrow */
+      background-image: url("data:image/svg+xml,%3Csvg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1rem;
+      padding-right: 2.5rem;
+      border: 2px solid #0d6efd;
+      border-radius: 6px;
+      transition: border-color 0.2s ease-in-out;
+    }
+
+    .form-select:focus {
+      border-color: #6610f2;
+      box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+      outline: none;
+    }
+
   </style>
 
 </head>
@@ -137,63 +180,71 @@
       This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste — for each shift and line.
     </div>
 
-    <div class="card p-4 mb-4">
-      <div class="row g-3">
-        <div class="col-lg-4 col-md-6 col-12">
-          <label class="form-label">Select Week</label>
-          <select id="week" class="form-select shadow-sm">
-            {% for week in week_names %}
-              <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
-            {% endfor %}
-          </select>
+    <div id="metricsTableWrapper">
+      <div class="card p-4 mb-4">
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6 col-12">
+            <label class="form-label">Select Week</label>
+            <select id="week" class="form-select shadow-sm">
+              {% for week in week_names %}
+                <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-6 col-12">
+            <label class="form-label">Select Day</label>
+            <select id="day" class="form-select shadow-sm">
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-12 col-12">
+            <label class="form-label">Select Shift</label>
+            <select id="shift" class="form-select shadow-sm">
+              <option>First Shift</option>
+              <option>Second Shift</option>
+              <option>Both Shift</option>
+            </select>
+          </div>
         </div>
-        <div class="col-lg-4 col-md-6 col-12">
-          <label class="form-label">Select Day</label>
-          <select id="day" class="form-select shadow-sm">
-            <option>Monday</option>
-            <option>Tuesday</option>
-            <option>Wednesday</option>
-            <option>Thursday</option>
-            <option>Friday</option>
-          </select>
-        </div>
-        <div class="col-lg-4 col-md-12 col-12">
-          <label class="form-label">Select Shift</label>
-          <select id="shift" class="form-select shadow-sm">
-            <option>First Shift</option>
-            <option>Second Shift</option>
-            <option>Both Shift</option>
-          </select>
-        </div>
+      </div>
+    
+      <div  class="card p-3 table-responsive" >
+        <table class="table table-bordered text-center align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>KPIs</th>
+              <th>LINE</th>
+              <th>TARGET</th>
+              <th>METRIC</th>
+              <th>WEEK AVERAGE</th>
+              <th>UNIT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td></tr>
+            <tr><td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td></tr>
+            <tr><td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td></tr>
+
+            <tr><td rowspan="3">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td></tr>
+            <tr><td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td></tr>
+            <tr><td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td></tr>
+
+            <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td></tr>
+            <tr><td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td></tr>
+            <tr><td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div class="card p-3 table-responsive">
-      <table class="table table-bordered text-center align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>KPIs</th>
-            <th>LINE</th>
-            <th>TARGET</th>
-            <th>METRIC</th>
-            <th>WEEK AVERAGE</th>
-            <th>UNIT</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td rowspan="3">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td></tr>
-          <tr><td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td></tr>
-          <tr><td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td></tr>
-
-          <tr><td rowspan="3">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td></tr>
-          <tr><td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td></tr>
-          <tr><td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td></tr>
-
-          <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td></tr>
-          <tr><td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td></tr>
-          <tr><td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td></tr>
-        </tbody>
-      </table>
+    <div class="text-center mt-2">
+      <button onclick="downloadMetricsTable()" class="btn btn-warning shadow-sm">
+        📥 Download Metrics Table as PDF
+      </button>
     </div>
 
     <!-- New chart sections -->
@@ -397,11 +448,55 @@
       pdf.save('Bakery_Weekly_Metrics.pdf');
     }
 
-
-
-
-
   </script>
+
+  <script>
+    async function downloadMetricsTable() {
+      const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4');
+      const content = document.getElementById('metricsTableWrapper');
+
+      // Force styles so canvas can render Bootstrap classes properly
+      content.style.backgroundColor = '#fff';
+      content.style.color = '#000';
+      content.style.fontSize = '12pt';
+      content.style.opacity = '1';
+      content.style.transform = 'none';
+      content.style.boxShadow = 'none';
+
+      // Clone node to avoid weird rendering from Bootstrap classes
+      const clone = content.cloneNode(true);
+      document.body.appendChild(clone);
+      clone.style.position = 'absolute';
+      clone.style.top = '0';
+      clone.style.left = '0';
+      clone.style.zIndex = '-1';
+
+      await new Promise(resolve => setTimeout(resolve, 500)); // Let browser layout settle
+
+      html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const width = pdf.internal.pageSize.getWidth() - 40;
+        const height = (canvas.height * width) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 20, width, height);
+        pdf.save('Bakery_Metrics_Table.pdf');
+        clone.remove(); // Cleanup
+      }).catch(err => {
+        console.error("PDF generation error:", err);
+        alert("Failed to generate PDF. Try again.");
+      });
+    }
+  </script>
+
+
+
+
+
+
 
   <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">
     &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
