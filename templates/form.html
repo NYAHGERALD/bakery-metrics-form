@@ -1,8 +1,8 @@
 
    
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
         <title>Bakery Daily Metrics Submission</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Bootstrap 5 -->
@@ -28,8 +28,8 @@
               margin-bottom: 10px;
             }
         </style>
-    </head>
-    <body>
+</head>
+<body>
 
     <div class="user-info d-flex align-items-center gap-3 ps-3 pt-3 mb-4">
       <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar" class="rounded-circle shadow" style="width: 50px; height: 50px; object-fit: cover;">
@@ -61,7 +61,7 @@
 
             <p class="text-muted">Please fill out all required fields before submitting.</p>
 
-            <form action="/submit" method="POST" class="row g-3">
+            <form id="bakeryForm" action="/submit" method="POST" class="row g-3">
 
                 <div class="col-md-6">
                     <label class="form-label">Week <span class="text-danger">*</span></label>
@@ -111,9 +111,15 @@
                 <input type="hidden" name="local_timestamp" id="local_timestamp">
 
                 <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-success w-100">✅ Submit</button>
+                    <button type="submit" id="submitBtn" class="btn btn-success w-100">✅ Submit</button>
                     <button type="reset" class="btn btn-secondary w-100">🧹 Clear</button>
                 </div>
+
+                <!-- Progress Bar -->
+                <div class="progress w-100 mt-3" id="submitProgress" style="display: none;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                </div>
+
             </form>
         </div>
     </div>
@@ -128,7 +134,26 @@
         document.getElementById("year").textContent = new Date().getFullYear();
         document.getElementById("local_timestamp").value = new Date().toLocaleString();
     </script>
-    </body>
-    </html>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#bakeryForm'); // ✅ fix: added #
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('submitProgress');
+
+        form.addEventListener('submit', function () {
+          // Disable the submit button
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...`;
+
+          // Show the progress bar
+          progressBar.style.display = 'block';
+        });
+      });
+    </script>
+
+
+</body>
+</html>
     
 
