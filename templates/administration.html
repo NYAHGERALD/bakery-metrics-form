@@ -1,159 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
   <title>Administration Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: #f4f6f9;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .dashboard-container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      margin-top: 2rem;
-      animation: fadeIn 0.8s ease-in-out;
-    }
-
-    @keyframes floatIn {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-    .animated {
-      animation: floatIn 0.8s ease-in-out;
-    }
-
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      margin-right: 10px;
-    }
-    .header-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .admin-id {
-      display: flex;
-      align-items: center;
-    }
-    .floating-table {
-      overflow-x: auto;
-      margin-top: 1.5rem;
-    }
-    .floating-table table {
-      min-width: 100%;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
-<body>
-  <div class="text-center">
-    <img src="/static/DON MIGUEL.png" style="width: 220px;">
-    <h4 class="mt-2">WELCOME TO ADMIN DASHBOARD</h4>
-    <p>Please use this Dashboard to manage user accounts and access</p>
+<body class="bg-gray-900 text-gray-100 font-sans">
+  
+
+  <!-- Header -->
+  <div class="text-center mt-8">
+    <img src="/static/DON MIGUEL.png" class="mx-auto w-56" />
+    <h4 class="text-2xl font-bold mt-4">WELCOME TO ADMIN DASHBOARD</h4>
+    <p class="text-gray-400">Use this Dashboard to manage user accounts and access</p>
   </div>
 
-  <div class="container dashboard-container">
-    <div class="header-box mb-4">
-      <div class="admin-id">
-        <img src="/static/default-avatar.png" class="avatar">
-        <strong id="adminName">Admin</strong>
+  <!-- Dashboard -->
+  <div class="max-w-6xl mx-auto mt-10 bg-gray-800 rounded-xl shadow-lg p-8">
+
+    <!-- Admin Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex items-center space-x-3">
+        <img src="/static/default-avatar.png" class="w-12 h-12 rounded-full" />
+        <span id="adminName" class="text-lg font-semibold">Admin</span>
       </div>
-      <div>
-        
-        <a href="/" class="btn btn-outline-danger ms-2">🚪 Logout</a>
-      </div>
+      <a href="/" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white">🚪 Logout</a>
     </div>
 
-    <!-- Key Generator -->
-    <label>Generated Access Key</label>
-    <div class="input-group mb-3">
-      <input id="generatedKey" class="form-control" readonly>
-      <button class="btn btn-outline-secondary" onclick="copyKey(this)"><i class="fas fa-copy"></i> <span>Copy Key</span></button>
+    <!-- Access Key Generator -->
+    <label class="block mb-1 font-medium">Generated Access Key</label>
+    <div class="flex mb-4">
+      <input id="generatedKey" class="w-full rounded-l bg-gray-700 border border-gray-600 px-4 py-2" readonly />
+      <button onclick="copyKey(this)" class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
+        <i class="fas fa-copy"></i> <span>Copy Key</span>
+      </button>
     </div>
-    <button class="btn btn-primary mb-4" onclick="generateKey()">🎲 Generate Key</button>
-    <p></p>
-    <!-- Register Key -->
-    <label>Input Access Key</label>
-    <div class="input-group mb-3">
-      <input id="inputKey" class="form-control" placeholder="Click Paste Key" maxlength="13">
-      <button class="btn btn-outline-secondary" onclick="pasteKey()"><i class="fas fa-paste"></i> Paste Key</button>
-    </div>
-    <button class="btn btn-success mb-3" onclick="registerKey()">✅ Register Key</button>
-    <div id="keyMessage" class="alert d-none"></div>
-    <div class="text-center">
-      <p>USER ACCOUNTS - See all the available users in the Bakery Department</p>
-    </div>
+    <button onclick="generateKey()" class="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🎲 Generate Key</button>
 
-    <!-- Search Bar -->
-    <div class="mb-3">
-      <input id="searchInput" class="form-control" placeholder="Search by Last name" oninput="searchUser()">
+    <!-- Key Registration -->
+    <label class="block mb-1 font-medium">Input Access Key</label>
+    <div class="flex mb-4">
+      <input id="inputKey" class="w-full rounded-l bg-gray-700 border border-gray-600 px-4 py-2" maxlength="13" placeholder="Click Paste Key" />
+      <button onclick="pasteKey()" class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
+        <i class="fas fa-paste"></i> <span>Paste Key</span>
+      </button>
     </div>
+    <button onclick="registerKey()" class="mb-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">✅ Register Key</button>
+    <div id="keyMessage" class="hidden p-2 rounded text-sm mt-2"></div>
 
     <!-- Users Table -->
-    <div class="floating-table">
-      <table class="table table-bordered">
-        <thead class="table-light">
+    <div class="text-center text-gray-300 mb-3">USER ACCOUNTS - All users in the Bakery Department</div>
+    <input id="searchInput" oninput="searchUser()" placeholder="Search by Last name"
+           class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded" />
+
+    <div class="max-h-64 overflow-y-auto rounded shadow mb-6 border border-gray-600">
+      <table class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
+        <thead class="bg-gray-600 text-white sticky top-0 z-10">
           <tr>
-            <th>Email</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Access Key</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Email</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">First Name</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Last Name</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Access Key</th>
           </tr>
         </thead>
-        <tbody id="userTable"></tbody>
-      </table>
-    </div>
-
-    <!-- Dropdown and Remove -->
-    <div class="mt-4">
-      <label>Select User</label>
-      <select id="userDropdown" class="form-select mb-2"></select>
-      <button class="btn btn-danger" onclick="confirmRemove()">🗑 Remove User</button>
-    </div>
-  </div>
-
-
-  <!-- 🧾 Bakery Metrics Submission Logs -->
-  <hr class="my-5">
-  <div class="px-3 px-md-5">
-
-    <!-- Title -->
-    <h5 class="text-center fw-bold mb-4 animated" style="animation: fadeIn 0.8s ease-in-out;">
-      📊 Bakery Metrics Submission Logs
-    </h5>
-
-    <!-- Email Search Bar -->
-    <div class="mb-3">
-      <input id="logSearchInput" class="form-control form-control-lg shadow-sm" placeholder="🔍 Search by User Email..." oninput="searchLogs()" style="border-radius: 8px;">
-    </div>
-
-    <!-- Table -->
-    <div class="table-responsive rounded shadow-sm animated fadeIn">
-      <table class="table table-hover table-bordered bg-white align-middle text-nowrap">
-        <thead class="table-dark text-white">
-          <tr>
-            <th>Submitted By</th>
-            <th>User Email</th>
-            <th>Date & Time</th>
-            <th>Message</th>
-            <th>Week</th>
-            <th>Day</th>
-          </tr>
-        </thead>
-        <tbody id="submissionLogsBody">
-          <!-- Dynamic rows will be inserted here -->
+        <tbody id="userTable" class="text-gray-200 divide-y divide-gray-600">
+          <!-- Populated dynamically -->
         </tbody>
       </table>
     </div>
+
+
+
+    <!-- Remove User -->
+    <label class="block mb-1 font-medium">Select User</label>
+    <select id="userDropdown" class="w-full mb-2 bg-gray-700 border border-gray-600 text-white rounded px-3 py-2"></select>
+    <button onclick="confirmRemove()" class="bg-red-600 hover:bg-red-700 px-4 py-2 text-white rounded">🗑 Remove User</button>
+  </div>
+
+  <!-- Submission Logs -->
+  <div class="max-w-6xl mx-auto mt-12 px-4">
+    <h5 class="text-center text-xl font-bold text-white mb-4">📊 Bakery Metrics Submission Logs</h5>
+
+    <input id="logSearchInput" oninput="searchLogs()"
+           class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded"
+           placeholder="🔍 Search by User Email..." />
+
+    <div class="max-h-72 overflow-y-auto rounded shadow-sm animated fadeIn border border-gray-600">
+      <table class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
+        <thead class="bg-gray-600 text-white sticky top-0 z-10">
+          <tr>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Submitted By</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">User Email</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Date & Time</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Message</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Week</th>
+            <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Day</th>
+          </tr>
+        </thead>
+        <tbody id="submissionLogsBody" class="text-gray-200 divide-y divide-gray-600">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
   </div>
 
 
@@ -305,11 +256,15 @@
 
 
   </script>
-  <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-500 mt-12 mb-6">
     &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
   </footer>
+  
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+
 </body>
 </html>

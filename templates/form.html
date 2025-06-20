@@ -1,159 +1,140 @@
-
-   
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>Bakery Daily Metrics Submission</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- Bootstrap 5 -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <style>
-            body {
-                background-color: #f8f9fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .fade-in {
-                animation: fadeIn 1s ease-in-out both;
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-
-            .banner-img {
-              width: 300px;
-              max-width: 90%;
-              height: auto;
-              margin-bottom: 10px;
-            }
-        </style>
+  <title>Bakery Daily Metrics Submission</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 1s ease-in-out both;
+    }
+    .banner-img {
+      width: 300px;
+      max-width: 90%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-gray-100 dark:bg-[#0f172a] text-gray-800 dark:text-white min-h-screen">
+  {% extends "dashboard.html" %}
 
-    <div class="user-info d-flex align-items-center gap-3 ps-3 pt-3 mb-4">
-      <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar" class="rounded-circle shadow" style="width: 50px; height: 50px; object-fit: cover;">
-      <h5 class="mb-0 text-capitalize">{{ user_full_name }}</h5>
-    </div>
+  {% block content %} 
 
+  <!-- Form Card -->
+  <div class="max-w-6xl mx-auto px-4 fade-in">
+    <div class="bg-white dark:bg-[#1e293b] shadow-md p-6 rounded-2xl">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h3 class="text-xl font-bold">Bakery Daily Metrics Submission</h3>
+      </div>
 
+      <p class="text-sm text-gray-500 dark:text-gray-300 mb-4">Please fill out all required fields before submitting.</p>
 
-     <!-- Header Banner -->
-     <div  class="text-center mb-4">
-        <img src="/static/DON MIGUEL.png" alt="Bakery Logo" class="banner-img">
-     </div>
-    
-   
- 
+      <form id="bakeryForm" action="/submit" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-    <div class="container py-4 fade-in">
-        <div class="card shadow p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Bakery Daily Metrics Submission</h3>
-                <div class="d-flex gap-2">
-                    <a href="/foreign-material" class="btn btn-outline-danger">⚠️ Foreign Material</a>
-                    <a href="/report" class="btn btn-outline-primary btn-sm">📊 Bakery Metrics Report</a>
-                    <form action="/logout" method="POST">
-                     <button class="btn btn-outline-danger btn-sm">Log Out</button>
-                    </form>
-                </div>
-            </div>
-
-            <p class="text-muted">Please fill out all required fields before submitting.</p>
-
-            <form id="bakeryForm" action="/submit" method="POST" class="row g-3">
-
-                <div class="col-md-6">
-                    <label class="form-label">Week <span class="text-danger">*</span></label>
-                    <select name="week" class="form-select" required>
-                        <option value="{{ latest_week }}">{{ latest_week }}</option>
-                    </select>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Day <span class="text-danger">*</span></label>
-                    <select name="day" class="form-select" required>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                    </select>
-                </div>
-
-                <!-- Metric Fields -->
-                {% for label, name in [
-                    ("OEE – Die Cut 1 (1st Shift)", "oee_–_die_cut_1_(1st_shift)"),
-                    ("OEE – Die Cut 2 (1st Shift)", "oee_–_die_cut_2_(1st_shift)"),
-                    ("Pounds – Die Cut 1 (1st Shift)", "pounds_–_die_cut_1_(1st_shift)"),
-                    ("Pounds – Die Cut 2 (1st Shift)", "pounds_–_die_cut_2_(1st_shift)"),
-                    ("Waste – Die Cut 1 (1st Shift)", "waste_–_die_cut_1_(1st_shift)"),
-                    ("Waste – Die Cut 2 (1st Shift)", "waste_–_die_cut_2_(1st_shift)"),
-                    ("OEE – Die Cut 1 (2nd Shift)", "oee_–_die_cut_1_(2nd_shift)"),
-                    ("OEE – Die Cut 2 (2nd Shift)", "oee_–_die_cut_2_(2nd_shift)"),
-                    ("Pounds – Die Cut 1 (2nd Shift)", "pounds_–_die_cut_1_(2nd_shift)"),
-                    ("Pounds – Die Cut 2 (2nd Shift)", "pounds_–_die_cut_2_(2nd_shift)"),
-                    ("Waste – Die Cut 1 (2nd Shift)", "waste_–_die_cut_1_(2nd_shift)"),
-                    ("Waste – Die Cut 2 (2nd Shift)", "waste_–_die_cut_2_(2nd_shift)")
-                ] %}
-                <div class="col-md-6">
-                    <label class="form-label">{{ label }} <span class="text-danger">*</span></label>
-                    <input type="number" name="{{ name }}" class="form-control" required min="0" step="any">
-                </div>
-                {% endfor %}
-
-                <div class="col-md-6">
-                    <label class="form-label">Submitted By <span class="text-danger">*</span></label>
-                    <input type="text" name="submitted_by" class="form-control" required pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed">
-                </div>
-
-                <!-- Hidden timestamp -->
-                <input type="hidden" name="local_timestamp" id="local_timestamp">
-
-                <div class="col-12 d-flex gap-2">
-                    <button type="submit" id="submitBtn" class="btn btn-success w-100">✅ Submit</button>
-                    <button type="reset" class="btn btn-secondary w-100">🧹 Clear</button>
-                </div>
-
-                <!-- Progress Bar -->
-                <div class="progress w-100 mt-3" id="submitProgress" style="display: none;">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
-                </div>
-
-            </form>
+        <!-- Week -->
+        <div>
+          <label class="block font-medium mb-1">Week <span class="text-red-500">*</span></label>
+          <select name="week" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-[#334155] text-black dark:text-white border border-gray-300 dark:border-gray-600" required>
+            <option value="{{ latest_week }}">{{ latest_week }}</option>
+          </select>
         </div>
+
+        <!-- Day -->
+        <div>
+          <label class="block font-medium mb-1">Day <span class="text-red-500">*</span></label>
+          <select name="day" class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-[#334155] text-black dark:text-white border border-gray-300 dark:border-gray-600" required>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+          </select>
+        </div>
+
+        <!-- Metric Fields -->
+        {% for label, name in [
+            ("OEE – Die Cut 1 (1st Shift)", "oee_–_die_cut_1_(1st_shift)"),
+            ("OEE – Die Cut 2 (1st Shift)", "oee_–_die_cut_2_(1st_shift)"),
+            ("Pounds – Die Cut 1 (1st Shift)", "pounds_–_die_cut_1_(1st_shift)"),
+            ("Pounds – Die Cut 2 (1st Shift)", "pounds_–_die_cut_2_(1st_shift)"),
+            ("Waste – Die Cut 1 (1st Shift)", "waste_–_die_cut_1_(1st_shift)"),
+            ("Waste – Die Cut 2 (1st Shift)", "waste_–_die_cut_2_(1st_shift)"),
+            ("OEE – Die Cut 1 (2nd Shift)", "oee_–_die_cut_1_(2nd_shift)"),
+            ("OEE – Die Cut 2 (2nd Shift)", "oee_–_die_cut_2_(2nd_shift)"),
+            ("Pounds – Die Cut 1 (2nd Shift)", "pounds_–_die_cut_1_(2nd_shift)"),
+            ("Pounds – Die Cut 2 (2nd Shift)", "pounds_–_die_cut_2_(2nd_shift)"),
+            ("Waste – Die Cut 1 (2nd Shift)", "waste_–_die_cut_1_(2nd_shift)"),
+            ("Waste – Die Cut 2 (2nd Shift)", "waste_–_die_cut_2_(2nd_shift)")
+        ] %}
+        <div>
+          <label class="block font-medium mb-1">{{ label }} <span class="text-red-500">*</span></label>
+          <input type="number" name="{{ name }}"
+                 class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-[#334155] text-black dark:text-white border border-gray-300 dark:border-gray-600"
+                 required min="0" step="any">
+        </div>
+        {% endfor %}
+
+        <!-- Submitted By -->
+        <div>
+          <label class="block font-medium mb-1">Submitted By <span class="text-red-500">*</span></label>
+          <input type="text" name="submitted_by"
+                 class="w-full px-3 py-2 rounded bg-gray-100 dark:bg-[#334155] text-black dark:text-white border border-gray-300 dark:border-gray-600"
+                 required pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed">
+        </div>
+
+        <input type="hidden" name="local_timestamp" id="local_timestamp">
+
+        <!-- Submit Buttons -->
+        <div class="md:col-span-2 flex flex-col md:flex-row gap-3 mt-4">
+          <button type="submit" id="submitBtn"
+                  class="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition">
+            ✅ Submit
+          </button>
+          <button type="reset"
+                  class="w-full py-2 bg-gray-400 hover:bg-gray-500 text-white rounded font-semibold transition">
+            🧹 Clear
+          </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full col-span-2 mt-4 hidden" id="submitProgress">
+          <div class="h-2 bg-blue-500 animate-pulse rounded"></div>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <footer class="text-center py-3 bg-light text-muted mt-4">
-        &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
-    </footer>
-    <!-- End Footer -->
+  <!-- Footer -->
+  <footer class="text-center py-4 mt-10 text-sm text-gray-600 dark:text-gray-400">
+    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
+  </footer>
 
-    <script>
-        document.getElementById("year").textContent = new Date().getFullYear();
-        document.getElementById("local_timestamp").value = new Date().toLocaleString();
-    </script>
+  <!-- Scripts -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById("local_timestamp").value = new Date().toLocaleString();
+  </script>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const form = document.querySelector('#bakeryForm'); // ✅ fix: added #
-        const submitBtn = document.getElementById('submitBtn');
-        const progressBar = document.getElementById('submitProgress');
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.querySelector('#bakeryForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const progressBar = document.getElementById('submitProgress');
 
-        form.addEventListener('submit', function () {
-          // Disable the submit button
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...`;
-
-          // Show the progress bar
-          progressBar.style.display = 'block';
-        });
+      form.addEventListener('submit', function () {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="animate-spin mr-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>Submitting...`;
+        progressBar.classList.remove("hidden");
       });
-    </script>
-
-
+    });
+  </script>
+  {% endblock %}
 </body>
 </html>
-    
+  
 

@@ -1,274 +1,250 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bakery Metrics Report</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-
-  <!-- jsPDF and html2canvas for PDF download -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF & AutoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    body {
-
-      background-color: #F2F2F2;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .green {
-      color: green !important;
-      font-weight: bold;
-    }
-
-    .red {
-      color: red !important;
-      font-weight: bold;
-    }
-
-    .bg-light-red {
-      background-color: #f8d7da !important;
-    }
-
-    .bg-light-green {
-      background-color: #d1e7dd !important;
-    }
-
-    .card {
-      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.5s ease-in-out both; }
+    .green { color: #22c55e; font-weight: 600; }
+    .red { color: #ef4444; font-weight: 600; }
+  </style>
+
+  <style>
+    @keyframes pulse-glow-green {
+      0%, 100% { box-shadow: 0 0 0px rgba(34, 197, 94, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
     }
 
-    .floating-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #0d6efd;
-      color: white;
-      border-radius: 50%;
-      padding: 12px;
-      box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
-      font-size: 1.25rem;
-      z-index: 999;
+    @keyframes pulse-glow-red {
+      0%, 100% { box-shadow: 0 0 0px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.9); }
     }
 
-    .floating-btn:hover {
-      background-color: #0b5ed7;
+    .glow-green {
+      animation: pulse-glow-green 2s infinite ease-in-out;
+      border-radius: 0.75rem;
     }
 
-    thead th {
-      background: linear-gradient(to right, #dee2e6, #f8f9fa);
+    .glow-red {
+      animation: pulse-glow-red 2s infinite ease-in-out;
+      border-radius: 0.75rem;
+    }
+  </style>
+
+
+
+  <style>
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
-    tbody td:nth-child(1),
-    tbody td:nth-child(2),
-    tbody td:nth-child(3),
-    tbody td:nth-child(6) {
-      background: linear-gradient(to right, #fdfdfd, #f3f3f3);
+    .animate-fade-in {
+      animation: fadeInUp 0.6s ease-out both;
     }
 
-    .logo {
-      max-width: 140px;
-      height: auto;
+    .group:hover .oee-msg,
+    .group:hover .waste-msg {
+      animation-play-state: paused !important;
     }
-
-    .chart-container {
-      margin-top: 30px;
-      width: 100%;
-      max-width: 100%;
-      aspect-ratio: 2 / 1;
-      position: relative;
-    }
-
-    .chart-container canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    @media (max-width: 576px) {
-      .display-4 {
-        font-size: 1.8rem;
-      }
-
-      .chart-container {
-        aspect-ratio: 1.5 / 1;
-      }
-    }
-
-
-    #metricsTableWrapper * {
-     
-      opacity: 1 !important;
-      background: #d9eeef !important;
-      box-shadow: none !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-
-    #metricsTableWrapper table, 
-    #metricsTableWrapper th, 
-    #metricsTableWrapper td {
-      border: 1px solid #000 !important;
-    }
-
-    #metricsTableWrapper thead th {
-      background-color: #0d6efd !important; /* Bootstrap primary blue */
-      color: white !important;
-      font-weight: bold !important;
-      border: 1px solid #000 !important;
-    }
-
-    .form-select {
-      appearance: none; /* Removes default arrow */
-      background-image: url("data:image/svg+xml,%3Csvg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1rem;
-      padding-right: 2.5rem;
-      border: 2px solid #0d6efd;
-      border-radius: 6px;
-      transition: border-color 0.2s ease-in-out;
-    }
-
-    .form-select:focus {
-      border-color: #6610f2;
-      box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
-      outline: none;
-    }
-
   </style>
 
 </head>
-<body>
+<body class="bg-[#0f172a] text-white min-h-screen font-sans">
 
+  {% extends "dashboard.html" %}
 
-  <div class="user-info d-flex align-items-center gap-3 ps-3 pt-3 mb-4">
-    <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar" class="rounded-circle shadow" style="width: 50px; height: 50px; object-fit: cover;">
-    <h5 class="mb-0 text-capitalize">{{ user_full_name }}</h5>
+  {% block content %} 
+
+  <div class="text-center mb-6 px-4">
+    <h1 class="text-3xl font-bold text-blue-400 uppercase drop-shadow">Bakery Metrics Report</h1>
   </div>
 
-  <div class="text-center my-4 px-3">
-    <h1 class="display-4 fw-bold text-uppercase text-primary" style="text-shadow: 1px 1px 2px #999;">
-      Bakery Metrics Report
-    </h1>
+  
+  <div class="max-w-4xl mx-auto bg-blue-800 text-blue-100 p-4 rounded shadow fade-in text-sm mb-6">
+    This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste — for each shift and line.
   </div>
 
-  <div class="container-fluid px-3 px-md-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
-      <img src="/static/DON%20MIGUEL.png" alt="Bakery Logo" class="logo">
-      <a href="/form" class="btn btn-outline-secondary shadow-sm">⬅️ Back to Form</a>
-    </div>
-
-    <div class="alert alert-info shadow-sm mb-4" role="alert">
-      This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste — for each shift and line.
-    </div>
-
-    <div id="metricsTableWrapper">
-      <div class="card p-4 mb-4">
-        <div class="row g-3">
-          <div class="col-lg-4 col-md-6 col-12">
-            <label class="form-label">Select Week</label>
-            <select id="week" class="form-select shadow-sm">
-              {% for week in week_names %}
-                <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-lg-4 col-md-6 col-12">
-            <label class="form-label">Select Day</label>
-            <select id="day" class="form-select shadow-sm">
-              <option>Monday</option>
-              <option>Tuesday</option>
-              <option>Wednesday</option>
-              <option>Thursday</option>
-              <option>Friday</option>
-            </select>
-          </div>
-          <div class="col-lg-4 col-md-12 col-12">
-            <label class="form-label">Select Shift</label>
-            <select id="shift" class="form-select shadow-sm">
-              <option>First Shift</option>
-              <option>Second Shift</option>
-              <option>Both Shift</option>
-            </select>
-          </div>
-        </div>
+  <div class="max-w-6xl mx-auto px-4 mb-6">
+    <div class="bg-[#1e293b] p-6 rounded-xl shadow grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block mb-1 font-medium">Select Week</label>
+        <select id="week" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
+          {% for week in week_names %}
+            <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
+          {% endfor %}
+        </select>
       </div>
-    
-      <div  class="card p-3 table-responsive" >
-        <table class="table table-bordered text-center align-middle mb-0">
-          <thead class="table-light">
+      <div>
+        <label class="block mb-1 font-medium">Select Day</label>
+        <select id="day" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1 font-medium">Select Shift</label>
+        <select id="shift" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
+          <option>First Shift</option><option>Second Shift</option><option>Both Shift</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 fade-in" id="metricsTableWrapper">
+    <div class="bg-[#1e293b] p-4 rounded-xl overflow-x-auto">
+      <div class="min-w-[700px]">
+        <table class="w-full table-auto border text-center text-lg">
+          <thead class="bg-blue-600 text-white">
             <tr>
-              <th>KPIs</th>
-              <th>LINE</th>
-              <th>TARGET</th>
-              <th>METRIC</th>
-              <th>WEEK AVERAGE</th>
-              <th>UNIT</th>
+              <th class="px-4 py-6 text-base">KPIs</th>
+              <th class="py-6 text-base">LINE</th>
+              <th class="py-6 text-base">TARGET</th>
+              <th class="py-6 text-base">METRIC</th>
+              <th class="py-6 text-base">WEEK AVG</th>
+              <th class="py-6 text-base">UNIT</th>
             </tr>
           </thead>
-          <tbody>
-            <tr><td rowspan="3">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td></tr>
-            <tr><td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td></tr>
-            <tr><td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td></tr>
+          <tbody class="divide-y divide-gray-600">
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td>
+            </tr>
 
-            <tr><td rowspan="3">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td></tr>
-            <tr><td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td></tr>
-            <tr><td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td></tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td>
+            </tr>
 
-            <tr><td rowspan="3">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td></tr>
-            <tr><td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td></tr>
-            <tr><td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td></tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td>
+            </tr>
+            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="text-center mt-2">
-      <button onclick="downloadMetricsTable()" class="btn btn-warning shadow-sm">
+    <div class="text-center mt-4">
+      <button onclick="downloadMetricsTable()" type="button"
+              class="px-6 py-2 bg-yellow-500 text-black font-semibold rounded shadow hover:bg-yellow-600">
         📥 Download Metrics Table as PDF
       </button>
+      <button onclick="downloadMetricsExcel()" type="button"
+            class="px-6 py-2 mt-2 bg-green-500 text-black font-semibold rounded shadow hover:bg-green-600">
+      📊 Download Metrics Table as Excel
+      </button>
+    </div>
+    
+  </div>
+
+
+  <div class="max-w-6xl mx-auto px-4 mt-12">
+
+    <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
+      <p class="font-semibold mb-1">OEE (%) shows how effectively your production lines are running. A higher OEE means less downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
+      <p class="italic opacity-90">OEE (%) muestra qué tan efectivamente están funcionando sus líneas de producción. Un OEE más alto significa menos tiempo de inactividad y mayor productividad. Monitorear esto ayuda a mejorar la eficiencia de la panadería y reducir el desperdicio.</p>
     </div>
 
-    <!-- New chart sections -->
-    <div class="chart-container mb-4" id="chartOEEWrapper">
-      <h5 class="text-center fw-bold mb-2">OEE (%)</h5>
-      <canvas id="chartOEE"></canvas>
-    </div>
-    <div class="chart-container mb-4" id="chartPoundsWrapper">
-      <h5 class="text-center fw-bold mb-2">Pounds (LB)</h5>
-      <canvas id="chartPounds"></canvas>
-    </div>
-    <div class="chart-container mb-4" id="chartWasteWrapper">
-      <h5 class="text-center fw-bold mb-2">Waste (%)</h5>
-      <canvas id="chartWaste"></canvas>
+
+
+    <div id="oeeFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
+      <div id="oeeFeedbackBox" class="bg-blue-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
+        <p id="oeeMessage" class="text-lg flex items-center gap-2">
+          <span>📈</span><span class="oee-msg">Evaluating performance...</span>
+        </p>
+      </div>
     </div>
 
-    <div class="text-center mt-3">
-      <button onclick="downloadChartsAsPDF()" class="btn btn-primary shadow-sm">
-        📄 Download Charts as PDF
+    <div id="chartOEEWrapper" class="mb-8">
+      <h5 class="text-center mb-2 font-semibold">OEE (%)</h5>
+      <div class="bg-[#1e293b] rounded-xl p-4 aspect-[2/1] glow-container ">
+        <canvas id="chartOEE"></canvas>
+      </div>
+    </div>
+
+
+    <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
+      <p class="font-semibold mb-1">Waste (%) helps track how much raw material is being lost. Keeping waste below target ensures cost control and supports food safety. Monitoring this metric is key to bakery profitability.</p>
+      <p class="italic opacity-90">El porcentaje de desperdicio (%) ayuda a rastrear cuánta materia prima se está perdiendo. Mantener el desperdicio por debajo del objetivo asegura el control de costos y respalda la seguridad alimentaria. Monitorear esta métrica es clave para la rentabilidad de la panadería.</p>
+    </div>
+
+    <div id="wasteFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
+      <div id="wasteFeedbackBox" class="bg-red-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
+        <p id="wasteMessage" class="text-lg flex items-center gap-2">
+          <span>🗑️</span><span class="waste-msg">Evaluating waste...</span>
+        </p>
+      </div>
+    </div>
+
+    <div id="chartWasteWrapper" class="mb-8">
+      <h5 class="text-center mb-2 font-semibold">Waste (%)</h5>
+      <div class="bg-[#1e293b] rounded-xl p-4 aspect-[2/1] glow-container ">
+        <canvas id="chartWaste"></canvas>
+      </div>
+    </div>
+
+    <div class="text-center mt-6">
+      <button
+        onclick="downloadChartsAsPDF()"
+        class="relative px-8 py-3 overflow-hidden font-semibold rounded-lg bg-gray-800 text-gray-50 hover:bg-gray-900 group"
+      >
+        <span
+          class="absolute top-0 right-0 px-5 py-1 text-xs tracking-wider text-center uppercase origin-bottom-left transform rotate-45 -translate-y-full translate-x-1/3 bg-violet-600"
+        >
+          New
+        </span>
+        <span class="relative flex items-center gap-2">
+          <span>Download Charts as PDF</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            fill="none"
+            class="w-4 h-4 transition-transform duration-300 ease-out group-hover:translate-y-1"
+          >
+            <path
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              stroke-width="2"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            ></path>
+          </svg>
+        </span>
       </button>
     </div>
 
   </div>
-
   <button class="floating-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <i class="fas fa-arrow-up"></i>
   </button>
@@ -335,92 +311,8 @@
       set('waste2Avg', data.waste2Avg);
       set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true);
 
-
-
-
-      updateChart(
-        [data.oee1Avg, data.oee2Avg, data.oeeTotalAvg],
-        [data.pounds1Avg, data.pounds2Avg, data.poundsTotalAvg],
-        [data.waste1Avg, data.waste2Avg, data.wasteTotalAvg]
-      );
     }
 
-    let chartOEE, chartPounds, chartWaste;
-
-    function createChart(ctx, label, data, color, format) {
-      return new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Die Cut 1', 'Die Cut 2', 'Total'],
-          datasets: [{
-            label: label,
-            data: data,
-            backgroundColor: color
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: context => `${label}: ${format(context.parsed.y)}`
-              }
-            },
-            datalabels: {
-              color: '#000',
-              anchor: 'end',
-              align: 'top',
-              font: { weight: 'bold' },
-              formatter: format
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Value',
-                font: { weight: 'bold' }
-              }
-            }
-          }
-        },
-        plugins: [ChartDataLabels]
-      });
-    }
-
-    function updateChart(oee, pounds, waste) {
-      // Destroy previous charts
-      if (chartOEE) chartOEE.destroy();
-      if (chartPounds) chartPounds.destroy();
-      if (chartWaste) chartWaste.destroy();
-
-      chartOEE = createChart(
-        document.getElementById('chartOEE'),
-        'OEE (%)',
-        oee.map(Number),
-        'rgba(54, 162, 235, 0.7)',
-        val => val.toFixed(1)
-      );
-
-      chartPounds = createChart(
-        document.getElementById('chartPounds'),
-        'Pounds (LB)',
-        pounds.map(Number),
-        'rgba(255, 206, 86, 0.7)',
-        val => Number(val).toLocaleString()
-      );
-
-      chartWaste = createChart(
-        document.getElementById('chartWaste'),
-        'Waste (%)',
-        waste.map(Number),
-        'rgba(255, 99, 132, 0.7)',
-        val => val.toFixed(2)
-      );
-    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       await fetchReport();
@@ -430,7 +322,7 @@
     });
 
 
-
+    /*
     async function downloadChartsAsPDF() {
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'pt', 'a4');
@@ -447,54 +339,462 @@
 
       pdf.save('Bakery_Weekly_Metrics.pdf');
     }
+    */
+    
+
+  </script>
+
+
+  <!-- Glowing plugin place before the render chart functions because they depend on it -->
+  <script>
+    const glowingBarPlugin = {
+      id: 'glowBars',
+      afterDatasetDraw(chart, args, options) {
+        const { ctx, chartArea: { top, bottom }, data } = chart;
+        const dataset = args.meta.dataset;
+        const target = options.target || 70;
+        const glowColor = options.glowColor || 'rgba(34, 197, 94, 0.6)';
+
+        ctx.save();
+
+        args.meta.data.forEach((bar, i) => {
+          const value = data.datasets[args.index].data[i];
+          const meetsCriteria = value >= target;
+
+          if (meetsCriteria && bar) {
+            const { x, y, width, height } = bar.getProps(['x', 'y', 'width', 'height'], true);
+
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = glowColor;
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            ctx.rect(x - width / 2, y, width, bottom - y);
+            ctx.stroke();
+          }
+        });
+
+        ctx.restore();
+      }
+    };
+
+    Chart.register(glowingBarPlugin);
+  </script>
+
+
+  <script>
+  let chartOEE, chartWaste;
+
+  // Build chart with floating values, target line, and performance line
+  function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor }) {
+    const values = data.map(Number);
+    const colors = values.map(v => {
+      if (ctxId === 'chartWaste') {
+        return v <= target ? '#22c55e' : '#ef4444';  // reversed for Waste
+      }
+      return v >= target ? '#22c55e' : '#ef4444';    // normal for OEE
+    });
+
+
+    const ctx = document.getElementById(ctxId).getContext('2d');
+    if (ctxId === 'chartOEE' && chartOEE) chartOEE.destroy();
+    if (ctxId === 'chartWaste' && chartWaste) chartWaste.destroy();
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        datasets: [
+          {
+            type: 'bar',
+            label: title,
+            data: values,
+            backgroundColor: colors,
+            borderRadius: 6,
+          },
+          {
+            type: 'line',
+            label: 'Performance Trend',
+            data: values,
+            borderColor: lineColor,
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: 'white',
+          },
+          {
+            type: 'line',
+            label: 'Target',
+            data: Array(5).fill(target),
+            borderColor: '#3b82f6',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            pointRadius: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          glowBars: {
+            target: 70,
+            glowColor: 'rgba(34, 197, 94, 0.8)'
+          },
+          legend: { labels: { color: 'white' } },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            color: (ctx) => ctx.datasetIndex === 0 ? 'white' : 'transparent',
+            font: { weight: 'bold' },
+            formatter: value => typeof value === 'number' ? value.toFixed(2) : ''
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: 'white' },
+            grid: { color: '#334155' }
+          },
+          y: {
+            beginAtZero: true,
+            suggestedMax: ctxId === 'chartOEE' ? 120 : undefined, // only apply to OEE chart
+            title: {
+              display: true,
+              text: yLabel,
+              color: 'white'
+            },
+            ticks: {
+              color: 'white',
+              callback: function(value) {
+                return value + (yLabel.includes('%') ? '%' : '');
+              }
+            },
+            grid: { color: '#334155' }
+          }
+
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    if (ctxId === 'chartOEE') chartOEE = chart;
+    if (ctxId === 'chartWaste') chartWaste = chart;
+  }
+  
+
+  // Fetch values from your server-side endpoint based on selected week
+  async function updateDynamicCharts() {
+    const week = document.getElementById('week').value;
+    const response = await fetch(`/api/weekly-metrics?week=${week}`);
+    const result = await response.json();
+
+    renderMetricChart({
+      ctxId: 'chartOEE',
+      title: 'OEE (%)',
+      data: result.oee, // Expecting array of 5 values
+      target: 70,
+      yLabel: 'OEE (%)',
+      bgColor: '#1e293b',
+      barColor: '#60a5fa',
+      lineColor: '#facc15'
+    });
+
+    renderMetricChart({
+      ctxId: 'chartWaste',
+      title: 'Waste (%)',
+      data: result.waste, // Expecting array of 5 values
+      target: 3.75,
+      yLabel: 'Waste (%)',
+      bgColor: '#1e293b',
+      barColor: '#f87171',
+      lineColor: '#facc15'
+    });
+
+    const applyGlowEffect = (chartId, average, target, reverse = false) => {
+      const wrapper = document.getElementById(chartId).parentElement.parentElement;
+      wrapper.classList.remove('glow-green', 'glow-red');
+
+      const avg = parseFloat(average); // just in case
+      const pass = reverse ? avg <= target : avg >= target;
+
+      wrapper.classList.add(pass ? 'glow-green' : 'glow-red');
+    };
+
+    // After rendering both charts:
+    applyGlowEffect('chartOEE', result.oeeAvg, 70);       // OEE - Cell I36
+    applyGlowEffect('chartWaste', result.wasteAvg, 3.75, true); // Waste - Cell I42
+
+
+    updateFeedbackMessages(result.oeeAvg, result.wasteAvg);
+
+  }
+
+  // Trigger on page load and when week changes
+  document.addEventListener('DOMContentLoaded', () => {
+    updateDynamicCharts();
+    document.getElementById('week').addEventListener('change', updateDynamicCharts);
+  });
+  </script>
+
+
+  <script>
+    async function downloadMetricsTable() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'pt',
+        format: 'a4'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      // Title
+      const title = "Bakery Metrics Table";
+      doc.setFontSize(16);
+      doc.setTextColor(40);
+      doc.text(title, pageWidth / 2, 40, { align: "center" });
+
+      // Timestamp
+      const now = new Date();
+      const timestamp = `Generated on ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`;
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(timestamp, pageWidth - 40, 60, { align: "right" });
+
+      // Footer
+      const footerText = "© Bakery Metrics App — Created by Gerald Nyah";
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(footerText, pageWidth / 2, pageHeight - 20, { align: "center" });
+
+      // Load logo image
+      const logoImg = new Image();
+      logoImg.src = "/static/DON MIGUEL.png"; // Adjust path as needed
+
+      logoImg.onload = () => {
+        doc.addImage(logoImg, 'PNG', 40, 20, 60, 40);
+
+        // Build table data
+        const head = [["KPIs", "LINE", "TARGET", "METRIC", "WEEK AVG", "UNIT"]];
+        const body = [];
+        const rows = document.querySelectorAll("#metricsTableWrapper table tbody tr");
+
+        rows.forEach((tr) => {
+          const cells = tr.querySelectorAll("td");
+          const row = [];
+
+          if (cells.length === 6) {
+            row.push(...Array.from(cells).map(td => td.innerText.trim()));
+          } else if (cells.length === 5) {
+            row.push("", ...Array.from(cells).map(td => td.innerText.trim()));
+          }
+          body.push(row);
+        });
+
+        // Draw table
+        doc.autoTable({
+          head: head,
+          body: body,
+          startY: 80,
+          styles: {
+            fontSize: 10,
+            cellPadding: 5,
+          },
+          headStyles: {
+            fillColor: [0, 102, 204],
+            textColor: 255,
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [245, 245, 245]
+          },
+          margin: { top: 80, bottom: 40 },
+          tableWidth: 'auto'
+        });
+
+        doc.save("Bakery_Metrics_Table.pdf");
+      };
+    }
+  </script>
+
+  <script>
+    function downloadMetricsExcel() {
+      const table = document.querySelector("#metricsTableWrapper table");
+
+      // Extract the table into sheet format
+      const ws = XLSX.utils.table_to_sheet(table, { raw: true });
+
+      // Insert logo/title row at the top
+      XLSX.utils.sheet_add_aoa(ws, [
+        ["DON MIGUEL FOODS"], 
+        ["Bakery Metrics Report"]
+      ], { origin: "A1" });
+
+      // Shift down the table so headers start from row 4
+      for (let R = ws['!ref'].split(':')[1].match(/\d+/)[0]; R >= 1; --R) {
+        for (let C = 0; C < 6; C++) {
+          const cell = XLSX.utils.encode_cell({ r: parseInt(R), c: C });
+          const newCell = XLSX.utils.encode_cell({ r: parseInt(R) + 2, c: C });
+          if (ws[cell]) {
+            ws[newCell] = ws[cell];
+            delete ws[cell];
+          }
+        }
+      }
+
+      // Bold and color headers
+      const headers = ["A3", "B3", "C3", "D3", "E3", "F3"];
+      headers.forEach(cell => {
+        if (ws[cell]) {
+          ws[cell].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "1E3A8A" } },
+            alignment: { horizontal: "center", vertical: "center" }
+          };
+        }
+      });
+
+      // Merge title cells
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }
+      ];
+
+      // Style logo/title rows
+      ["A1", "A2"].forEach(cell => {
+        if (ws[cell]) {
+          ws[cell].s = {
+            font: { bold: true, sz: 14 },
+            alignment: { horizontal: "center" }
+          };
+        }
+      });
+
+      // Column widths
+      ws['!cols'] = [
+        { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 8 }
+      ];
+
+      // Create and export workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Bakery Metrics");
+      XLSX.writeFile(wb, "Bakery_Metrics_Report.xlsx");
+    }
+  </script>
+
+  <script>
+    const oeeMessages = {
+      good: [
+        "🎯 Great job! OEE is above target!",
+        "🏆 Consistent efficiency this week!",
+        "💪 Equipment running strong!",
+        "📈 Production efficiency is on point!",
+        "✅ OEE trend shows excellent consistency."
+      ],
+      bad: [
+        "⚠️ OEE below 70% — review equipment performance.",
+        "🛠️ Investigate major stops or speed losses.",
+        "📉 Consider scheduling preventive maintenance.",
+        "🚧 Focus on root causes of downtime.",
+        "🔍 Look into line balancing or operator training."
+      ]
+    };
+
+    const wasteMessages = {
+      good: [
+        "🌿 Excellent! Waste is under control.",
+        "🎉 Low waste — keep up the great work!",
+        "✅ Great reduction in material loss.",
+        "💚 Sustainability target achieved!",
+        "🏆 Consistent control over waste."
+      ],
+      bad: [
+        "⚠️ Waste above 3.75% — check for overfill or misalignment.",
+        "🔧 Investigate scrap sources or packaging issues.",
+        "📊 Monitor weight trends and sealing integrity.",
+        "🧪 Review product changeover losses.",
+        "🚨 Consider Gemba walk or operator retraining."
+      ]
+    };
+
+    let oeeIndex = 0;
+    let wasteIndex = 0;
+    let oeeTimer, wasteTimer;
+
+    function cycleFeedback(type, isGood, elementId, messages, spanClass) {
+      const span = document.querySelector(`#${elementId} .${spanClass}`);
+      const msgList = messages[isGood ? 'good' : 'bad'];
+
+      function updateMsg() {
+        span.textContent = msgList[(type === 'oee' ? oeeIndex++ : wasteIndex++) % msgList.length];
+      }
+
+      updateMsg();
+      if (type === 'oee') {
+        clearInterval(oeeTimer);
+        oeeTimer = setInterval(updateMsg, 3000);
+      } else {
+        clearInterval(wasteTimer);
+        wasteTimer = setInterval(updateMsg, 3000);
+      }
+    }
+
+    // ➕ Call this after fetching averages
+    function updateFeedbackMessages(oeeAvg, wasteAvg) {
+      const oeeGood = oeeAvg >= 70;
+      const wasteGood = wasteAvg <= 3.75;
+
+      const oeeBox = document.getElementById("oeeFeedbackBox");
+      const wasteBox = document.getElementById("wasteFeedbackBox");
+
+      // Update background colors based on performance
+      oeeBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${
+        oeeGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
+      }`;
+
+      wasteBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${
+        wasteGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
+      }`;
+
+      cycleFeedback('oee', oeeGood, 'oeeFeedback', oeeMessages, 'oee-msg');
+      cycleFeedback('waste', wasteGood, 'wasteFeedback', wasteMessages, 'waste-msg');
+    }
 
   </script>
 
   <script>
-    async function downloadMetricsTable() {
-      const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4');
-      const content = document.getElementById('metricsTableWrapper');
+    async function downloadChartsAsPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const chart1 = document.getElementById('chartOEEWrapper');
+      const chart2 = document.getElementById('chartWasteWrapper');
 
-      // Force styles so canvas can render Bootstrap classes properly
-      content.style.backgroundColor = '#fff';
-      content.style.color = '#000';
-      content.style.fontSize = '12pt';
-      content.style.opacity = '1';
-      content.style.transform = 'none';
-      content.style.boxShadow = 'none';
+      const timestamp = new Date().toLocaleString();
 
-      // Clone node to avoid weird rendering from Bootstrap classes
-      const clone = content.cloneNode(true);
-      document.body.appendChild(clone);
-      clone.style.position = 'absolute';
-      clone.style.top = '0';
-      clone.style.left = '0';
-      clone.style.zIndex = '-1';
+      const renderToCanvas = async (element) =>
+        await html2canvas(element, { backgroundColor: '#1e293b', scale: 2 });
 
-      await new Promise(resolve => setTimeout(resolve, 500)); // Let browser layout settle
+      const canvas1 = await renderToCanvas(chart1);
+      const img1 = canvas1.toDataURL('image/png');
+      pdf.addImage(img1, 'PNG', 20, 20, 550, 220);
 
-      html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const width = pdf.internal.pageSize.getWidth() - 40;
-        const height = (canvas.height * width) / canvas.width;
+      const canvas2 = await renderToCanvas(chart2);
+      const img2 = canvas2.toDataURL('image/png');
+      pdf.addImage(img2, 'PNG', 20, 260, 550, 220);
 
-        pdf.addImage(imgData, 'PNG', 20, 20, width, height);
-        pdf.save('Bakery_Metrics_Table.pdf');
-        clone.remove(); // Cleanup
-      }).catch(err => {
-        console.error("PDF generation error:", err);
-        alert("Failed to generate PDF. Try again.");
-      });
+      // Footer + Timestamp
+      pdf.setFontSize(10);
+      pdf.text(`Generated on: ${timestamp}`, 20, 500);
+      const logo = new Image();
+      logo.src = '/static/DON MIGUEL.png'; // or use full URL if outside /static
+      logo.onload = function () {
+        pdf.addImage(logo, 'PNG', 450, 490, 100, 30);
+        pdf.save(`Bakery_Charts_${new Date().toISOString().slice(0, 10)}.pdf`);
+      };
     }
   </script>
-
-
-
-
 
 
 
@@ -505,5 +805,6 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
+  {% endblock %}
 </body>
 </html>

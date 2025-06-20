@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Overview</title>
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white h-screen overflow-hidden">
+  {% extends "dashboard.html" %}
+  {% block content %}
+
+  <!-- Page Title -->
+  <div class="mb-6 text-center">
+    <h1 class="text-3xl font-bold">Inventory Overview</h1>
+    <p class="text-gray-400">View and filter calculated inventory data from sheets</p>
+  </div>
+
+  <!-- Filter Controls -->
+  <div id="filterArea" class="flex flex-col gap-2 min-w-[250px]">
+    <!-- Static Dropdown -->
+    <label for="filterOption" class="block text-sm font-medium text-gray-300">Static Filter</label>
+    <select id="filterOption" name="filterOption" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+      <option value="all">All</option>
+      <option value="received">Raw Material Received</option>
+      <option value="returned">Raw Material Returned</option>
+      <option value="first shift">First Shift</option>
+      <option value="second shift">Second Shift</option>
+    </select>
+
+    <!-- Add Filter Button -->
+    <button id="addFilterBtn"
+      class="flex justify-center items-center gap-2 w-28 h-12 mt-2 cursor-pointer rounded-md shadow-2xl text-white font-semibold bg-gradient-to-r from-[#14b8a6] via-[#059669] to-[#047857] hover:shadow-xl hover:shadow-green-500 hover:scale-105 duration-300 hover:from-[#047857] hover:to-[#14b8a6]">
+      <svg class="w-6 h-6" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linejoin="round" stroke-linecap="round"></path>
+      </svg>
+      Add Filter
+    </button>
+
+    <!-- Dynamic Filter Labels -->
+    <div id="dynamicFilters" class="flex flex-wrap gap-2 pt-2">
+      <!-- Labels will be added here -->
+    </div>
+  </div>
+
+
+
+  <!-- Controls -->
+  <div class="flex flex-wrap gap-4 mb-6 justify-between items-center">
+    <!-- Sheet Dropdown -->
+    <div class="flex-1 min-w-[200px]">
+      <label for="sheetSelect" class="block mb-1 text-sm font-medium text-gray-300">Select Sheet</label>
+      <select id="sheetSelect" name="sheet" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+        <option value="">-- Choose a sheet --</option>
+        {% for sheet in sheet_options %}
+          <option value="{{ sheet }}">{{ sheet }}</option>
+        {% endfor %}
+      </select>
+    </div>
+   
+    <!-- Day Search -->
+    <div class="flex-1 min-w-[200px]">
+      <label for="daySearch" class="block mb-1 text-sm font-medium text-gray-300">Search by Day</label>
+      <input type="text" id="daySearch" name="daySearch" placeholder="e.g. Monday" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" />
+    </div>
+    
+  </div>
+    <!-- Date Filter -->
+  <div class="flex-1 min-w-[200px]">
+    <label for="dateSearch" class="block mb-1 text-sm font-medium text-gray-300">Search by Date</label>
+    <input type="date" id="dateSearch" name="dateSearch" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" />
+  </div>
+
+
+  <!-- Table Container -->
+  <div class="overflow-x-auto bg-gray-800 rounded-lg shadow-md">
+    <table class="min-w-full text-sm table-auto">
+      <thead class="bg-gray-700 text-gray-300">
+        <tr>
+          <th class="p-2 text-left">QUANTITY</th>
+          <th class="p-2 text-left">LOT NUMBER</th>
+          <th class="p-2 text-left">SHIFT</th>
+          <th class="p-2 text-left">DAY</th>
+          <th class="p-2 text-left">DATE</th>
+          <th class="p-2 text-left">TIME</th>
+          <th class="p-2 text-left">USER</th>
+          <th class="p-2 text-left">STATUS</th>
+          <th class="p-2 text-left">ITEM NUMBER</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryTableBody" class="divide-y divide-gray-700">
+        <!-- Populated dynamically -->
+      </tbody>
+    </table>
+  </div>
+
+
+  <script>
+    async function loadSheetDropdownOptions() {
+      const sheetDropdown = document.getElementById("sheetSelect");
+      try {
+        const response = await fetch("/api/inventory-sheets");
+        const result = await response.json();
+        sheetDropdown.innerHTML = `<option value="">-- Choose a sheet --</option>`;
+        result.sheets.forEach(sheet => {
+          const option = document.createElement("option");
+          option.value = sheet;
+          option.textContent = sheet;
+          sheetDropdown.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Failed to load sheet options:", error);
+      }
+    }
+
+    // Run when the page loads
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSheetDropdownOptions();
+    });
+  </script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sheetSelect = document.getElementById("sheetSelect");
+      const daySearch = document.getElementById("daySearch");
+      const filterOption = document.getElementById("filterOption");
+      const tableBody = document.getElementById("inventoryTableBody");
+      const dateSearch = document.getElementById("dateSearch");
+
+      function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${month}/${day}/${year}`;
+      }
+
+
+      async function fetchData() {
+        const sheet = sheetSelect.value;
+        const day = daySearch.value.trim();
+        const status = filterOption.value.trim().toLowerCase();
+        const date = dateSearch.value;
+
+        if (!sheet) return;
+
+        const params = new URLSearchParams();
+        params.append("sheet", sheet);
+        if (day) params.append("day", day);
+        if (status && status !== "all") params.append("status", status);
+        if (date) params.append("date", date);
+
+        try {
+          const response = await fetch(`/api/inventory-overview-data?${params.toString()}`);
+          const result = await response.json();
+
+          tableBody.innerHTML = "";
+
+          if (!result.rows || result.rows.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-400">No data found.</td></tr>`;
+            return;
+          }
+
+          result.rows.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td class="px-3 py-2">${row.quantity}</td>
+              <td class="px-3 py-2">${row.lot}</td>
+              <td class="px-3 py-2">${row.shift}</td>
+              <td class="px-3 py-2">${row.day}</td>
+              <td class="px-3 py-2">${formatDate(row.date)}</td>
+              <td class="px-3 py-2">${row.time}</td>
+              <td class="px-3 py-2">${row.user}</td>
+              <td class="px-3 py-2">${row.status}</td>
+              <td class="px-3 py-2">${row.item}</td>
+            `;
+            tableBody.appendChild(tr);
+          });
+
+        } catch (err) {
+          console.error("❌ Error fetching inventory data:", err);
+          tableBody.innerHTML = `<tr><td colspan="9" class="text-red-500 py-4">Error loading data.</td></tr>`;
+        }
+      }
+
+      // 🔄 React to user interaction
+      sheetSelect.addEventListener("change", fetchData);
+      filterOption.addEventListener("change", fetchData);
+      dateSearch.addEventListener("change", fetchData);
+
+      let debounce;
+      daySearch.addEventListener("input", () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(fetchData, 400);
+      });
+
+      fetchData(); // Initial load
+    });
+  </script>
+
+
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const addFilterBtn = document.getElementById("addFilterBtn");
+      const dynamicFilters = document.getElementById("dynamicFilters");
+      const tableBody = document.getElementById("inventoryTableBody");
+
+      const filterOptions = [
+        { value: "received", label: "Raw Material Received" },
+        { value: "returned", label: "Raw Material Returned" },
+        { value: "first shift", label: "First Shift" },
+        { value: "second shift", label: "Second Shift" }
+      ];
+
+      let activeFilters = [];
+
+      function createFilterDropdown() {
+        const dropdown = document.createElement("select");
+        dropdown.className = "p-2 rounded bg-gray-700 text-white border border-gray-500";
+        dropdown.innerHTML = `<option value="">Select filter...</option>` + 
+          filterOptions
+            .filter(opt => !activeFilters.includes(opt.value))
+            .map(opt => `<option value="${opt.value}">${opt.label}</option>`)
+            .join("");
+
+        dropdown.addEventListener("change", () => {
+          if (dropdown.value) {
+            addFilterLabel(dropdown.value);
+            dropdown.remove(); // remove dropdown after selection
+            applyClientSideFilters(); // Apply on dropdown change
+          }
+        });
+
+        dynamicFilters.appendChild(dropdown);
+      }
+
+      function addFilterLabel(value) {
+        const filter = filterOptions.find(opt => opt.value === value);
+        if (!filter || activeFilters.includes(value)) return;
+
+        activeFilters.push(value);
+
+        const label = document.createElement("span");
+        label.className = "flex items-center gap-2 px-3 py-1 bg-gray-800 text-white rounded-full text-sm";
+        label.innerHTML = `
+          ${filter.label}
+          <button class="text-red-400 hover:text-red-600 font-bold" aria-label="Remove filter">×</button>
+        `;
+
+        label.querySelector("button").addEventListener("click", () => {
+          label.remove();
+          activeFilters = activeFilters.filter(f => f !== value);
+          applyClientSideFilters(); // Re-apply after removing
+        });
+
+        dynamicFilters.appendChild(label);
+      }
+
+      function applyClientSideFilters() {
+        const rows = tableBody.querySelectorAll("tr");
+
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          const matchesAll = activeFilters.every(filter => text.includes(filter));
+          row.style.display = matchesAll ? "" : "none";
+        });
+      }
+
+      addFilterBtn.addEventListener("click", () => {
+        if (filterOptions.length > activeFilters.length) {
+          createFilterDropdown();
+        }
+      });
+
+      // Re-apply dynamic filters after every API fetch
+      const originalFetchData = window.fetchData;
+      if (typeof originalFetchData === "function") {
+        const observer = new MutationObserver(() => {
+          applyClientSideFilters();
+        });
+        observer.observe(tableBody, { childList: true });
+      }
+    });
+  </script>
+
+
+
+
+  
+
+  {% endblock %}
+</body>
+</html>

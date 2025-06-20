@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Dashboard{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-900 text-white">
+  <div class="flex h-screen">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex md:flex-col w-64 bg-gray-800 shadow-lg p-4 space-y-6">
+      <div class="text-2xl font-bold mb-8 flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
+        <span>Bakery Dashboard</span>
+      </div>
+      <nav class="flex flex-col gap-4 text-sm">
+        <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Reports</span>
+        </a>
+        <a href="/form" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="file-text" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Submit Form</span>
+        </a>
+        <a href="/foreign-material" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Foreign Material</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Mobile Sidebar Trigger -->
+    <div class="md:hidden absolute top-4 left-4 z-50">
+      <button id="mobileMenuBtn" class="text-white focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobileSidebar" class="fixed inset-y-0 left-0 bg-gray-800 w-64 transform -translate-x-full transition-transform duration-300 z-40 p-4 space-y-6">
+      <div class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
+        <span>Bakery Dashboard</span>
+      </div>
+      <nav class="flex flex-col gap-4 text-sm">
+        <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Reports</span>
+        </a>
+        <a href="/form" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="file-text" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Submit Form</span>
+        </a>
+        <a href="/foreign-material" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Foreign Material</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Navbar -->
+      <header class="flex justify-between items-center p-4 bg-gray-800 shadow-md">
+        <div></div>
+        <div class="text-xl font-semibold">404UPDATE</div>
+        <div>
+          <img src="https://www.svgrepo.com/show/512636/user-circle.svg" class="w-8 h-8 rounded-full" alt="User" />
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="p-6 overflow-y-auto">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Mobile toggle
+    const btn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('mobileSidebar');
+    btn.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+    });
+
+    // Load Lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
+

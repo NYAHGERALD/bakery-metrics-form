@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+  <style>
+    @keyframes progressBar {
+        0% { width: 0% }
+        50% { width: 60% }
+        100% { width: 100% }
+    }
+    .animate-progressBar {
+        animation: progressBar 2s infinite;
+    }
+    .animate-fadeIn {
+        animation: fadeIn 2s ease-in-out both;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0 }
+        to { opacity: 1 }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 1.5s ease-in-out both;
+    }
+  </style>
+  <style>
+    .blink {
+        animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+        50% {
+        opacity: 0;
+        }
+    }
+  </style>
+
+
+
+</head>
+<body class="bg-gray-900 text-white h-screen overflow-hidden">
+
+  
+
+
+
+  <div class="flex h-screen">
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex md:flex-col w-64 bg-gray-800 shadow-lg p-4 space-y-6">
+      <div class="text-2xl font-bold mb-8 flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
+        <span>Bakery Dashboard</span>
+      </div>
+      <nav class="flex flex-col gap-4 text-sm">
+
+
+        <div class="relative group">
+            <a href="/dashboard" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+                <i data-lucide="home" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+                <span>Main Dashboard</span>
+            </a>
+
+            <!-- Tooltip -->
+            <div class="absolute invisible opacity-0 group-hover:visible group-hover:opacity-100 left-full top-1/2 -translate-y-1/2 ml-4 w-64 transition-all duration-300 transform group-hover:translate-x-0 translate-x-2 z-50">
+                <div class="relative p-4 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-white">Dashboard Overview</h3>
+                </div>
+
+                <p class="text-sm text-gray-300">The Dashboard provides a summary of key bakery metrics such as OEE and Waste. Use this view to monitor the overall and shift performance, track the current week trends, and identify areas needing attention.</p>
+
+                <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        
+
+        <div class="relative group">
+            <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+                <span>Metrics Reports</span>
+            </a>
+
+            <!-- Tooltip -->
+            <div class="absolute invisible opacity-0 group-hover:visible group-hover:opacity-100 left-full top-1/2 -translate-y-1/2 ml-4 w-64 transition-all duration-300 transform group-hover:translate-x-0 translate-x-2 z-50">
+                <div class="relative p-4 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-white">Report Overview</h3>
+                </div>
+
+                <p class="text-sm text-gray-300">View weekly and daily KPI metrics visualized with charts and table. Also download table and charts as pdf</p>
+
+                <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="relative group">
+            <a href="/form" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+                <i data-lucide="file-text" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+                <span>Submit Metrics</span>
+            </a>
+
+            <!-- Tooltip -->
+            <div class="absolute invisible opacity-0 group-hover:visible group-hover:opacity-100 left-full top-1/2 -translate-y-1/2 ml-4 w-64 transition-all duration-300 transform group-hover:translate-x-0 translate-x-2 z-50">
+                <div class="relative p-4 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-white">Metrics Overview</h3>
+                </div>
+
+                <p class="text-sm text-gray-300">Submit key bakery daily data such as OEE, Pounds, and Waste for first and second shift. Ensure timely and accurate reporting to support performance tracking.</p>
+
+                <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
+                </div>
+            </div>
+        </div>
+
+
+        
+        <a href="/inventory" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+            <span>Report Item usages</span>
+        </a>
+
+
+         <!-- Inventory Overview Link with Tooltip -->
+        <div class="relative group">
+            <a href="/inventory-overview" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+                <i data-lucide="bar-chart" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+                <span>Track Pre-staged</span>
+            </a>
+
+            <!-- Tooltip -->
+            <div class="absolute invisible opacity-0 group-hover:visible group-hover:opacity-100 left-full top-1/2 -translate-y-1/2 ml-4 w-64 transition-all duration-300 transform group-hover:translate-x-0 translate-x-2 z-50">
+                <div class="relative p-4 bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-white">Pre-staged Overview</h3>
+                </div>
+
+                <p class="text-sm text-gray-300">View and filter all raw material received and return to the warehouse pre-staged. Use the filters to analyze daily transactions and review on the floor actual quantity usage.</p>
+
+                <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
+                </div>
+            </div>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- Mobile Sidebar Trigger -->
+    <div class="md:hidden absolute top-4 left-4 z-50">
+      <button id="mobileMenuBtn" class="text-white focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobileSidebar" class="fixed inset-y-0 left-0 bg-gray-800 w-64 transform -translate-x-full transition-transform duration-300 z-40 p-4 space-y-6">
+      <div class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
+        <span>Bakery Dashboard</span>
+      </div>
+      <nav class="flex flex-col gap-4 text-sm">
+
+        <a href="/dashboard" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+            <i data-lucide="home" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+            <span>Main Dashboard</span>
+        </a>
+
+        <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Metrics Reports</span>
+        </a>
+        <a href="/form" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="file-text" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Submit Metrics</span>
+        </a>
+        <a href="/inventory" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Report Item usages</span>
+        </a>
+        <a href="/inventory-overview" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
+          <i data-lucide="bar-chart" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
+          <span>Track Pre-staged</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+    <!-- Navbar -->
+    <header class="px-4 py-3 bg-gray-800 shadow-md sm:px-6">
+        <div class="flex justify-between items-center w-full">
+            <!-- Left side: Toggle and Title -->
+            <div class="flex items-center gap-3">
+            <!-- Mobile Sidebar Toggle -->
+            <button id="mobileMenuBtn" class="md:hidden text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <!-- App Title -->
+            <div class="text-sm sm:text-xl font-bold text-white whitespace-nowrap">BAKERY DEPARTMENT</div>
+            </div>
+
+            <!-- Clock Display -->
+            <div id="clockContainer" class="hidden sm:flex flex-col items-center text-white pr-4">
+                <div id="clockTime" class="text-sm font-bold tracking-widest">
+                    <span id="hour">--</span><span class="blink">:</span><span id="minute">--</span><span class="blink">:</span><span id="second">--</span>
+                    <span id="ampm" class="ml-1">--</span>
+                </div>
+                <div id="clockDate" class="text-xs text-gray-400">Loading date...</div>
+            </div>
+
+
+
+            <!-- User Info -->
+            <!-- User Info with Dropdown -->
+            <div class="relative group">
+                <div class="flex items-center gap-3 cursor-pointer" id="profileToggle">
+                    <img src="{{ url_for('static', filename='default-avatar.png') }}" alt="User Avatar"
+                        class="rounded-full shadow w-[45px] h-[45px] object-cover border border-teal-500" />
+                    <h5 class="text-sm sm:text-base font-semibold capitalize text-white">{{ session['user_full_name'] }}</h5>
+                </div>
+
+                <!-- Dropdown -->
+                <div id="logoutDropdown"
+                    class="hidden absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50">
+
+                    <!-- Profile Link -->
+                    <a href="/profile"
+                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        👤 Profile
+                    </a>
+
+                    <!-- Logout Link -->
+                    <a href="/"
+                        class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        🚪 Logout
+                    </a>
+                </div>
+
+
+    </header>
+
+
+    <!-- Dashboard Content -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+        <!-- Floating Chat Icon -->
+        <a href="/chat" title="Open Chat"
+            class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-teal-600 shadow-lg flex items-center justify-center text-white hover:scale-110 transition duration-300">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6m-6 4h8M5 20l1.5-4.5a9 9 0 1115-5.5 9 9 0 01-15 5.5z" />
+            </svg>
+        </a>
+        {% block content %}
+        <div id="contentOverlay"
+            class="fixed top-0 left-0 w-full h-screen z-50 bg-gray-950 bg-opacity-95 flex items-center justify-center px-4 py-8 sm:py-20 hidden">
+            
+            <!-- Loading Content -->
+            <div class="text-center space-y-4">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 border-4 border-t-[#00e600] border-gray-700 rounded-full animate-spin mx-auto"></div>
+                <div class="text-[#00e600] text-lg sm:text-xl font-bold animate-fadeIn">Almost There...</div>
+                <div class="text-sm text-gray-400 animate-fadeIn">Loading charts...</div>
+            </div>
+        </div>
+        <!-- 🔒 Container for dashboard content -->
+        <div id="dashboardContent" class="relative">
+            
+        
+
+
+            <div class="w-full max-w-7xl mx-auto px-2 sm:px-4">
+        
+            <h1 class="text-2xl font-bold mb-4">📊 Weekly Overview</h1>
+            <p class="text-sm text-gray-400 mb-6">This dashboard shows the most recent week's performance for OEE and Waste.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="chartOEEWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                    <canvas id="chartOEE" class="w-full h-60"></canvas>
+                </div>
+                <div id="chartWasteWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                    <canvas id="chartWaste" class="w-full h-60"></canvas>
+                </div>
+            </div>
+
+            <!-- First Shift Charts Section -->
+            <div class="mt-10">
+                <h2 class="text-xl font-semibold mb-2">📈 First Shift Performance (Latest Week)</h2>
+                <p class="text-sm text-gray-400 mb-4">
+                    This section shows the performance of the first production shift for the latest week. 
+                    The OEE (%) chart measures how effectively the equipment operated, while the Waste (%) chart tracks material loss. 
+                    Green bars indicate targets were met, while red bars highlight underperformance.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- OEE First Shift Chart -->
+                    <div id="chartOEEFirstShiftWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                        <canvas id="chartOEEFirstShift" class="w-full h-60"></canvas>
+                    </div>
+
+                    <!-- Waste First Shift Chart -->
+                    <div id="chartWasteFirstShiftWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                        <canvas id="chartWasteFirstShift" class="w-full h-60"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Shift Charts Section -->
+            <div class="mt-10">
+                <h2 class="text-xl font-semibold mb-2">📉 Second Shift Performance (Latest Week)</h2>
+                <p class="text-sm text-gray-400 mb-4">
+                    This section summarizes the OEE and Waste performance of the second shift for the latest week.
+                    The goal is to monitor efficiency and minimize waste during the second shift. 
+                    Bars are color-coded to highlight whether the daily performance met expectations.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- OEE Second Shift Chart -->
+                    <div id="chartOEESecondShiftWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                        <canvas id="chartOEESecondShift" class="w-full h-60"></canvas>
+                    </div>
+
+                    <!-- Waste Second Shift Chart -->
+                    <div id="chartWasteSecondShiftWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
+                        <canvas id="chartWasteSecondShift" class="w-full h-60"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+        
+        </div>
+        
+        {% endblock %}
+    </main>
+    </div>
+
+  </div>
+
+  <script>
+    let chartOEE, chartWaste;
+
+    // Build chart with floating values, target line, and performance line
+    function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor, reverseColorLogic = false }){
+        const values = data.map(Number);
+
+        const colors = values.map(v => {
+        if (ctxId.includes('Waste')) {
+            return v <= target ? '#22c55e' : '#ef4444'; // reversed for Waste charts
+        }
+        return v >= target ? '#22c55e' : '#ef4444';   // normal logic for OEE charts
+        });
+
+
+
+        const ctx = document.getElementById(ctxId).getContext('2d');
+        if (ctxId === 'chartOEE' && chartOEE) chartOEE.destroy();
+        if (ctxId === 'chartWaste' && chartWaste) chartWaste.destroy();
+
+        const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+            datasets: [
+            {
+                type: 'bar',
+                label: title,
+                data: values,
+                backgroundColor: colors,
+                borderRadius: 6,
+            },
+            {
+                type: 'line',
+                label: 'Performance Trend',
+                data: values,
+                borderColor: lineColor,
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: 'white',
+            },
+            {
+                type: 'line',
+                label: 'Target',
+                data: Array(5).fill(target),
+                borderColor: '#3b82f6',
+                borderDash: [5, 5],
+                borderWidth: 2,
+                pointRadius: 0,
+            }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+            glowBars: {
+                target: 70,
+                glowColor: 'rgba(34, 197, 94, 0.8)'
+            },
+            legend: { labels: { color: 'white' } },
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                color: (ctx) => ctx.datasetIndex === 0 ? 'white' : 'transparent',
+                font: { weight: 'bold' },
+                formatter: value => typeof value === 'number' ? value.toFixed(2) : ''
+            }
+            },
+            scales: {
+            x: {
+                ticks: { color: 'white' },
+                grid: { color: '#334155' }
+            },
+            y: {
+                beginAtZero: true,
+                suggestedMax: ctxId === 'chartOEE' ? 120 : undefined, // only apply to OEE chart
+                title: {
+                display: true,
+                text: yLabel,
+                color: 'white'
+                },
+                ticks: {
+                color: 'white',
+                callback: function(value) {
+                    return value + (yLabel.includes('%') ? '%' : '');
+                }
+                },
+                grid: { color: '#334155' }
+            }
+
+            }
+        },
+        plugins: [ChartDataLabels]
+        });
+
+        if (ctxId === 'chartOEE') chartOEE = chart;
+        if (ctxId === 'chartWaste') chartWaste = chart;
+    }
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const overlay = document.getElementById("contentOverlay");
+        overlay.classList.remove('hidden');  // Show overlay
+
+        try {
+        await loadDashboardCharts(); // Wait for all charts to load
+        } catch (error) {
+        console.error('Failed to load charts:', error);
+        }
+
+        overlay.classList.add('hidden');  // Hide overlay
+    });
+  </script>
+
+  <script>
+    async function loadDashboardCharts() {
+        const response = await fetch('/api/weekly-metrics?week=latest');
+        const result = await response.json();
+        console.log(result); // ✅ Add this temporarily to debug
+
+        renderMetricChart({
+        ctxId: 'chartOEE',
+        title: 'OEE (%)',
+        data: result.oee,
+        target: 70,
+        yLabel: 'OEE (%)',
+        bgColor: '#1e293b',
+        barColor: '#60a5fa',
+        lineColor: '#facc15'
+        });
+
+        renderMetricChart({
+        ctxId: 'chartWaste',
+        title: 'Waste (%)',
+        data: result.waste,
+        target: 3.75,
+        yLabel: 'Waste (%)',
+        bgColor: '#1e293b',
+        barColor: '#f87171',
+        lineColor: '#facc15'
+        });
+
+        // 🔁 First Shift Charts
+        renderMetricChart({
+            ctxId: 'chartOEEFirstShift',
+            title: 'OEE (1st Shift)',
+            data: result.oeeFirstShift,
+            target: 70,
+            yLabel: 'OEE (%)',
+            bgColor: '#1e293b',
+            barColor: '#38bdf8',
+            lineColor: '#facc15'
+        });
+
+        renderMetricChart({
+            ctxId: 'chartWasteFirstShift',
+            title: 'Waste (1st Shift)',
+            data: result.wasteFirstShift,
+            target: 3.75,
+            yLabel: 'Waste (%)',
+            bgColor: '#1e293b',
+            barColor: '#f87171',
+            lineColor: '#facc15'
+            
+        });
+
+        // 🔁 Second Shift Charts
+        renderMetricChart({
+            ctxId: 'chartOEESecondShift',
+            title: 'OEE (2nd Shift)',
+            data: result.oeeSecondShift,
+            target: 70,
+            yLabel: 'OEE (%)',
+            bgColor: '#1e293b',
+            barColor: '#34d399',
+            lineColor: '#facc15'
+        });
+
+        renderMetricChart({
+            ctxId: 'chartWasteSecondShift',
+            title: 'Waste (2nd Shift)',
+            data: result.wasteSecondShift,
+            target: 3.75,
+            yLabel: 'Waste (%)',
+            bgColor: '#1e293b',
+            barColor: '#fb7185',
+            lineColor: '#facc15'
+            
+        });
+
+
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboardCharts);
+  </script>
+  
+
+  
+
+  <script>
+    // Mobile toggle
+    const btn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('mobileSidebar');
+    btn.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+    });
+
+    // Load Lucide icons
+    lucide.createIcons();
+  </script>
+
+  <script>
+    function handleScrollGlow() {
+        const charts = document.querySelectorAll('[id^="chart"][id$="Wrapper"]');
+        charts.forEach(chart => {
+        const rect = chart.getBoundingClientRect();
+        const inView = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+        
+        if (inView) {
+            chart.classList.add('shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]', 'scale-[1.02]');
+        } else {
+            chart.classList.remove('shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]', 'scale-[1.02]');
+        }
+        });
+    }
+
+    window.addEventListener('scroll', handleScrollGlow);
+  </script>
+
+  <script>
+    function updateClock() {
+        const now = new Date();
+
+        let hour = now.getHours();
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        const second = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+
+        hour = hour % 12;
+        hour = hour ? hour : 12; // the hour '0' should be '12'
+
+        document.getElementById('hour').textContent = String(hour).padStart(2, '0');
+        document.getElementById('minute').textContent = minute;
+        document.getElementById('second').textContent = second;
+        document.getElementById('ampm').textContent = ampm;
+
+        // Format date and timezone
+        const options = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZoneName: 'short'
+        };
+        const dateStr = now.toLocaleString(undefined, options);
+        const tz = dateStr.split(', ').pop(); // e.g. "CDT"
+        document.getElementById('clockDate').textContent = `${now.toLocaleDateString(undefined, {
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+        })} — ${tz}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+
+  <script>
+    // Toggle avatar dropdown
+    document.addEventListener("DOMContentLoaded", () => {
+        const profileToggle = document.getElementById("profileToggle");
+        const logoutDropdown = document.getElementById("logoutDropdown");
+
+        document.addEventListener("click", (e) => {
+        if (profileToggle.contains(e.target)) {
+            logoutDropdown.classList.toggle("hidden");
+        } else {
+            logoutDropdown.classList.add("hidden");
+        }
+        });
+    });
+  </script>
+  
+
+</body>
+</html>

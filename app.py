@@ -1,8 +1,9 @@
+# type: ignore
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
-from datetime import datetime
 import os
 from dotenv import load_dotenv
 import re
@@ -10,6 +11,7 @@ import io
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import uuid
+from flask import request, jsonify
 
 
 
@@ -41,6 +43,8 @@ client = gspread.authorize(creds)
 SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
 SHEET_NAME = "Foreign Material Reports"
 GOOGLE_DRIVE_FOLDER_ID = "1O5-wG6PWFTXI-gldzZhqknp03gxyXRyv"  # create or reuse "FM-Images" folder
+# Your Spreadsheet name
+SPREADSHEET_NAME = 'BAKERY METRICS_2024-2025'
 
 drive_service = build('drive', 'v3', credentials=creds)
 
@@ -102,6 +106,7 @@ def upload_image_to_drive(image_file):
 def home():
     return render_template('home.html')
 
+
 @app.route('/verify-email', methods=['POST'])
 def verify_email():
     email = request.form.get('email', '').strip().lower()
@@ -135,7 +140,8 @@ def verify_email():
 
         if stored_password == password:
             session['verified'] = True
-            return redirect(url_for('form'))
+            return render_template('dashboard.html')
+
 
         flash("Incorrect password.", "danger")
         return redirect(url_for('home'))
@@ -212,6 +218,53 @@ def get_submission_logs():
     except Exception as e:
         print("⚠️ Error in /api/submission-logs:", e)
         return jsonify({"logs": [], "error": str(e)})
+
+
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'email' not in session:
+        return redirect(url_for('home'))
+
+    user_email = session['email']
+    phone_number = ''
+    message = None
+
+    try:
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("user-emails")
+        data = sheet.get_all_values()
+
+        # Find the row for this user's email
+        for idx, row in enumerate(data[1:], start=2):
+            if row[0].strip().lower() == user_email.lower():
+                phone_number = row[6] if len(row) > 6 else ""
+
+                if request.method == 'POST':
+                    submitted_phone = request.form.get('phone', '').strip()
+
+                    if submitted_phone and submitted_phone != phone_number:
+                        if not submitted_phone.startswith("+1") or len(submitted_phone) < 10:
+                            message = "⚠️ Please enter a valid U.S. phone number starting with +1"
+                        else:
+                            sheet.update_cell(idx, 7, submitted_phone)
+                            phone_number = submitted_phone
+                            message = "✅ Phone number updated successfully."
+
+                return render_template('profile.html', email=user_email, phone=phone_number, message=message)
+
+        return "❌ User email not found.", 404
+
+    except Exception as e:
+        print("❌ Error in profile update:", e)
+        return render_template('profile.html', email=user_email, phone=phone_number, message="An error occurred.")
+
+
+
+
+@app.route('/chat')
+def chat():
+    return render_template('chat.html')
 
 
 
@@ -326,6 +379,8 @@ def set_password():
         return render_template('set_password.html')
 
 
+
+
 # --- ADMIN API ROUTES ---
 @app.route('/api/register-key', methods=['POST'])
 def api_register_key():
@@ -412,6 +467,8 @@ def form():
     latest_week = get_latest_week_sheet()
     return render_template('form.html', latest_week=latest_week, user_full_name=session.get('user_full_name', 'User'))
 
+
+
 @app.route('/submit', methods=['POST'])
 def submit():
     if not session.get('verified'):
@@ -472,6 +529,12 @@ def submit():
 def foreign_material():
     return render_template('foreignMaterial.html')
 
+
+@app.route('/dashboard')
+def dashboard():
+    if not session.get('verified'):
+        return redirect(url_for('home'))  # Optional: protect dashboard for logged-in users only
+    return render_template('dashboard.html', user_full_name=session.get('user_full_name', 'User'))
 
 
 
@@ -587,6 +650,79 @@ def get_report_names():
         return jsonify({"status": "error", "message": str(e)})
 
 
+@app.route("/inventory")
+def inventory():
+    try:
+        spreadsheet = client.open(SPREADSHEET_NAME)
+        all_sheets = spreadsheet.worksheets()
+        sheet_names = [ws.title for ws in all_sheets]
+
+        # Filter for 3-digit or specific names
+        valid_sheets = []
+        for name in sheet_names:
+            if (
+                re.fullmatch(r"\d{3}", name) or
+                name in ["150344", "Dough-Conditioner", "Beta-Tabs"]
+            ):
+                valid_sheets.append(name)
+
+        return render_template("inventory.html", sheet_options=valid_sheets)
+    except Exception as e:
+        return f"❌ Error loading inventory sheets: {e}"
+
+
+
+
+@app.route('/submit-inventory', methods=['POST'])
+def submit_inventory():
+    try:
+        data = {
+            "inventoryType": request.form.get("inventoryType", "received"),
+            "item": request.form.get("item"),
+            "shift": request.form.get("shift"),
+            "lotNumber": request.form.get("lotNumber"),
+            "numBoxes": request.form.get("numBoxes"),
+            "numBags": request.form.get("numBags"),
+            "doughQty": request.form.get("doughQty"),
+            "betaQty": request.form.get("betaQty"),
+            "weekday": datetime.now().strftime('%A'),
+            "date": datetime.now().strftime('%m/%d/%Y'),
+            "time": datetime.now().strftime('%I:%M:%S %p'),
+            "user": session.get('email', 'unknown')
+        }
+
+        # Open the sheet by item name
+        sheet = client.open(SPREADSHEET_NAME).worksheet(data['item'])
+
+        # Get all existing rows
+        all_rows = sheet.get_all_values()
+        next_row = len(all_rows) + 1
+
+        # Write to columns A–L
+        row_data = [
+            data["numBags"],       # A
+            data["lotNumber"],     # B
+            data["numBoxes"],      # C
+            data["doughQty"],      # D
+            data["betaQty"],       # E
+            data["shift"],         # F
+            data["weekday"],       # G
+            data["date"],          # H
+            data["time"],          # I
+            data["user"],          # J
+            data["inventoryType"], # K (received or returned)
+            data["item"]           # L
+        ]
+
+        sheet.update(f"A{next_row}", [row_data])
+
+        return render_template("confirmation.html", success=True, name=data["user"], timestamp=data["time"])
+
+    except Exception as e:
+        print("❌ Inventory submission error:", e)
+        return render_template("confirmation.html", success=False, name="Unknown", timestamp=datetime.now())
+
+
 
 
 @app.route('/get-report-data', methods=['GET'])
@@ -617,6 +753,207 @@ def get_report_data():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
+
+
+@app.route('/api/weekly-metrics')
+def get_weekly_metrics():
+    week = request.args.get('week')
+
+    # Handle "latest" week dynamically
+    if not week or week == "latest":
+        spreadsheet = client.open(SPREADSHEET_NAME)
+        week_names = [ws.title for ws in spreadsheet.worksheets() if "_" in ws.title and len(ws.title.split("_")) == 2]
+
+        def extract_week_start(week_name):
+            try:
+                start_str = week_name.split("_")[0]
+                return datetime.strptime(start_str, "%m-%d-%Y")
+            except:
+                return datetime.min
+
+        week_names.sort(key=extract_week_start, reverse=True)
+        week = week_names[0] if week_names else None
+
+        if not week:
+            return jsonify({'error': 'No valid week found'}), 404
+
+    try:
+        sheet = client.open(SPREADSHEET_NAME).worksheet(week)
+
+        # Fetch values for OEE (D36:H36)
+        oee_range = sheet.get('D36:H36')[0]
+        oee_data = [float(val) if val else 0 for val in oee_range]
+
+        # Fetch values for Waste (D42:H42)
+        waste_range = sheet.get('D42:H42')[0]
+        waste_data = [float(val) if val else 0 for val in waste_range]
+
+        # Fetch averages from cells I36 and I42
+        oee_avg = sheet.acell('I36').value or "0"
+        waste_avg = sheet.acell('I42').value or "0"
+
+        # Fetch values for First Shift OEE (D8:H8)
+        oee_first_shift_range = sheet.get('D8:H8')[0]
+        oee_first_shift = [float(val) if val else 0 for val in oee_first_shift_range]
+
+        # Fetch values for First Shift Waste (D14:H14)
+        waste_first_shift_range = sheet.get('D14:H14')[0]
+        waste_first_shift = [float(val) if val else 0 for val in waste_first_shift_range]
+
+        # Fetch values for Second Shift OEE (D22:H22)
+        oee_second_shift_range = sheet.get('D22:H22')[0]
+        oee_second_shift = [float(val) if val else 0 for val in oee_second_shift_range]
+
+        # Fetch values for Second Shift Waste (D28:H28)
+        waste_second_shift_range = sheet.get('D28:H28')[0]
+        waste_second_shift = [float(val) if val else 0 for val in waste_second_shift_range]
+
+
+        return jsonify({
+            'week': week,
+            'oee': oee_data,
+            'waste': waste_data,
+            'oeeAvg': float(oee_avg),
+            'wasteAvg': float(waste_avg),
+            'oeeFirstShift': oee_first_shift,
+            'wasteFirstShift': waste_first_shift,
+            'oeeSecondShift': oee_second_shift,
+            'wasteSecondShift': waste_second_shift
+        })
+    except Exception as e:
+        print(f"❌ Error reading sheet for week '{week}':", str(e))
+        return jsonify({'error': 'Unable to read sheet data'}), 500
+
+
+@app.route('/inventory-overview')
+def inventory_overview():
+    try:
+        spreadsheet = client.open(SPREADSHEET_NAME)
+        all_sheets = spreadsheet.worksheets()
+
+        # Only get relevant sheet names
+        sheet_names = [ws.title for ws in all_sheets if re.fullmatch(r'\d{3}', ws.title) or ws.title in [
+            "150344", "Dough-Conditioner", "Beta-Tabs"]]
+
+        return render_template("inventory_overview.html", sheet_names=sheet_names)
+
+    except Exception as e:
+        print("❌ Error loading inventory overview page:", e)
+        return "Internal Server Error", 500
+
+
+
+
+
+
+
+@app.route('/api/inventory-sheets')
+def get_inventory_sheet_names():
+    try:
+        spreadsheet = client.open(SPREADSHEET_NAME)
+        all_sheets = spreadsheet.worksheets()
+
+        valid_sheets = []
+        for sheet in all_sheets:
+            title = sheet.title.strip()
+            if (
+                re.fullmatch(r"\d{3}", title) or
+                title in ["150344", "Dough-Conditioner", "Beta-Tabs"]
+            ):
+                valid_sheets.append(title)
+
+        return jsonify({"sheets": valid_sheets})
+
+    except Exception as e:
+        print("❌ Error fetching sheet names:", e)
+        return jsonify({"sheets": [], "error": str(e)})
+    
+
+
+@app.route('/api/inventory-overview-data')
+def inventory_overview_data():
+    from datetime import datetime
+
+    sheet_param = request.args.get('sheet')
+    day_filter = request.args.get('day')
+    status_filter = request.args.get('status')
+    date_filter = request.args.get('date')
+
+    rows = []
+
+    if not sheet_param:
+        return jsonify(rows=[])
+
+    try:
+        sheet = client.open(SPREADSHEET_NAME).worksheet(sheet_param)
+        data = sheet.get_all_values()
+
+        if not data or len(data) < 1:
+            return jsonify(rows=[])
+
+        def safe_float(value):
+            try:
+                return float(value)
+            except:
+                return 0
+
+        multiplier_map = {
+            "222": lambda r: safe_float(r[0]) * 6 + safe_float(r[2]) * 48,
+            "221": lambda r: safe_float(r[0]) * 3.88 + safe_float(r[2]) * 46.56,
+            "185": lambda r: safe_float(r[0]) * 2.85 + safe_float(r[2]) * 45.6,
+            "168": lambda r: safe_float(r[0]) * 37.5,
+            "171": lambda r: safe_float(r[0]) * 37.69,
+            "186": lambda r: safe_float(r[0]) * 17.25,
+            "203": lambda r: safe_float(r[0]) * 37.69,
+            "150344": lambda r: safe_float(r[0]) * 50,
+            "Dough-Conditioner": lambda r: safe_float(r[3]) * 500,
+            "Beta-Tabs": lambda r: safe_float(r[4]) * 8.4
+        }
+
+        for row in data:
+            if not any(cell.strip() for cell in row):
+                continue
+            if len(row) < 12:
+                continue
+
+            quantity = multiplier_map.get(sheet_param, lambda r: 0)(row)
+
+            raw_date = row[7] if len(row) > 7 else ""
+            try:
+                parsed_date = datetime.strptime(raw_date, "%m/%d/%Y").strftime("%Y-%m-%d")
+            except:
+                parsed_date = ""
+
+            record = {
+                "quantity": round(quantity, 2),
+                "lot": row[1] if len(row) > 1 else "",
+                "shift": row[5] if len(row) > 5 else "",
+                "day": row[6] if len(row) > 6 else "",
+                "date": parsed_date,
+                "time": row[8] if len(row) > 8 else "",
+                "user": row[9] if len(row) > 9 else "",
+                "status": row[10] if len(row) > 10 else "",
+                "item": row[11] if len(row) > 11 else ""
+            }
+
+            rows.append(record)
+
+        # ✅ Apply filters **after** collecting all rows
+        if day_filter:
+            rows = [r for r in rows if r['day'].lower() == day_filter.lower()]
+        if status_filter and status_filter != "all":
+            if status_filter in ["received", "returned"]:
+                rows = [r for r in rows if r['status'].lower() == status_filter]
+            elif status_filter in ["first shift", "second shift"]:
+                rows = [r for r in rows if r['shift'].lower() == status_filter]
+        if date_filter:
+            rows = [r for r in rows if r.get("date", "").strip() == date_filter]
+
+        return jsonify(rows=rows)
+
+    except Exception as e:
+        print("❌ Error in inventory_overview_data:", e)
+        return jsonify(rows=[], error=str(e)), 500
 
 
 

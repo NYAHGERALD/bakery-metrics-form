@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat | Bakery Metrics</title>
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Sticky Header and Filter Wrapper -->
+  <div class="sticky top-0 z-50 bg-gray-900">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold">Live Chat</h1>
+        <a href="/dashboard" class="text-sm text-teal-400 hover:underline">Back to Dashboard</a>
+    </header>
+
+    <!-- Filter Toggle for Mobile -->
+    <div class="md:hidden flex justify-between items-center px-4 py-2 bg-gray-800 shadow">
+        <span class="text-white font-semibold text-lg">Chat Filters</span>
+        <button id="toggleFiltersBtn" class="text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+                viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
+    <!-- 🔝 Floating Recently Deleted Toggle Button -->
+    <button
+        onclick="toggleDeletedView()"
+        class="fixed top-20 right-5 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow z-50"
+        >
+        🧾 Recently Deleted
+    </button>
+
+
+    <!-- Filter Section -->
+    <div id="filterSection" class="hidden md:block px-4 py-3 bg-gray-700 space-y-3">
+        <!-- Add inside filterSection -->
+      <button onclick="clearFilters()" class="mt-2 px-4 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 text-sm">
+        Clear Filters
+      </button>
+      <button onclick="toggleDeleteMode()" class="fixed bottom-32 right-5 bg-gray-800 text-white px-3 py-1 rounded shadow">
+        🗂 Select Messages
+      </button>
+
+
+        <!-- Date Filter -->
+      <div>
+          <label for="filterDate" class="text-sm text-white block mb-1">Date</label>
+          <input type="date" id="filterDate" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+      </div>
+
+        <!-- Time Range -->
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label class="text-sm text-white block mb-1">Start Time</label>
+          <input type="time" id="startTime" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+        </div>
+        <div class="flex-1">
+          <label class="text-sm text-white block mb-1">End Time</label>
+          <input type="time" id="endTime" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Chat Area -->
+  <div id="chatMessages"
+    - class="overflow-y-auto p-4 space-y-4 bg-gray-800 mt-[230px] pb-[100px] h-[calc(100vh-250px)]">
+    + class="overflow-y-auto p-4 space-y-4 bg-gray-800 mt-[230px] pb-[160px] h-[calc(100vh-160px)]">
+
+    <!-- Example message -->
+    <div class="max-w-md bg-gray-700 p-3 rounded-lg shadow text-white">
+        <div class="text-xs text-gray-400 mb-1">user@example.com</div>
+        <p>Hello, this is a sample message. 👋</p>
+        <p class="text-sm text-gray-400 mt-1 italic">Spanish: Hola, este es un mensaje de ejemplo.</p>
+    </div>
+    
+    <!-- New messages will be dynamically added here -->
+  </div>
+
+
+    <!-- 🔽 Recently Deleted Message Display Area -->
+  <div id="deletedMessages" class="hidden space-y-4 bg-gray-800 p-4 rounded mt-24 px-4 max-h-[calc(100vh-200px)] overflow-y-auto pb-[160px]">
+    <!-- Deleted messages will appear here when toggled -->
+  </div>
+
+    <!-- Message Input Fixed at Bottom -->
+  <div class="fixed bottom-0 left-0 w-full z-20 bg-gray-800 px-4 py-3 border-t border-gray-700">
+    <form id="chatForm" class="flex gap-2 items-center">
+        <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 p-2 rounded bg-gray-700 border border-gray-600 text-white">
+        <input type="file" id="fileInput" accept="image/*,video/*" capture="environment" class="hidden" >
+        <label for="fileInput" class="cursor-pointer text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828m-6-6L6 9l-2 2a4 4 0 105.657 5.657L18 6"></path>
+          </svg>
+        </label>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Send</button>
+    </form>
+  </div>
+  <!-- Delete Button Floating -->
+  <button id="confirmDeleteBtn" class="hidden fixed bottom-20 right-5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow z-50">
+    🗑 Delete Selected
+  </button>
+
+  <script>
+    function scrollToBottom() {
+        const chatBox = document.getElementById("chatMessages");
+        if (chatBox) {
+          chatBox.scrollTo({
+            top: chatBox.scrollHeight + 100,
+            behavior: "smooth"
+          });
+        }
+    }
+
+  </script>
+
+  <!-- Firebase App (Core) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQUYz5Xmn4gTwoUvs1qWc9oZD1MMgWXQ0",
+        authDomain: "bakerylivechat.firebaseapp.com",
+        databaseURL: "https://bakerylivechat-default-rtdb.firebaseio.com",
+        projectId: "bakerylivechat",
+        storageBucket: "bakerylivechat.appspot.com",
+        messagingSenderId: "1018774884231",
+        appId: "1:1018774884231:web:07e162fcdf2e3bcb170d22"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+
+
+  <script>
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const chatMessages = document.getElementById("chatMessages");
+
+    // Stores the quoted message being replied to
+    let replyingTo = null;
+
+    // Handle message submission
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        const email = "{{ session.get('email') }}";
+        const timestamp = new Date().toISOString();
+
+        // Include reply reference if replying
+        const msgData = {
+        email,
+        message,
+        timestamp,
+        replyTo: replyingTo || null
+        };
+
+         // ✅ Push message inside the submit handler (NOT outside!)
+        firebase.database().ref("messages").push(msgData);
+        chatInput.value = "";
+        replyingTo = null;  // Reset reply context
+        scrollToBottom();   // ✅ Scroll to bottom after sending
+
+       
+    });
+
+  </script>
+
+
+  <script>
+    const displayedMessages = new Set();
+
+    function clearMessages() {
+        chatMessages.innerHTML = "";
+        displayedMessages.clear();
+    }
+    
+  
+    function renderMessage({ key, email, message, timestamp, replyTo, fileUrl, fileType}) {
+        const id = `${key}`;
+        if (displayedMessages.has(id)) return;
+        displayedMessages.add(id);
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "message-wrapper max-w-md bg-gray-700 p-3 rounded-lg shadow text-white relative select-none group flex items-start gap-2";
+        wrapper.dataset.key = key;
+
+
+        let mediaHTML = "";
+        if (fileUrl) {
+            if (fileType === "image") {
+                mediaHTML = `<img src="${fileUrl}" alt="uploaded image" class="mt-2 rounded max-w-xs max-h-60 shadow">`;
+            } else if (fileType === "video") {
+              mediaHTML = `
+                <video controls class="mt-2 rounded max-w-xs max-h-60 shadow">
+                    <source src="${fileUrl}" type="video/mp4">
+                    Your browser does not support video.
+                </video>`;
+            }
+        }
+
+
+        wrapper.innerHTML = `
+            <input type="checkbox" class="delete-checkbox hidden mt-1" data-key="${key}">
+            <div class="flex-1">
+                <div class="text-xs text-gray-400 mb-1 flex justify-between">
+                    <span>${email}</span>
+                    <span class="text-gray-500 text-xs">
+                    ${new Date(timestamp).toLocaleDateString('en-US', {
+                        weekday: 'short', month: 'short', day: 'numeric'
+                    })} at 
+                    ${new Date(timestamp).toLocaleTimeString('en-US', {
+                        hour: 'numeric', minute: '2-digit'
+                    })}
+                    </span>
+                </div>
+
+                ${replyTo ? `<div class="bg-gray-600 text-sm italic px-3 py-2 mb-2 rounded border-l-4 border-gray-400 pl-3 text-gray-300">↩ ${replyTo}</div>` : ""}
+                <p>${message}</p>
+
+                ${mediaHTML}
+                
+                <!-- 🔽 Right-click menu -->
+                <div class="context-menu absolute right-2 top-2 bg-gray-800 border border-gray-600 rounded hidden z-50">
+                    <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="enableDeleteMode()">🗑 Select to Delete</button>
+                    <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="replyMessage(\`${message.replace(/`/g, '\\`')}\`)">↩ Reply</button>
+                </div>
+            </div>
+        `;
+
+        // 👇 Right-click support
+        wrapper.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            document.querySelectorAll(".context-menu").forEach(menu => menu.classList.add("hidden"));
+            wrapper.querySelector(".context-menu").classList.remove("hidden");
+        });
+
+        // 👇 Long-press for mobile
+        let pressTimer;
+        wrapper.addEventListener("touchstart", () => {
+            pressTimer = setTimeout(() => {
+                document.querySelectorAll(".context-menu").forEach(menu => menu.classList.add("hidden"));
+                wrapper.querySelector(".context-menu").classList.remove("hidden");
+            }, 600);
+        });
+        wrapper.addEventListener("touchend", () => clearTimeout(pressTimer));
+        wrapper.addEventListener("touchmove", () => clearTimeout(pressTimer));
+
+        document.addEventListener("click", () => {
+            document.querySelectorAll(".context-menu").forEach(menu => menu.classList.add("hidden"));
+        });
+
+        chatMessages.appendChild(wrapper);
+        scrollToBottom();
+    }
+
+
+
+
+
+    function deleteMessage(key) {
+        firebase.database().ref(`messages/${key}`).once("value", (snapshot) => {
+        const msg = snapshot.val();
+        if (msg) {
+            //msg.deletedAt = new Date().toISOString(); // ⏱️ Add deletion timestamp
+            firebase.database().ref(`recentlyDeleted/${key}`).set(msg);
+            firebase.database().ref(`messages/${key}`).remove();
+        }
+        });
+    }
+
+
+    function restoreDeletedMessage(key) {
+        firebase.database().ref(`recentlyDeleted/${key}`).once("value")
+            .then(snapshot => {
+                const msg = snapshot.val();
+                if (msg) {
+                    // Push to active chat
+                    return firebase.database().ref(`messages/${key}`).set(msg).then(() => {
+                        return firebase.database().ref(`recentlyDeleted/${key}`).remove();
+                    });
+                }
+            })
+            .then(() => {
+                alert("Message restored.");
+                loadDeletedMessages(); // Refresh deleted section
+                scrollToBottom();
+            })
+            .catch(err => {
+                console.error("Restore failed:", err);
+                alert("Error restoring message.");
+            });
+    }
+
+
+
+    function permanentlyDeleteMessage(key, buttonRef) {
+        const confirmed = confirm("Are you sure you want to permanently delete this message? This cannot be undone.");
+        if (!confirmed) return;
+
+        firebase.database().ref(`recentlyDeleted/${key}`).remove()
+            .then(() => {
+            // Instantly remove the card from UI
+            const wrapper = buttonRef.closest(".bg-gray-700");
+            if (wrapper) wrapper.remove();
+            })
+            .catch(err => {
+            console.error("Permanent delete failed:", err);
+            alert("Failed to delete message permanently.");
+            });
+    }
+
+
+
+
+
+
+    /**
+    * Prepares the input field for replying to a specific message
+    * Stores the original message in `replyingTo`
+    */
+    function replyMessage(originalText) {
+        replyingTo = originalText;
+        const input = document.getElementById("chatInput");
+        input.value = `Replying: "${originalText}" → `;
+        input.focus();
+    }
+
+
+    function applyFilters() {
+        const date = document.getElementById("filterDate").value;
+        const start = document.getElementById("startTime").value;
+        const end = document.getElementById("endTime").value;
+
+        clearMessages();
+
+        firebase.database().ref("messages").orderByChild("timestamp").once("value", snapshot => {
+        snapshot.forEach(child => {
+            const { email, message, timestamp, replyTo } = child.val();
+            const time = new Date(timestamp);
+
+            let pass = true;
+
+            if (date) {
+            const localDate = time.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            if (localDate !== date) pass = false;
+            }
+
+            if (start && end) {
+            const localTime = time.toTimeString().slice(0, 5); // HH:mm
+            if (localTime < start || localTime > end) pass = false;
+            }
+
+            if (pass) renderMessage({ key: child.key, email, message, timestamp, replyTo });
+        });
+        });
+    }
+
+    // Filter events
+    document.getElementById("filterDate").addEventListener("change", applyFilters);
+    document.getElementById("startTime").addEventListener("change", applyFilters);
+    document.getElementById("endTime").addEventListener("change", applyFilters);
+
+    function clearFilters() {
+        document.getElementById("filterDate").value = "";
+        document.getElementById("startTime").value = "";
+        document.getElementById("endTime").value = "";
+        applyFilters();
+    }
+
+    // Realtime listener
+    firebase.database().ref("messages").on("child_added", snapshot => {
+        const { email, message, timestamp, replyTo, fileUrl, fileType  } = snapshot.val();
+        const isFiltering =
+        document.getElementById("filterDate").value ||
+        document.getElementById("startTime").value ||
+        document.getElementById("endTime").value;
+
+        if (!isFiltering) {
+        renderMessage({ key: snapshot.key, email, message, timestamp, replyTo, fileUrl, fileType  });
+        }
+    });
+    </script>
+
+    <!-- Toggle filter section on mobile -->
+    <script>
+    document.getElementById("toggleFiltersBtn").addEventListener("click", function () {
+        const filterSection = document.getElementById("filterSection");
+        if (filterSection) {
+        filterSection.classList.toggle("hidden");
+        }
+    });
+  </script>
+
+
+
+  <script>
+    let deleteMode = false;
+
+
+
+    // Toggle all checkboxes on/off
+    function toggleDeleteMode() {
+        deleteMode = !deleteMode;
+        document.querySelectorAll(".delete-checkbox").forEach(cb => {
+        cb.classList.toggle("hidden", !deleteMode);
+        });
+        document.getElementById("confirmDeleteBtn").classList.toggle("hidden", !deleteMode);
+    }
+
+
+    // Triggered from right-click menu (you’ll attach it in next step)
+    function enableDeleteMode() {
+        toggleDeleteMode();
+    }
+
+    // Handle deletion of selected messages
+    document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
+        const selected = document.querySelectorAll(".delete-checkbox:checked");
+
+        console.log("Selected checkboxes:", selected);  // 👈 Add this line
+
+        if (selected.length === 0) {
+            alert("No messages selected.");
+            return;
+        }
+
+        selected.forEach(checkbox => {
+            const key = checkbox.dataset.key;
+            console.log("Deleting key:", key); // 👈 Add this to see what key is found
+
+            firebase.database().ref(`messages/${key}`).once("value")
+                .then(snapshot => {
+                    const msg = snapshot.val();
+                    if (msg) {
+                        return firebase.database().ref(`recentlyDeleted/${key}`).set(msg)
+                            .then(() => firebase.database().ref(`messages/${key}`).remove());
+                    }
+                })
+                .then(() => {
+                    const hasFilters =
+                        document.getElementById("filterDate").value ||
+                        document.getElementById("startTime").value ||
+                        document.getElementById("endTime").value;
+
+                    if (hasFilters) {
+                        applyFilters(); // Refresh filtered view
+                    } else {
+                        const msgDiv = document.querySelector(`[data-key="${key}"]`);
+                        if (msgDiv) msgDiv.remove(); // Just remove from UI
+                    }
+                })
+                .catch(err => {
+                    console.error("Error during deletion:", err); // 👈 Catches ANY error
+                });
+        });
+
+        toggleDeleteMode(); // Exit delete mode and hide checkboxes
+    });
+
+
+
+
+
+    function toggleDeletedView() {
+        const deletedBox = document.getElementById("deletedMessages");
+        const isHidden = deletedBox.classList.contains("hidden");
+
+        if (isHidden) {
+            deletedBox.classList.remove("hidden");
+            loadDeletedMessages(true); // pass flag to trigger scroll
+        } else {
+            deletedBox.classList.add("hidden");
+            deletedBox.innerHTML = "";
+        }
+    }
+
+
+
+    function loadDeletedMessages(shouldScroll = false) {
+        const container = document.getElementById("deletedMessages");
+        container.innerHTML = ""; // Clear old content
+
+        const now = Date.now(); // Current time in ms
+
+        firebase.database().ref("recentlyDeleted").once("value", snapshot => {
+            if (!snapshot.exists()) {
+                container.innerHTML = "<p class='text-gray-400 italic'>No recently deleted messages.</p>";
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const { email, message, timestamp, replyTo } = child.val();
+                const key = child.key;
+
+
+                /* ✅ Auto-delete if older than 10 seconds (for testing)
+                const ageLimit = 10 * 1000; // ⏱ 10 seconds (testing) — use 30*24*60*60*1000 for 30 days
+                const deletedTime = deletedAt ? new Date(deletedAt).getTime() : 0;
+                const isExpired = now - deletedTime > ageLimit;
+
+                if (isExpired) {
+                    // Auto-delete from recentlyDeleted
+                    firebase.database().ref(`recentlyDeleted/${key}`).remove();
+                    return; // Skip rendering this message
+                }
+                */
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "bg-gray-700 p-4 rounded text-white shadow relative";
+
+                wrapper.innerHTML = `
+                    <div class="text-sm text-gray-400 mb-1 flex justify-between">
+                        <span>${email}</span>
+                        <span>
+                            ${new Date(timestamp).toLocaleDateString('en-US', {
+                                weekday: 'short', month: 'short', day: 'numeric'
+                            })} at 
+                            ${new Date(timestamp).toLocaleTimeString('en-US', {
+                                hour: 'numeric', minute: '2-digit'
+                            })}
+                        </span>
+                    </div>
+
+                    ${replyTo ? `<div class="text-gray-300 italic mb-2 border-l-4 border-gray-500 pl-3 py-2">${replyTo}</div>` : ""}
+                    <p class="mb-3">${message}</p>
+
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <button onclick="restoreDeletedMessage('${key}')" class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                            ♻ <span>Restore</span>
+                        </button>
+                        <button onclick="permanentlyDeleteMessage('${key}', this)" class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                            🗑 <span>Permanently Delete</span>
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(wrapper);
+            });
+                        // ✅ Auto-scroll to bottom after rendering if requested
+            if (shouldScroll) {
+                setTimeout(() => {
+                  container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: "smooth"
+                  });
+                }, 300);
+            }
+        });
+    }
+
+
+
+    const fileInput = document.getElementById("fileInput");
+
+    fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        console.log("Selected file:", file);
+        console.log("Is firebase.storage defined?", typeof firebase.storage); // should say "function"
+
+        const email = "{{ session.get('email') }}";
+        const timestamp = new Date().toISOString();
+
+        const storage = firebase.storage(); // ✅ FIXED
+        const fileRef = storage.ref(`uploads/${Date.now()}_${file.name}`);
+
+        try {
+            await fileRef.put(file);
+            const fileUrl = await fileRef.getDownloadURL();
+
+          const msgData = {
+            email,
+            message: "", // empty message
+            fileUrl,
+            fileType: file.type.startsWith("image") ? "image" : "video",
+            timestamp,
+            replyTo: replyingTo || null
+          };
+
+            firebase.database().ref("messages").push(msgData);
+            fileInput.value = ""; // reset input
+            replyingTo = null;
+            scrollToBottom();
+        } catch (err) {
+            console.error("Upload failed", err);
+            alert("Failed to upload file.");
+        }
+    });
+
+
+
+
+  </script>
+
+
+
+
+
+    
+
+</body>
+</html>
+
+
