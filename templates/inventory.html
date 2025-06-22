@@ -35,138 +35,140 @@
     }
   </script>
 </head>
-<body class="bg-gray-900 text-white h-screen overflow-hidden">
+<body class="bg-gray-100 dark:bg-[#0f172a] text-gray-800 dark:text-white min-h-screen">
     
   {% extends "dashboard.html" %}
 
-  {% block content %} 
+  {% block content %}
+        
+  <div class="max-w-6xl mx-auto px-4 fade-in shadow-md bg-gray-800 ">
+    <!-- Card Container -->
+    <div class="bg-white dark:bg-[#1e293b] shadow-md p-6 rounded-2xl"></div>
 
-  <!-- Card Container -->
-  <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-3xl animate-fadeIn space-y-6 ">
+        <!-- Title & Description -->
+        <div class="text-center">
+        <h1 class="text-2xl font-bold mb-1">Inventory Usage Submission</h1>
+        <p class="text-gray-400 text-sm">Fill out the form to log usage of bakery ingredients and components.</p>
+        </div>
 
-    <!-- Title & Description -->
-    <div class="text-center">
-      <h1 class="text-2xl font-bold mb-1">Inventory Usage Submission</h1>
-      <p class="text-gray-400 text-sm">Fill out the form to log usage of bakery ingredients and components.</p>
+        <!-- Date & Time -->
+        <div class="flex justify-between text-sm text-gray-300">
+        <div><strong>Today is:</strong> <span id="weekday"></span></div>
+        <div><strong>Current Time:</strong> <span id="time"></span></div>
+        </div>
+
+        <!-- Form -->
+        <form action="/submit-inventory" method="POST" class="space-y-6">
+
+        <!-- Place this at the top of your form -->
+        <div class="mb-6">
+            <label for="inventoryType" class="block mb-1 font-medium text-white">Inventory Transaction <span class="text-red-500">*</span></label>
+            <select id="inventoryType" name="inventoryType" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+                <option value="received">Raw Material received</option>
+                <option value="returned">Raw Materials returned</option>
+            </select>
+        </div>
+
+            <!-- Dynamic Label Section -->
+        <div class="text-center mb-4">
+            <h2 id="transactionTitle" class="text-xl font-semibold text-blue-400">Raw Material received</h2>
+        </div>
+
+        
+        <!-- Dropdown: Item Selection -->
+        <div class="mb-4">
+            <label for="item" class="block mb-1 font-medium text-white">Select an Item to begin <span class="text-red-500">*</span></label>
+            <select id="item" name="item" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+                <option value="">-- Please choose an Item --</option>
+                {% for item in sheet_options %}
+                <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+        <!-- Select Shift -->
+        <div>
+            <label class="block mb-1">Select Shift <span class="text-red-500">*</span></label>
+            <select name="shift" required class="w-full p-2 rounded bg-gray-700 text-white">
+            <option value="">-- Choose Your Shift --</option>
+            <option value="First Shift">First Shift</option>
+            <option value="Second Shift">Second Shift</option>
+            </select>
+        </div>
+
+        <!-- Input Groups -->
+        <div class="grid sm:grid-cols-2 gap-4">
+            <!-- Lot Number -->
+            <div>
+            <label class="block mb-1">Lot Number <span class="text-red-500">*</span></label>
+            <div class="flex items-center gap-2">
+                <input id="lotNumber" name="lotNumber" type="text" required class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                <label class="text-sm flex items-center gap-1">
+                <input type="checkbox" onchange="toggleInput('lotNumber', this)" />
+                None
+                </label>
+            </div>
+            </div>
+
+            <!-- Number of Boxes -->
+            <div>
+            <label class="block mb-1">Number of Boxes</label>
+            <div class="flex items-center gap-2">
+                <input id="numBoxes" name="numBoxes" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                <label class="text-sm flex items-center gap-1">
+                <input type="checkbox" onchange="toggleInput('numBoxes', this)" />
+                None
+                </label>
+            </div>
+            </div>
+
+            <!-- Number of Bags -->
+            <div>
+            <label class="block mb-1">Number of Bags</label>
+            <div class="flex items-center gap-2">
+                <input id="numBags" name="numBags" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                <label class="text-sm flex items-center gap-1">
+                <input type="checkbox" onchange="toggleInput('numBags', this)" />
+                None
+                </label>
+            </div>
+            </div>
+
+            <!-- Dough Conditioner Qty -->
+            <div>
+            <label class="block mb-1">Dough Conditioner Qty</label>
+            <div class="flex items-center gap-2">
+                <input id="doughQty" name="doughQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                <label class="text-sm flex items-center gap-1">
+                <input type="checkbox" onchange="toggleInput('doughQty', this)" />
+                None
+                </label>
+            </div>
+            </div>
+
+            <!-- Number of Beta Tabs Container -->
+            <div>
+            <label class="block mb-1"># of Beta Tabs Container</label>
+            <div class="flex items-center gap-2">
+                <input id="betaQty" name="betaQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                <label class="text-sm flex items-center gap-1">
+                <input type="checkbox" onchange="toggleInput('betaQty', this)" />
+                None
+                </label>
+            </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center pt-4">
+            <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition duration-300">
+            Submit Form
+            </button>
+        </div>
+        </form>
     </div>
-
-    <!-- Date & Time -->
-    <div class="flex justify-between text-sm text-gray-300">
-      <div><strong>Today is:</strong> <span id="weekday"></span></div>
-      <div><strong>Current Time:</strong> <span id="time"></span></div>
-    </div>
-
-    <!-- Form -->
-    <form action="/submit-inventory" method="POST" class="space-y-6">
-
-    <!-- Place this at the top of your form -->
-      <div class="mb-6">
-        <label for="inventoryType" class="block mb-1 font-medium text-white">Inventory Transaction</label>
-        <select id="inventoryType" name="inventoryType" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
-            <option value="received">Raw Material received</option>
-            <option value="returned">Raw Materials returned</option>
-        </select>
-      </div>
-
-        <!-- Dynamic Label Section -->
-      <div class="text-center mb-4">
-        <h2 id="transactionTitle" class="text-xl font-semibold text-blue-400">Raw Material received</h2>
-      </div>
-
-     
-      <!-- Dropdown: Item Selection -->
-      <div class="mb-4">
-        <label for="item" class="block mb-1 font-medium text-white">Select Item</label>
-        <select id="item" name="item" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
-            <option value="">-- Choose an Item --</option>
-            {% for item in sheet_options %}
-            <option value="{{ item }}">{{ item }}</option>
-            {% endfor %}
-        </select>
-      </div>
-
-
-      <!-- Select Shift -->
-      <div>
-        <label class="block mb-1">Select Shift</label>
-        <select name="shift" required class="w-full p-2 rounded bg-gray-700 text-white">
-          <option value="">-- Choose Shift --</option>
-          <option value="First Shift">First Shift</option>
-          <option value="Second Shift">Second Shift</option>
-        </select>
-      </div>
-
-      <!-- Input Groups -->
-      <div class="grid sm:grid-cols-2 gap-4">
-        <!-- Lot Number -->
-        <div>
-          <label class="block mb-1">Lot Number</label>
-          <div class="flex items-center gap-2">
-            <input id="lotNumber" name="lotNumber" type="text" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-            <label class="text-sm flex items-center gap-1">
-              <input type="checkbox" onchange="toggleInput('lotNumber', this)" />
-              None
-            </label>
-          </div>
-        </div>
-
-        <!-- Number of Boxes -->
-        <div>
-          <label class="block mb-1">Number of Boxes</label>
-          <div class="flex items-center gap-2">
-            <input id="numBoxes" name="numBoxes" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-            <label class="text-sm flex items-center gap-1">
-              <input type="checkbox" onchange="toggleInput('numBoxes', this)" />
-              None
-            </label>
-          </div>
-        </div>
-
-        <!-- Number of Bags -->
-        <div>
-          <label class="block mb-1">Number of Bags</label>
-          <div class="flex items-center gap-2">
-            <input id="numBags" name="numBags" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-            <label class="text-sm flex items-center gap-1">
-              <input type="checkbox" onchange="toggleInput('numBags', this)" />
-              None
-            </label>
-          </div>
-        </div>
-
-        <!-- Dough Conditioner Qty -->
-        <div>
-          <label class="block mb-1">Dough Conditioner Qty</label>
-          <div class="flex items-center gap-2">
-            <input id="doughQty" name="doughQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-            <label class="text-sm flex items-center gap-1">
-              <input type="checkbox" onchange="toggleInput('doughQty', this)" />
-              None
-            </label>
-          </div>
-        </div>
-
-        <!-- Number of Beta Tabs Container -->
-        <div>
-          <label class="block mb-1"># of Beta Tabs Container</label>
-          <div class="flex items-center gap-2">
-            <input id="betaQty" name="betaQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-            <label class="text-sm flex items-center gap-1">
-              <input type="checkbox" onchange="toggleInput('betaQty', this)" />
-              None
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="text-center pt-4">
-        <button type="submit"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition duration-300">
-          Submit Inventory
-        </button>
-      </div>
-    </form>
   </div>
 
   <!-- Animation Styles -->
@@ -290,7 +292,14 @@
     });
   </script>
 
-
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 mt-12 mb-6">
+    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
+  </footer>
+  
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 
   {% endblock %}
 

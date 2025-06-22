@@ -1,5 +1,6 @@
 {% extends "dashboard.html" %}
 {% block content %}
+        
 <div class="max-w-3xl mx-auto mt-10 px-6 py-8 bg-gray-900 rounded-lg shadow-xl border border-gray-700">
   <h2 class="text-2xl sm:text-3xl font-bold text-white mb-6 flex items-center gap-2">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,4 +50,12 @@
   {% endif %}
 
 </div>
+    <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 mt-12 mb-6">
+    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
+  </footer>
+  
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 {% endblock %}

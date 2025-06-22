@@ -55,7 +55,7 @@
     <aside class="hidden md:flex md:flex-col w-64 bg-gray-800 shadow-lg p-4 space-y-6">
       <div class="text-2xl font-bold mb-8 flex items-center gap-2">
         <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
-        <span>Bakery Dashboard</span>
+        <span>Bakery</span>
       </div>
       <nav class="flex flex-col gap-4 text-sm">
 
@@ -76,7 +76,7 @@
                     <h3 class="text-sm font-semibold text-white">Dashboard Overview</h3>
                 </div>
 
-                <p class="text-sm text-gray-300">The Dashboard provides a summary of key bakery metrics such as OEE and Waste. Use this view to monitor the overall and shift performance, track the current week trends, and identify areas needing attention.</p>
+                <p class="text-sm text-gray-300">The Dashboard provides a summary of our key bakery metrics such as OEE and Waste. Use this view to monitor the overall and shift performance, track the current week's trends, and identify areas needing attention.</p>
 
                 <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
                 </div>
@@ -92,7 +92,7 @@
         <div class="relative group">
             <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
                 <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
-                <span>Metrics Reports</span>
+                <span>Bakery Metrics</span>
             </a>
 
             <!-- Tooltip -->
@@ -130,7 +130,7 @@
                     <h3 class="text-sm font-semibold text-white">Metrics Overview</h3>
                 </div>
 
-                <p class="text-sm text-gray-300">Submit key bakery daily data such as OEE, Pounds, and Waste for first and second shift. Ensure timely and accurate reporting to support performance tracking.</p>
+                <p class="text-sm text-gray-300">Submit key bakery daily data such as OEE, Pounds, and Waste for first and second shift. Ensure timely and accurate reporting.</p>
 
                 <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
                 </div>
@@ -149,7 +149,7 @@
         <div class="relative group">
             <a href="/inventory-overview" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
                 <i data-lucide="bar-chart" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
-                <span>Track Pre-staged</span>
+                <span>Track Item usage</span>
             </a>
 
             <!-- Tooltip -->
@@ -162,7 +162,7 @@
                     <h3 class="text-sm font-semibold text-white">Pre-staged Overview</h3>
                 </div>
 
-                <p class="text-sm text-gray-300">View and filter all raw material received and return to the warehouse pre-staged. Use the filters to analyze daily transactions and review on the floor actual quantity usage.</p>
+                <p class="text-sm text-gray-300">View and filter all raw material received and return to the warehouse or pre-staged area. Use the filters to analyze daily transactions and review the actual quantity usage.</p>
 
                 <div class="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gradient-to-br from-gray-900/95 to-gray-800/95 rotate-45 border-t border-l border-white/10"></div>
                 </div>
@@ -185,7 +185,7 @@
     <div id="mobileSidebar" class="fixed inset-y-0 left-0 bg-gray-800 w-64 transform -translate-x-full transition-transform duration-300 z-40 p-4 space-y-6">
       <div class="text-2xl font-bold mb-6 flex items-center gap-2">
         <i data-lucide="layout-dashboard" class="w-6 h-6 text-teal-400"></i>
-        <span>Bakery Dashboard</span>
+        <span>Bakery</span>
       </div>
       <nav class="flex flex-col gap-4 text-sm">
 
@@ -196,7 +196,7 @@
 
         <a href="/report" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
           <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
-          <span>Metrics Reports</span>
+          <span>Bakery Metrics</span>
         </a>
         <a href="/form" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
           <i data-lucide="file-text" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
@@ -208,7 +208,7 @@
         </a>
         <a href="/inventory-overview" class="flex items-center gap-3 px-4 py-2 rounded transition-all duration-300 group hover:bg-gray-700 hover:text-white">
           <i data-lucide="bar-chart" class="w-5 h-5 text-gray-400 group-hover:text-teal-400 transition-transform duration-300"></i>
-          <span>Track Pre-staged</span>
+          <span>Track Item usage</span>
         </a>
       </nav>
     </div>
@@ -273,14 +273,20 @@
 
     <!-- Dashboard Content -->
     <main class="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+
         <!-- Floating Chat Icon -->
-        <a href="/chat" title="Open Chat"
-            class="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-teal-600 shadow-lg flex items-center justify-center text-white hover:scale-110 transition duration-300">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6m-6 4h8M5 20l1.5-4.5a9 9 0 1115-5.5 9 9 0 01-15 5.5z" />
-            </svg>
-        </a>
+        <div class="fixed bottom-6 right-6 z-50 flex items-center space-x-2">
+            <!-- Chat Button with Avatar -->
+            <a href="/chat" title="Open Chat"
+                class="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-teal-600 shadow-lg flex items-center justify-center text-white hover:scale-110 transition duration-300 overflow-hidden">
+                <img src="/static/avatar.png" alt="Chat Avatar" class="w-10 h-10 rounded-full object-cover">
+            </a>
+
+            <!-- Label -->
+            <span class="text-white bg-gray-800 px-3 py-1 rounded-lg shadow text-sm font-medium">Let’s Chat</span>
+        </div>
         {% block content %}
+    
         <div id="contentOverlay"
             class="fixed top-0 left-0 w-full h-screen z-50 bg-gray-950 bg-opacity-95 flex items-center justify-center px-4 py-8 sm:py-20 hidden">
             
@@ -299,8 +305,8 @@
 
             <div class="w-full max-w-7xl mx-auto px-2 sm:px-4">
         
-            <h1 class="text-2xl font-bold mb-4">📊 Weekly Overview</h1>
-            <p class="text-sm text-gray-400 mb-6">This dashboard shows the most recent week's performance for OEE and Waste.</p>
+            <h1 class="text-2xl font-bold mb-4 text-center">📊 Bakery Weekly Overview</h1>
+            <p class="text-sm text-gray-400 mb-6">These two charts below display the most recent week's performance for OEE and Waste across both shifts</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div id="chartOEEWrapper" class="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_4px_rgba(34,197,94,0.5)]">
@@ -313,11 +319,11 @@
 
             <!-- First Shift Charts Section -->
             <div class="mt-10">
-                <h2 class="text-xl font-semibold mb-2">📈 First Shift Performance (Latest Week)</h2>
+                <h2 class="text-xl font-semibold mb-2">📈 First Shift Performance (Current Week)</h2>
                 <p class="text-sm text-gray-400 mb-4">
-                    This section shows the performance of the first production shift for the latest week. 
-                    The OEE (%) chart measures how effectively the equipment operated, while the Waste (%) chart tracks material loss. 
-                    Green bars indicate targets were met, while red bars highlight underperformance.
+                    This section provides a summary of the current week's OEE and Waste performance for first Shift.
+                    The objective is to monitor operational efficiency and minimize material waste during first shift operations.
+                    Bars are color-coded to indicate daily performance: green bars represent days where targets were met, while red bars highlight underperformance.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- OEE First Shift Chart -->
@@ -334,11 +340,11 @@
 
             <!-- Second Shift Charts Section -->
             <div class="mt-10">
-                <h2 class="text-xl font-semibold mb-2">📉 Second Shift Performance (Latest Week)</h2>
+                <h2 class="text-xl font-semibold mb-2">📉 Second Shift Performance (Current Week)</h2>
                 <p class="text-sm text-gray-400 mb-4">
-                    This section summarizes the OEE and Waste performance of the second shift for the latest week.
-                    The goal is to monitor efficiency and minimize waste during the second shift. 
-                    Bars are color-coded to highlight whether the daily performance met expectations.
+                    This section provides a summary of the current week's OEE and Waste performance for Second Shift.
+                    The objective is to monitor operational efficiency and minimize material waste during second shift operations.
+                    Bars are color-coded to indicate daily performance: green bars represent days where targets were met, while red bars highlight underperformance.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- OEE Second Shift Chart -->
@@ -356,6 +362,14 @@
 
         
         </div>
+        <!-- Footer -->
+        <footer class="text-center text-sm text-gray-600 mt-12 mb-6">
+            &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
+        </footer>
+        
+        <script>
+            document.getElementById("year").textContent = new Date().getFullYear();
+        </script>
         
         {% endblock %}
     </main>

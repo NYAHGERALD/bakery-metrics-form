@@ -30,7 +30,7 @@ shift_data_ranges = {
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'v@^i4N9r#2LjkU7!XzYp0aE&$RmW'
-app.permanent_session_lifetime = timedelta(minutes=15)
+app.permanent_session_lifetime = timedelta(hours=1)
 
 @app.before_request
 def make_session_permanent():

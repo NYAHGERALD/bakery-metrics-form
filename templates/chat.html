@@ -5,16 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat | Bakery Metrics</title>
   <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+
+  <style>
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+    .blinking {
+        animation: blink 1s infinite;
+    }
+
+    .reaction-badge {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 1.2rem;
+        pointer-events: none;
+    }
+
+
+  </style>
+
+
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
+  
+
+  <script>
+    sessionStorage.setItem("currentUser", "{{ session.get('email') }}");
+  </script>
+
 
     <!-- Sticky Header and Filter Wrapper -->
-  <div class="sticky top-0 z-50 bg-gray-900">
+  <div class="sticky top-0 z-50 bg-gray-900 relative">
     <!-- Header -->
     <header class="bg-gray-800 shadow px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Live Chat</h1>
-        <a href="/dashboard" class="text-sm text-teal-400 hover:underline">Back to Dashboard</a>
+
+        <div id="chatStatus" class="flex items-center gap-2 text-white font-bold text-lg">
+            <span>LIVE</span>
+            <span id="liveDot" class="h-3 w-3 rounded-full bg-blue-500"></span>
+            <span id="userCount" class="text-sm text-gray-300">(1)</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="toggleDeleteMode()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
+                🗂 Select Messages
+            </button>
+            <button onclick="toggleDeletedView()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
+                🧾 Recently Deleted
+            </button>
+            <a href="/dashboard" class="text-sm text-teal-400 hover:underline">Back to Dashboard</a>
+        </div>
     </header>
+    <!-- 🔽 Dropdown submenu for Recently Deleted -->
+    <div id="deletedDropdown" class="hidden absolute top-20 left-1/2 transform -translate-x-1/2 w-[95%] max-w-md bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-50">
+        <div class="p-4 max-h-[400px] overflow-y-auto space-y-4" id="deletedMessages">
+            <!-- Deleted messages will appear here -->
+        </div>
+    </div>
+
+
+    <!-- Delete Action Buttons (fixed to bottom-right) -->
+    <div id="deleteButtons" class="fixed bottom-5 right-5 space-y-2 z-50">
+        <!-- Delete Selected -->
+        <button id="confirmDeleteBtn" class="hidden bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-sm ">
+            🗑 Send to Recently Deleted
+        </button>
+
+        <!-- Delete for All (new) -->
+        <button id="deleteForAllBtn" class="hidden bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm ">
+            🔥 Permanently Delete for All
+        </button>
+    </div>
+    <!-- Undo Banner Container -->
+    <div id="undoContainer" class="fixed top-14 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-md"></div>
+
+
 
     <!-- Filter Toggle for Mobile -->
     <div class="md:hidden flex justify-between items-center px-4 py-2 bg-gray-800 shadow">
@@ -27,26 +93,25 @@
             </svg>
         </button>
     </div>
-    <!-- 🔝 Floating Recently Deleted Toggle Button -->
-    <button
-        onclick="toggleDeletedView()"
-        class="fixed top-20 right-5 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow z-50"
-        >
-        🧾 Recently Deleted
-    </button>
-
-
+    
     <!-- Filter Section -->
     <div id="filterSection" class="hidden md:block px-4 py-3 bg-gray-700 space-y-3">
         <!-- Add inside filterSection -->
       <button onclick="clearFilters()" class="mt-2 px-4 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 text-sm">
         Clear Filters
       </button>
-      <button onclick="toggleDeleteMode()" class="fixed bottom-32 right-5 bg-gray-800 text-white px-3 py-1 rounded shadow">
-        🗂 Select Messages
-      </button>
+
+            <!-- Chat Banner -->
+      <div id="chatBanner" class="hidden bg-yellow-200 border border-yellow-400 text-yellow-900 text-sm rounded px-4 py-3 relative flex justify-between items-start ">
+        <div>
+            <strong>Welcome to our secured Bakery Group Chat.</strong><br>
+            Any message deleted here will be moved to the <strong>'Recently Deleted'</strong> section and removed from the chat view for all Bakery users.
+        </div>
+        <button id="closeBannerBtn" class="ml-4 text-xl font-bold text-yellow-800 hover:text-red-600">&times;</button>
+      </div>
 
 
+    
         <!-- Date Filter -->
       <div>
           <label for="filterDate" class="text-sm text-white block mb-1">Date</label>
@@ -69,44 +134,22 @@
 
 
   <!-- Chat Area -->
-  <div id="chatMessages"
-    - class="overflow-y-auto p-4 space-y-4 bg-gray-800 mt-[230px] pb-[100px] h-[calc(100vh-250px)]">
-    + class="overflow-y-auto p-4 space-y-4 bg-gray-800 mt-[230px] pb-[160px] h-[calc(100vh-160px)]">
+  <div id="chatMessages" class="flex flex-col overflow-y-auto space-y-4 h-[calc(100vh-250px)] px-4 pt-6 pb-36 sm:px-6 sm:pt-8 bg-gray-800 bg-[url('/static/chat-bg.png')] bg-center bg-cover bg-no-repeat">
 
-    <!-- Example message -->
-    <div class="max-w-md bg-gray-700 p-3 rounded-lg shadow text-white">
-        <div class="text-xs text-gray-400 mb-1">user@example.com</div>
-        <p>Hello, this is a sample message. 👋</p>
-        <p class="text-sm text-gray-400 mt-1 italic">Spanish: Hola, este es un mensaje de ejemplo.</p>
-    </div>
-    
+   
     <!-- New messages will be dynamically added here -->
-  </div>
 
-
-    <!-- 🔽 Recently Deleted Message Display Area -->
-  <div id="deletedMessages" class="hidden space-y-4 bg-gray-800 p-4 rounded mt-24 px-4 max-h-[calc(100vh-200px)] overflow-y-auto pb-[160px]">
-    <!-- Deleted messages will appear here when toggled -->
   </div>
+   
 
     <!-- Message Input Fixed at Bottom -->
   <div class="fixed bottom-0 left-0 w-full z-20 bg-gray-800 px-4 py-3 border-t border-gray-700">
     <form id="chatForm" class="flex gap-2 items-center">
-        <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 p-2 rounded bg-gray-700 border border-gray-600 text-white">
-        <input type="file" id="fileInput" accept="image/*,video/*" capture="environment" class="hidden" >
-        <label for="fileInput" class="cursor-pointer text-gray-400 hover:text-white">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828m-6-6L6 9l-2 2a4 4 0 105.657 5.657L18 6"></path>
-          </svg>
-        </label>
+        <textarea id="chatInput" placeholder="Type a message..." rows="1" class="flex-1 p-2 rounded bg-gray-700 border border-gray-600 text-white resize-none min-h-[40px] max-h-[200px] focus:outline-none leading-tight" oninput="autoGrow(this)"></textarea>
         <button type="submit" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white">Send</button>
     </form>
   </div>
-  <!-- Delete Button Floating -->
-  <button id="confirmDeleteBtn" class="hidden fixed bottom-20 right-5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow z-50">
-    🗑 Delete Selected
-  </button>
-
+  
   <script>
     function scrollToBottom() {
         const chatBox = document.getElementById("chatMessages");
@@ -123,10 +166,15 @@
   <!-- Firebase App (Core) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+    
 
 
   <script>
+    const undoCountdowns = {};
+   
+
+    
+
     const firebaseConfig = {
         apiKey: "AIzaSyBQUYz5Xmn4gTwoUvs1qWc9oZD1MMgWXQ0",
         authDomain: "bakerylivechat.firebaseapp.com",
@@ -138,11 +186,27 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-  </script>
+    
+    // 🔥 ADD THIS LINE:
+    
+    // ✅ Declare current user from session
+    //const currentUser = "{{ session.get('email') }}";
+    const currentUser = sessionStorage.getItem("currentUser");
+
+    // ✅ Only proceed if user exists and Firebase is ready
+    if (currentUser && typeof firebase !== "undefined") {
+        const userRef = firebase.database().ref(`onlineUsers/${btoa(currentUser)}`);
+        userRef.set(true);                     // Mark this user online
+        userRef.onDisconnect().remove();       // Auto-remove on tab/browser close
+    }
+
+
+    let lastDeletedKey = null;
+    let undoTimeout = null;
+    
 
 
 
-  <script>
     const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
     const chatMessages = document.getElementById("chatMessages");
@@ -176,10 +240,9 @@
        
     });
 
-  </script>
+ 
 
 
-  <script>
     const displayedMessages = new Set();
 
     function clearMessages() {
@@ -188,36 +251,31 @@
     }
     
   
-    function renderMessage({ key, email, message, timestamp, replyTo, fileUrl, fileType}) {
+    function renderMessage({ key, email, message, timestamp, replyTo}) {
+    
         const id = `${key}`;
         if (displayedMessages.has(id)) return;
         displayedMessages.add(id);
-
         const wrapper = document.createElement("div");
-        wrapper.className = "message-wrapper max-w-md bg-gray-700 p-3 rounded-lg shadow text-white relative select-none group flex items-start gap-2";
+
+        const isSentByCurrentUser = email === currentUser;
+        wrapper.className = `
+            message-wrapper max-w-2xl p-4 rounded-2xl shadow text-white relative select-none group flex items-start gap-3
+            ${isSentByCurrentUser ? 'bg-green-800 ml-auto' : 'bg-gray-700 mr-auto'}
+            before:absolute before:content-[""] before:top-4 
+            ${isSentByCurrentUser 
+                ? 'before:right-[-8px] before:border-y-[8px] before:border-l-[12px] before:border-y-transparent before:border-l-green-800' 
+                : 'before:left-[-8px] before:border-y-[8px] before:border-r-[12px] before:border-y-transparent before:border-r-gray-700'}
+        `.trim();
+
         wrapper.dataset.key = key;
-
-
-        let mediaHTML = "";
-        if (fileUrl) {
-            if (fileType === "image") {
-                mediaHTML = `<img src="${fileUrl}" alt="uploaded image" class="mt-2 rounded max-w-xs max-h-60 shadow">`;
-            } else if (fileType === "video") {
-              mediaHTML = `
-                <video controls class="mt-2 rounded max-w-xs max-h-60 shadow">
-                    <source src="${fileUrl}" type="video/mp4">
-                    Your browser does not support video.
-                </video>`;
-            }
-        }
-
 
         wrapper.innerHTML = `
             <input type="checkbox" class="delete-checkbox hidden mt-1" data-key="${key}">
             <div class="flex-1">
                 <div class="text-xs text-gray-400 mb-1 flex justify-between">
-                    <span>${email}</span>
-                    <span class="text-gray-500 text-xs">
+                    <span class="truncate max-w-[150px]">${email}</span>
+                    <span class="text-gray-300 text-xs">
                     ${new Date(timestamp).toLocaleDateString('en-US', {
                         weekday: 'short', month: 'short', day: 'numeric'
                     })} at 
@@ -229,16 +287,26 @@
 
                 ${replyTo ? `<div class="bg-gray-600 text-sm italic px-3 py-2 mb-2 rounded border-l-4 border-gray-400 pl-3 text-gray-300">↩ ${replyTo}</div>` : ""}
                 <p>${message}</p>
-
-                ${mediaHTML}
                 
                 <!-- 🔽 Right-click menu -->
                 <div class="context-menu absolute right-2 top-2 bg-gray-800 border border-gray-600 rounded hidden z-50">
                     <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="enableDeleteMode()">🗑 Select to Delete</button>
                     <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="replyMessage(\`${message.replace(/`/g, '\\`')}\`)">↩ Reply</button>
                 </div>
+                
             </div>
         `;
+
+        if (email === currentUser) {
+            wrapper.innerHTML += `
+            <div class="context-menu absolute right-2 top-2 bg-gray-800 border border-gray-600 rounded hidden z-50">
+                <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="enableDeleteMode()">🗑 Select to Delete</button>
+                <button class="block px-4 py-1 text-left w-full hover:bg-gray-600 text-sm" onclick="replyMessage(\`${message.replace(/`/g, '\\`')}\`)">↩ Reply</button>
+               
+            </div>
+            `;
+        }
+
 
         // 👇 Right-click support
         wrapper.addEventListener("contextmenu", (e) => {
@@ -263,6 +331,39 @@
         });
 
         chatMessages.appendChild(wrapper);
+
+        // Real-time reaction listener
+        firebase.database().ref(`reactions/${key}`).on("value", (snapshot) => {
+            const data = snapshot.val();
+            const badge = wrapper.querySelector(".reaction-badge");
+
+            if (data) {
+                // Collect unique emoji reactions
+                const allEmojis = Object.values(data);
+                const grouped = allEmojis.reduce((map, emoji) => {
+                    map[emoji] = (map[emoji] || 0) + 1;
+                    return map;
+                }, {});
+
+                const display = Object.entries(grouped)
+                    .map(([emoji, count]) => `${emoji} ${count > 1 ? count : ""}`)
+                    .join(" ");
+
+                if (!badge) {
+                    const newBadge = document.createElement("div");
+                    newBadge.className = "reaction-badge absolute -bottom-3 right-3 text-xl";
+                    newBadge.textContent = display;
+                    wrapper.appendChild(newBadge);
+                } else {
+                    badge.textContent = display;
+                }
+            } else if (badge) {
+                // No reactions? Remove badge
+                badge.remove();
+            }
+        });
+
+        attachContextMenuListeners(wrapper);
         scrollToBottom();
     }
 
@@ -380,34 +481,52 @@
         applyFilters();
     }
 
-    // Realtime listener
-    firebase.database().ref("messages").on("child_added", snapshot => {
-        const { email, message, timestamp, replyTo, fileUrl, fileType  } = snapshot.val();
-        const isFiltering =
-        document.getElementById("filterDate").value ||
-        document.getElementById("startTime").value ||
-        document.getElementById("endTime").value;
+    // ✅ New version with deletedGlobally check
+    firebase.database().ref("messages").on("value", snapshot => {
+        clearMessages();
+        snapshot.forEach(child => {
+            const { email, message, timestamp, replyTo, deletedGlobally } = child.val();
+            const isFiltering =
+                document.getElementById("filterDate").value ||
+                document.getElementById("startTime").value ||
+                document.getElementById("endTime").value;
 
-        if (!isFiltering) {
-        renderMessage({ key: snapshot.key, email, message, timestamp, replyTo, fileUrl, fileType  });
+            if (!isFiltering && !deletedGlobally) {
+                renderMessage({ key: child.key, email, message, timestamp, replyTo });
+            }
+        });
+    });
+
+
+    // ✅ Trigger browser notification on new message
+    firebase.database().ref("messages").limitToLast(1).on("child_added", (snapshot) => {
+        const msg = snapshot.val();
+        if (!msg || !msg.email || !msg.message) return;
+
+        if (msg.email !== currentUser) {
+            showNotification(msg.email, msg.message);
         }
     });
-    </script>
 
-    <!-- Toggle filter section on mobile -->
-    <script>
+
+  
+
+    
+  
     document.getElementById("toggleFiltersBtn").addEventListener("click", function () {
         const filterSection = document.getElementById("filterSection");
         if (filterSection) {
         filterSection.classList.toggle("hidden");
         }
     });
-  </script>
+  
 
 
 
-  <script>
+  
     let deleteMode = false;
+
+    
 
 
 
@@ -418,6 +537,7 @@
         cb.classList.toggle("hidden", !deleteMode);
         });
         document.getElementById("confirmDeleteBtn").classList.toggle("hidden", !deleteMode);
+        document.getElementById("deleteForAllBtn").classList.toggle("hidden", !deleteMode); // 👈 add this
     }
 
 
@@ -471,21 +591,118 @@
     });
 
 
+    
+    function showUndoBannerForKey(key, originalText) {
+        const undoContainer = document.getElementById("undoContainer");
+        const id = `undo-${key}`;
+        const banner = document.createElement("div");
+        banner.id = id;
+        banner.className = "flex items-center gap-4 bg-gray-800 px-4 py-2 rounded shadow mb-2";
+        banner.innerHTML = `
+            <span class="truncate max-w-xs text-sm">🗑 <strong>${originalText}</strong></span>
+            <span id="${id}-countdown" class="text-yellow-400 text-sm">30s</span>
+            <button onclick="undoGlobalDelete('${key}', '${id}')" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm">Undo</button>
+        `;
+        undoContainer.appendChild(banner);
+
+        let seconds = 5;
+        const interval = setInterval(() => {
+            seconds--;
+            const countdownEl = document.getElementById(`${id}-countdown`);
+            if (countdownEl) countdownEl.innerText = `${seconds}s`;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                delete undoCountdowns[key];
+                firebase.database().ref("messages").child(key).remove(); // 🔥 Final delete
+                firebase.database().ref("recentlyDeleted").child(key).remove();
+                banner.remove();
+            }
+        }, 1000);
+        // 🔥 Store this interval so we can cancel it later
+        undoCountdowns[key] = interval;
+    }
+
+
+
+    function undoGlobalDelete(key, bannerId) {
+        const undoBanner = document.getElementById(bannerId);
+
+        // ✅ Cancel the countdown
+        if (undoCountdowns[key]) {
+            clearInterval(undoCountdowns[key]);
+            delete undoCountdowns[key];
+        }
+
+        firebase.database().ref("recentlyDeleted").child(key).once("value", async (snapshot) => {
+            const originalMsg = snapshot.val();
+            if (originalMsg) {
+                await firebase.database().ref("messages").child(key).set(originalMsg);
+                await firebase.database().ref("recentlyDeleted").child(key).remove();
+            }
+            if (undoBanner) undoBanner.remove();
+        });
+    }
+
+
+
+
+
+
+    document.getElementById("deleteForAllBtn").addEventListener("click", async () => {
+        const checkboxes = document.querySelectorAll(".delete-checkbox:checked");
+
+        if (!checkboxes.length) return alert("Select at least one message.");
+
+        for (const cb of checkboxes) {
+            const key = cb.dataset.key;
+            const messageEl = cb.closest(".message-wrapper");
+            const messageText = messageEl.querySelector("p")?.innerText || "Deleted Message";
+            const email = messageEl.querySelector("span")?.innerText.trim();
+
+            if (email !== currentUser) {
+                alert("You can only delete your own messages for all.");
+                continue;
+            }
+
+            const snapshot = await firebase.database().ref("messages").child(key).get();
+            const originalMsg = snapshot.val();
+
+            if (originalMsg) {
+                // Move to 'recentlyDeleted'
+                await firebase.database().ref("recentlyDeleted").child(key).set(originalMsg);
+
+                // Set deletedGlobally flag
+                await firebase.database().ref("messages").child(key).update({
+                    deletedGlobally: true
+                });
+
+                // Hide from UI (not needed if you have real-time listener filtering, but OK to keep)
+                messageEl?.remove();
+
+                // Show undo banner
+                showUndoBannerForKey(key, messageText);
+            }
+        }
+
+        // Clean up
+        toggleDeleteMode();
+    });
 
 
 
     function toggleDeletedView() {
-        const deletedBox = document.getElementById("deletedMessages");
-        const isHidden = deletedBox.classList.contains("hidden");
+        const dropdown = document.getElementById("deletedDropdown");
+        const isHidden = dropdown.classList.contains("hidden");
 
         if (isHidden) {
-            deletedBox.classList.remove("hidden");
-            loadDeletedMessages(true); // pass flag to trigger scroll
+            dropdown.classList.remove("hidden");
+            loadDeletedMessages(true);
         } else {
-            deletedBox.classList.add("hidden");
-            deletedBox.innerHTML = "";
+            dropdown.classList.add("hidden");
+            document.getElementById("deletedMessages").innerHTML = "";
         }
     }
+
 
 
 
@@ -562,55 +779,210 @@
     }
 
 
+    document.addEventListener("DOMContentLoaded", () => {
+        const banner = document.getElementById("chatBanner");
+        const closeBtn = document.getElementById("closeBannerBtn");
 
-    const fileInput = document.getElementById("fileInput");
+        // Show the banner by default every page load
+        banner.classList.remove("hidden");
 
-    fileInput.addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        closeBtn.addEventListener("click", () => {
+            banner.classList.add("hidden");
+        });
+    });
 
-        console.log("Selected file:", file);
-        console.log("Is firebase.storage defined?", typeof firebase.storage); // should say "function"
+    const liveDot = document.getElementById("liveDot");
+    const userCountEl = document.getElementById("userCount");
 
-        const email = "{{ session.get('email') }}";
-        const timestamp = new Date().toISOString();
+        // Simulated way to track online users — adapt to your logic
+        firebase.database().ref("onlineUsers").on("value", snapshot => {
+        const users = snapshot.val() || {};
+        const onlineCount = Object.keys(users).length;
 
-        const storage = firebase.storage(); // ✅ FIXED
-        const fileRef = storage.ref(`uploads/${Date.now()}_${file.name}`);
+        // Update count display
+        userCountEl.textContent = `(${onlineCount})`;
 
-        try {
-            await fileRef.put(file);
-            const fileUrl = await fileRef.getDownloadURL();
-
-          const msgData = {
-            email,
-            message: "", // empty message
-            fileUrl,
-            fileType: file.type.startsWith("image") ? "image" : "video",
-            timestamp,
-            replyTo: replyingTo || null
-          };
-
-            firebase.database().ref("messages").push(msgData);
-            fileInput.value = ""; // reset input
-            replyingTo = null;
-            scrollToBottom();
-        } catch (err) {
-            console.error("Upload failed", err);
-            alert("Failed to upload file.");
+        if (onlineCount > 1) {
+            liveDot.classList.remove("bg-blue-500");
+            liveDot.classList.add("bg-green-500", "blinking");
+        } else {
+            liveDot.classList.remove("bg-green-500", "blinking");
+            liveDot.classList.add("bg-blue-500");
         }
     });
 
+    function insertEmoji(emoji) {
+        const input = document.getElementById("chatInput");
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const text = input.value;
+        input.value = text.slice(0, start) + emoji + text.slice(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + emoji.length;
+    }
 
+
+
+  </script>
+
+  <script>
+    function autoGrow(element) {
+        element.style.height = "auto"; // Reset height
+        element.style.height = (element.scrollHeight) + "px"; // Grow to fit content
+    }
+  </script>
+
+  
+
+
+
+
+  <script>
+    // Close dropdown if clicking outside
+    window.addEventListener("click", function (e) {
+        const dropdown = document.getElementById("deletedDropdown");
+        const button = document.querySelector("button[onclick='toggleDeletedView()']");
+        if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+        dropdown.classList.add("hidden");
+        document.getElementById("deletedMessages").innerHTML = "";
+        }
+    });
+  </script>
+
+
+  <!-- ✅ FIXED Floating Emoji Reaction Bar -->
+  <div id="emojiReactionBar"
+        class="hidden fixed flex flex-wrap gap-2 px-4 py-3 rounded-2xl shadow-xl border border-gray-600 z-[9999] max-w-xs w-auto justify-center
+                backdrop-blur bg-gray-800/50 transition-opacity transition-transform duration-200 ease-out transform scale-100 opacity-100">
+    <button onclick="reactToMessage('😂')" class="hover:scale-125 transition-transform">😂</button>
+    <button onclick="reactToMessage('🤣')" class="hover:scale-125 transition-transform">🤣</button>
+    <button onclick="reactToMessage('❤️')" class="hover:scale-125 transition-transform">❤️</button>
+    <button onclick="reactToMessage('👍')" class="hover:scale-125 transition-transform">👍</button>
+    <button onclick="reactToMessage('🔥')" class="hover:scale-125 transition-transform">🔥</button>
+    <button onclick="reactToMessage('🥲')" class="hover:scale-125 transition-transform">🥲</button>
+    <button onclick="reactToMessage('😎')" class="hover:scale-125 transition-transform">😎</button>
+    <button onclick="reactToMessage('😡')" class="hover:scale-125 transition-transform">😡</button>
+    <button onclick="reactToMessage('😱')" class="hover:scale-125 transition-transform">😱</button>
+    <button onclick="reactToMessage('🙏')" class="hover:scale-125 transition-transform">🙏</button>
+    <button onclick="reactToMessage('💯')" class="hover:scale-125 transition-transform">💯</button>
+  </div>
+
+
+
+
+  <script>
+    let contextTargetMessage = null;
+
+    // Show context menu
+    function showContextMenu(e, target) {
+        e.preventDefault();
+        const menu = document.getElementById("globalContextMenu");
+        contextTargetMessage = target;
+        menu.classList.remove("hidden");
+        menu.style.left = `${e.pageX}px`;
+        menu.style.top = `${e.pageY}px`;
+    }
+
+    // Hide on click outside
+    document.addEventListener("click", () => {
+        document.getElementById("globalContextMenu").classList.add("hidden");
+    });
+
+    // Attach to messages dynamically after rendering
+    function attachContextMenuListeners(messageDiv) {
+        // Right-click (desktop)
+        messageDiv.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            showEmojiReactionBar(e.pageX, e.pageY, messageDiv);
+        });
+
+        // Long press (mobile)
+        let pressTimer;
+        messageDiv.addEventListener("touchstart", (e) => {
+            pressTimer = setTimeout(() => {
+                const rect = messageDiv.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + window.scrollY;
+                showEmojiReactionBar(x, y, messageDiv);
+            }, 600);
+        });
+        messageDiv.addEventListener("touchend", () => clearTimeout(pressTimer));
+        messageDiv.addEventListener("touchmove", () => clearTimeout(pressTimer));
+    }
+
+
+    let emojiReactTarget = null;
+
+    function showEmojiReactionBar(x, y, targetMessageDiv) {
+        const bar = document.getElementById("emojiReactionBar");
+        emojiReactTarget = targetMessageDiv;
+
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            // Get message position
+            const rect = targetMessageDiv.getBoundingClientRect();
+            // Center the emoji bar horizontally on screen
+            x = window.innerWidth / 2 - bar.offsetWidth / 2;
+            // Position it slightly above the message
+            y = rect.top + window.scrollY - 80;
+        }
+
+        bar.style.left = `${x}px`;
+        bar.style.top = `${y}px`;
+
+        bar.classList.remove("hidden");
+        bar.classList.add("opacity-100", "scale-100");
+    }
+
+
+
+    function reactToMessage(emoji) {
+        if (!emojiReactTarget) return;
+
+        const messageKey = emojiReactTarget.dataset.key;
+        const user = currentUser || "anonymous";
+
+        // Save emoji to Firebase under /reactions/{messageKey}/{user}
+        firebase.database().ref(`reactions/${messageKey}/${btoa(user)}`).set(emoji);
+
+        // Hide the reaction bar
+        document.getElementById("emojiReactionBar").classList.add("hidden");
+        emojiReactTarget = null;
+    }
+
+    document.addEventListener("click", (e) => {
+        const bar = document.getElementById("emojiReactionBar");
+        if (!bar.contains(e.target)) {
+            bar.classList.add("hidden");
+            emojiReactTarget = null;
+        }
+    });
 
 
   </script>
 
 
 
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+    });
+  </script>
 
 
-    
+  <script>
+    function showNotification(sender, message) {
+    if (Notification.permission === "granted" && document.hidden) {
+        new Notification(`New message from ${sender}`, {
+        body: message,
+        icon: "/static/img/logo.png" // optional: your custom logo
+        });
+    }
+    }
+  </script>
 
 </body>
 </html>

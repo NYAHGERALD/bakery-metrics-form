@@ -71,6 +71,7 @@
   {% extends "dashboard.html" %}
 
   {% block content %} 
+    
 
   <div class="text-center mb-6 px-4">
     <h1 class="text-3xl font-bold text-blue-400 uppercase drop-shadow">Bakery Metrics Report</h1>
@@ -172,8 +173,7 @@
   <div class="max-w-6xl mx-auto px-4 mt-12">
 
     <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">OEE (%) shows how effectively your production lines are running. A higher OEE means less downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
-      <p class="italic opacity-90">OEE (%) muestra qué tan efectivamente están funcionando sus líneas de producción. Un OEE más alto significa menos tiempo de inactividad y mayor productividad. Monitorear esto ayuda a mejorar la eficiencia de la panadería y reducir el desperdicio.</p>
+      <p class="font-semibold mb-1">OEE (%) shows how effectively our lines are running. A higher OEE means less downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
     </div>
 
 
@@ -195,8 +195,7 @@
 
 
     <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">Waste (%) helps track how much raw material is being lost. Keeping waste below target ensures cost control and supports food safety. Monitoring this metric is key to bakery profitability.</p>
-      <p class="italic opacity-90">El porcentaje de desperdicio (%) ayuda a rastrear cuánta materia prima se está perdiendo. Mantener el desperdicio por debajo del objetivo asegura el control de costos y respalda la seguridad alimentaria. Monitorear esta métrica es clave para la rentabilidad de la panadería.</p>
+      <p class="font-semibold mb-1">Waste (%) helps us track how much raw material is being lost. Keeping our waste below target ensures cost control. Monitoring this metric is key to bakery profitability.</p>
     </div>
 
     <div id="wasteFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
@@ -687,35 +686,35 @@
   <script>
     const oeeMessages = {
       good: [
-        "🎯 Great job! OEE is above target!",
-        "🏆 Consistent efficiency this week!",
-        "💪 Equipment running strong!",
-        "📈 Production efficiency is on point!",
+        "🎯 Great job team! Our OEE is above target!",
+        "🏆 Consistent efficiency this week! team, let's keep up",
+        "💪 Wow! Our equipment running strong!",
+        "📈 Bakery efficiency is on point!",
         "✅ OEE trend shows excellent consistency."
       ],
       bad: [
-        "⚠️ OEE below 70% — review equipment performance.",
-        "🛠️ Investigate major stops or speed losses.",
+        "⚠️ OEE below 70% — Please review equipment performance.",
+        "🛠️ Please investigate major stops or speed losses.",
         "📉 Consider scheduling preventive maintenance.",
-        "🚧 Focus on root causes of downtime.",
-        "🔍 Look into line balancing or operator training."
+        "🚧 Let's Focus on root causes of downtime.",
+        "🔍 Look into line balancing or operator re-training."
       ]
     };
 
     const wasteMessages = {
       good: [
-        "🌿 Excellent! Waste is under control.",
-        "🎉 Low waste — keep up the great work!",
-        "✅ Great reduction in material loss.",
-        "💚 Sustainability target achieved!",
-        "🏆 Consistent control over waste."
+        "🌿 Excellent! our Waste is under control.",
+        "🎉 Low waste — keep up the great work! team",
+        "✅ Wow! great reduction in material loss.",
+        "💚 Our sustainability target achieved!",
+        "🏆 Consistent control over waste, great work team."
       ],
       bad: [
-        "⚠️ Waste above 3.75% — check for overfill or misalignment.",
-        "🔧 Investigate scrap sources or packaging issues.",
-        "📊 Monitor weight trends and sealing integrity.",
-        "🧪 Review product changeover losses.",
-        "🚨 Consider Gemba walk or operator retraining."
+        "⚠️ Our waste is now above 3.75% — Please check the lines.",
+        "🔧 Please it's time to investigate scrap sources.",
+        "📊 Let's also monitor weight trends to avoid dumping underweight Tortillas.",
+        "🧪 Review any contamination issues that leads to waste.",
+        "🚨 I think it's time to consider Gemba walk or operator retraining."
       ]
     };
 
