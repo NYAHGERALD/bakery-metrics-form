@@ -1,300 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Inventory Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
-  <script>
-    // Live clock and day updater
-    document.addEventListener("DOMContentLoaded", () => {
-      const timeEl = document.getElementById("time");
-      const dayEl = document.getElementById("weekday");
+    <meta charset="UTF-8" />
+    <title>Inventory Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
+    <script>
+        // Live clock and day updater
+        document.addEventListener("DOMContentLoaded", () => {
+            const timeEl = document.getElementById("time");
+            const dayEl = document.getElementById("weekday");
 
-      function updateTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString(undefined, {
-          hour: '2-digit', minute: '2-digit', second: '2-digit',
-          hour12: true,
-          timeZoneName: 'short'
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString(undefined, {
+                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: true,
+                    timeZoneName: 'short'
+                });
+                const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
+                timeEl.textContent = timeString;
+                dayEl.textContent = weekday;
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
         });
-        const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
-        timeEl.textContent = timeString;
-        dayEl.textContent = weekday;
-      }
 
-      updateTime();
-      setInterval(updateTime, 1000);
-    });
-
-    // Disable input on checkbox
-    function toggleInput(id, checkbox) {
-      const input = document.getElementById(id);
-      input.disabled = checkbox.checked;
-      if (checkbox.checked) input.value = '';
-    }
-  </script>
+        // Disable input on checkbox
+        function toggleInput(id, checkbox) {
+            const input = document.getElementById(id);
+            input.disabled = checkbox.checked;
+            if (checkbox.checked) input.value = '';
+        }
+    </script>
 </head>
-<body class="bg-gray-100 dark:bg-[#0f172a] text-gray-800 dark:text-white min-h-screen">
-    
-  {% extends "dashboard.html" %}
 
-  {% block content %}
-        
-  <div class="max-w-6xl mx-auto px-4 fade-in shadow-md bg-gray-800 ">
-    <!-- Card Container -->
-    <div class="bg-white dark:bg-[#1e293b] shadow-md p-6 rounded-2xl"></div>
+<body class="bg-[#0f172a] text-white min-h-screen">
 
-        <!-- Title & Description -->
-        <div class="text-center">
-        <h1 class="text-2xl font-bold mb-1">Inventory Usage Submission</h1>
-        <p class="text-gray-400 text-sm">Fill out the form to log usage of bakery ingredients and components.</p>
+    {% extends "dashboard.html" %}
+    {% block content %}
+
+    <div class="max-w-6xl mx-auto px-4 fade-in shadow-md bg-gray-800">
+        <!-- Card Container -->
+        <div class="bg-[#1e293b] shadow-md p-6 rounded-2xl">
+
+            <!-- Title & Description -->
+            <div class="text-center">
+                <h1 class="text-2xl font-bold mb-1">Inventory Usage Submission</h1>
+                <p class="text-gray-400 text-sm">Fill out the form to log usage of bakery ingredients and components.
+                </p>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="flex justify-between text-sm text-gray-300">
+                <div><strong>Today is:</strong> <span id="weekday"></span></div>
+                <div><strong>Current Time:</strong> <span id="time"></span></div>
+            </div>
+
+            <!-- Form -->
+            <form action="/submit-inventory" method="POST" class="space-y-6">
+
+                <!-- Transaction Type -->
+                <div class="mb-6">
+                    <label for="inventoryType" class="block mb-1 font-medium text-white">Inventory Transaction <span
+                            class="text-red-500">*</span></label>
+                    <select id="inventoryType" name="inventoryType" required
+                        class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+                        <option value="received">Raw Material received</option>
+                        <option value="returned">Raw Materials returned</option>
+                    </select>
+                </div>
+
+                <!-- Transaction Title -->
+                <div class="text-center mb-4">
+                    <h2 id="transactionTitle" class="text-xl font-semibold text-blue-400">Raw Material received</h2>
+                </div>
+
+                <!-- Item Dropdown -->
+                <div class="mb-4">
+                    <label for="item" class="block mb-1 font-medium text-white">Select an Item to begin <span
+                            class="text-red-500">*</span></label>
+                    <select id="item" name="item" required
+                        class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
+                        <option value="">-- Please choose an Item --</option>
+                        {% for item in sheet_options %}
+                        <option value="{{ item }}">{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Shift -->
+                <div>
+                    <label class="block mb-1">Select Shift <span class="text-red-500">*</span></label>
+                    <select name="shift" required class="w-full p-2 rounded bg-gray-700 text-white">
+                        <option value="">-- Choose Your Shift --</option>
+                        <option value="First Shift">First Shift</option>
+                        <option value="Second Shift">Second Shift</option>
+                    </select>
+                </div>
+
+                <!-- Input Groups -->
+                <div class="grid sm:grid-cols-2 gap-4">
+
+                    <!-- Lot Number -->
+                    <div>
+                        <label class="block mb-1">Lot Number <span class="text-red-500">*</span></label>
+                        <div class="flex items-center gap-2">
+                            <input id="lotNumber" name="lotNumber" type="text" required
+                                class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                            <label class="text-sm flex items-center gap-1">
+                                <input type="checkbox" onchange="toggleInput('lotNumber', this)" />
+                                None
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Number of Boxes -->
+                    <div>
+                        <label class="block mb-1">Number of Boxes</label>
+                        <div class="flex items-center gap-2">
+                            <input id="numBoxes" name="numBoxes" type="number"
+                                class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                            <label class="text-sm flex items-center gap-1">
+                                <input type="checkbox" onchange="toggleInput('numBoxes', this)" />
+                                None
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Number of Bags -->
+                    <div>
+                        <label class="block mb-1">Number of Bags</label>
+                        <div class="flex items-center gap-2">
+                            <input id="numBags" name="numBags" type="number"
+                                class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                            <label class="text-sm flex items-center gap-1">
+                                <input type="checkbox" onchange="toggleInput('numBags', this)" />
+                                None
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dough Conditioner Qty -->
+                    <div>
+                        <label class="block mb-1">Dough Conditioner Qty</label>
+                        <div class="flex items-center gap-2">
+                            <input id="doughQty" name="doughQty" type="number"
+                                class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                            <label class="text-sm flex items-center gap-1">
+                                <input type="checkbox" onchange="toggleInput('doughQty', this)" />
+                                None
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Beta Tabs Container -->
+                    <div>
+                        <label class="block mb-1"># of Beta Tabs Container</label>
+                        <div class="flex items-center gap-2">
+                            <input id="betaQty" name="betaQty" type="number"
+                                class="flex-1 p-2 rounded bg-gray-700 text-white" />
+                            <label class="text-sm flex items-center gap-1">
+                                <input type="checkbox" onchange="toggleInput('betaQty', this)" />
+                                None
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center pt-4">
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition duration-300">
+                        Submit Form
+                    </button>
+                </div>
+
+            </form>
         </div>
-
-        <!-- Date & Time -->
-        <div class="flex justify-between text-sm text-gray-300">
-        <div><strong>Today is:</strong> <span id="weekday"></span></div>
-        <div><strong>Current Time:</strong> <span id="time"></span></div>
-        </div>
-
-        <!-- Form -->
-        <form action="/submit-inventory" method="POST" class="space-y-6">
-
-        <!-- Place this at the top of your form -->
-        <div class="mb-6">
-            <label for="inventoryType" class="block mb-1 font-medium text-white">Inventory Transaction <span class="text-red-500">*</span></label>
-            <select id="inventoryType" name="inventoryType" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
-                <option value="received">Raw Material received</option>
-                <option value="returned">Raw Materials returned</option>
-            </select>
-        </div>
-
-            <!-- Dynamic Label Section -->
-        <div class="text-center mb-4">
-            <h2 id="transactionTitle" class="text-xl font-semibold text-blue-400">Raw Material received</h2>
-        </div>
-
-        
-        <!-- Dropdown: Item Selection -->
-        <div class="mb-4">
-            <label for="item" class="block mb-1 font-medium text-white">Select an Item to begin <span class="text-red-500">*</span></label>
-            <select id="item" name="item" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600">
-                <option value="">-- Please choose an Item --</option>
-                {% for item in sheet_options %}
-                <option value="{{ item }}">{{ item }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-
-        <!-- Select Shift -->
-        <div>
-            <label class="block mb-1">Select Shift <span class="text-red-500">*</span></label>
-            <select name="shift" required class="w-full p-2 rounded bg-gray-700 text-white">
-            <option value="">-- Choose Your Shift --</option>
-            <option value="First Shift">First Shift</option>
-            <option value="Second Shift">Second Shift</option>
-            </select>
-        </div>
-
-        <!-- Input Groups -->
-        <div class="grid sm:grid-cols-2 gap-4">
-            <!-- Lot Number -->
-            <div>
-            <label class="block mb-1">Lot Number <span class="text-red-500">*</span></label>
-            <div class="flex items-center gap-2">
-                <input id="lotNumber" name="lotNumber" type="text" required class="flex-1 p-2 rounded bg-gray-700 text-white" />
-                <label class="text-sm flex items-center gap-1">
-                <input type="checkbox" onchange="toggleInput('lotNumber', this)" />
-                None
-                </label>
-            </div>
-            </div>
-
-            <!-- Number of Boxes -->
-            <div>
-            <label class="block mb-1">Number of Boxes</label>
-            <div class="flex items-center gap-2">
-                <input id="numBoxes" name="numBoxes" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-                <label class="text-sm flex items-center gap-1">
-                <input type="checkbox" onchange="toggleInput('numBoxes', this)" />
-                None
-                </label>
-            </div>
-            </div>
-
-            <!-- Number of Bags -->
-            <div>
-            <label class="block mb-1">Number of Bags</label>
-            <div class="flex items-center gap-2">
-                <input id="numBags" name="numBags" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-                <label class="text-sm flex items-center gap-1">
-                <input type="checkbox" onchange="toggleInput('numBags', this)" />
-                None
-                </label>
-            </div>
-            </div>
-
-            <!-- Dough Conditioner Qty -->
-            <div>
-            <label class="block mb-1">Dough Conditioner Qty</label>
-            <div class="flex items-center gap-2">
-                <input id="doughQty" name="doughQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-                <label class="text-sm flex items-center gap-1">
-                <input type="checkbox" onchange="toggleInput('doughQty', this)" />
-                None
-                </label>
-            </div>
-            </div>
-
-            <!-- Number of Beta Tabs Container -->
-            <div>
-            <label class="block mb-1"># of Beta Tabs Container</label>
-            <div class="flex items-center gap-2">
-                <input id="betaQty" name="betaQty" type="number" class="flex-1 p-2 rounded bg-gray-700 text-white" />
-                <label class="text-sm flex items-center gap-1">
-                <input type="checkbox" onchange="toggleInput('betaQty', this)" />
-                None
-                </label>
-            </div>
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="text-center pt-4">
-            <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition duration-300">
-            Submit Form
-            </button>
-        </div>
-        </form>
     </div>
-  </div>
 
-  <!-- Animation Styles -->
-  <style>
-    .animate-fadeIn {
-      animation: fadeIn 0.6s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-
-  
-
-  <!-- Place this inside your existing <script> tag at the bottom of the body -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const itemSelect = document.getElementById("item");
-
-        const fields = {
-        lotNumber: document.getElementById("lotNumber"),
-        numBoxes: document.getElementById("numBoxes"),
-        numBags: document.getElementById("numBags"),
-        doughQty: document.getElementById("doughQty"),
-        betaQty: document.getElementById("betaQty")
-        };
-
-        const checkboxes = {
-        numBoxes: fields.numBoxes.parentElement.querySelector("input[type=checkbox]"),
-        numBags: fields.numBags.parentElement.querySelector("input[type=checkbox]"),
-        doughQty: fields.doughQty.parentElement.querySelector("input[type=checkbox]"),
-        betaQty: fields.betaQty.parentElement.querySelector("input[type=checkbox]")
-        };
-
-        function disableAndClear(field) {
-        field.disabled = true;
-        field.removeAttribute("required");
-        field.value = '';
+    <!-- Animation Styles -->
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out;
         }
 
-        function enableAndRequire(field) {
-        field.disabled = false;
-        field.setAttribute("required", "true");
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-
-        function disableCheckbox(cb) {
-        cb.disabled = true;
-        cb.checked = false;
-        }
-
-        function enableCheckbox(cb) {
-        cb.disabled = false;
-        }
-
-        itemSelect.addEventListener("change", () => {
-        const value = itemSelect.value.trim();
-
-        // Reset all fields first
-        Object.values(fields).forEach(field => enableAndRequire(field));
-        Object.values(checkboxes).forEach(cb => enableCheckbox(cb));
-
-        // Apply new custom rules
-        const disableDoughBeta = ["222", "221", "185"];
-        const disableDoughBetaBox = ["186", "171", "170", "168", "203", "227"];
+    </style>
 
 
-        
 
-        if (disableDoughBeta.includes(value)) {
-            disableAndClear(fields.doughQty);
-            disableAndClear(fields.betaQty);
-            disableCheckbox(checkboxes.doughQty);
-            disableCheckbox(checkboxes.betaQty);
-        } 
-        else if (disableDoughBetaBox.includes(value)) {
-            disableAndClear(fields.doughQty);
-            disableAndClear(fields.betaQty);
-            disableAndClear(fields.numBoxes);
-            disableCheckbox(checkboxes.doughQty);
-            disableCheckbox(checkboxes.betaQty);
-            disableCheckbox(checkboxes.numBoxes);
-        } 
-        else if (value === "150344") {
-            disableAndClear(fields.numBoxes);
-            disableAndClear(fields.doughQty);
-            disableAndClear(fields.betaQty);
-            disableCheckbox(checkboxes.numBoxes);
-            disableCheckbox(checkboxes.doughQty);
-            disableCheckbox(checkboxes.betaQty);
-        } 
-        else if (value === "Dough-Conditioner") {
-            disableAndClear(fields.numBoxes);
-            disableAndClear(fields.numBags);
-            disableAndClear(fields.betaQty);
-            disableCheckbox(checkboxes.numBoxes);
-            disableCheckbox(checkboxes.numBags);
-            disableCheckbox(checkboxes.betaQty);
-        } 
-        else if (value === "Beta-Tabs") {
-            disableAndClear(fields.numBoxes);
-            disableAndClear(fields.numBags);
-            disableAndClear(fields.doughQty);
-            disableCheckbox(checkboxes.numBoxes);
-            disableCheckbox(checkboxes.numBags);
-            disableCheckbox(checkboxes.doughQty);
-        }
+    <!-- Place this inside your existing <script> tag at the bottom of the body -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const itemSelect = document.getElementById("item");
+
+            const fields = {
+                lotNumber: document.getElementById("lotNumber"),
+                numBoxes: document.getElementById("numBoxes"),
+                numBags: document.getElementById("numBags"),
+                doughQty: document.getElementById("doughQty"),
+                betaQty: document.getElementById("betaQty")
+            };
+
+            const checkboxes = {
+                numBoxes: fields.numBoxes.parentElement.querySelector("input[type=checkbox]"),
+                numBags: fields.numBags.parentElement.querySelector("input[type=checkbox]"),
+                doughQty: fields.doughQty.parentElement.querySelector("input[type=checkbox]"),
+                betaQty: fields.betaQty.parentElement.querySelector("input[type=checkbox]")
+            };
+
+            function disableAndClear(field) {
+                field.disabled = true;
+                field.removeAttribute("required");
+                field.value = '';
+            }
+
+            function enableAndRequire(field) {
+                field.disabled = false;
+                field.setAttribute("required", "true");
+            }
+
+            function disableCheckbox(cb) {
+                cb.disabled = true;
+                cb.checked = false;
+            }
+
+            function enableCheckbox(cb) {
+                cb.disabled = false;
+            }
+
+            itemSelect.addEventListener("change", () => {
+                const value = itemSelect.value.trim();
+
+                // Reset all fields first
+                Object.values(fields).forEach(field => enableAndRequire(field));
+                Object.values(checkboxes).forEach(cb => enableCheckbox(cb));
+
+                // Apply new custom rules
+                const disableDoughBeta = ["222", "221", "185"];
+                const disableDoughBetaBox = ["186", "171", "170", "168", "203", "227"];
+
+
+
+
+                if (disableDoughBeta.includes(value)) {
+                    disableAndClear(fields.doughQty);
+                    disableAndClear(fields.betaQty);
+                    disableCheckbox(checkboxes.doughQty);
+                    disableCheckbox(checkboxes.betaQty);
+                }
+                else if (disableDoughBetaBox.includes(value)) {
+                    disableAndClear(fields.doughQty);
+                    disableAndClear(fields.betaQty);
+                    disableAndClear(fields.numBoxes);
+                    disableCheckbox(checkboxes.doughQty);
+                    disableCheckbox(checkboxes.betaQty);
+                    disableCheckbox(checkboxes.numBoxes);
+                }
+                else if (value === "150344") {
+                    disableAndClear(fields.numBoxes);
+                    disableAndClear(fields.doughQty);
+                    disableAndClear(fields.betaQty);
+                    disableCheckbox(checkboxes.numBoxes);
+                    disableCheckbox(checkboxes.doughQty);
+                    disableCheckbox(checkboxes.betaQty);
+                }
+                else if (value === "Dough-Conditioner") {
+                    disableAndClear(fields.numBoxes);
+                    disableAndClear(fields.numBags);
+                    disableAndClear(fields.betaQty);
+                    disableCheckbox(checkboxes.numBoxes);
+                    disableCheckbox(checkboxes.numBags);
+                    disableCheckbox(checkboxes.betaQty);
+                }
+                else if (value === "Beta-Tabs") {
+                    disableAndClear(fields.numBoxes);
+                    disableAndClear(fields.numBags);
+                    disableAndClear(fields.doughQty);
+                    disableCheckbox(checkboxes.numBoxes);
+                    disableCheckbox(checkboxes.numBags);
+                    disableCheckbox(checkboxes.doughQty);
+                }
+            });
+            // --- Inventory Type Label Update ---
+            const typeSelect = document.getElementById("inventoryType");
+            const transactionTitle = document.getElementById("transactionTitle");
+
+            typeSelect.addEventListener("change", () => {
+                if (typeSelect.value === "returned") {
+                    transactionTitle.textContent = "Raw Materials returned";
+                } else {
+                    transactionTitle.textContent = "Raw Material received";
+                }
+            });
+
         });
-        // --- Inventory Type Label Update ---
-        const typeSelect = document.getElementById("inventoryType");
-        const transactionTitle = document.getElementById("transactionTitle");
+    </script>
 
-        typeSelect.addEventListener("change", () => {
-        if (typeSelect.value === "returned") {
-            transactionTitle.textContent = "Raw Materials returned";
-        } else {
-            transactionTitle.textContent = "Raw Material received";
-        }
-        });
-
-    });
-  </script>
-
-  {% endblock %}
+    {% endblock %}
 
 </body>
+
 </html>
-
-
