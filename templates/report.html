@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,28 +12,60 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- jsPDF & AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .fade-in { animation: fadeIn 0.5s ease-in-out both; }
-    .green { color: #22c55e; font-weight: 600; }
-    .red { color: #ef4444; font-weight: 600; }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out both;
+    }
+
+    .green {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .red {
+      color: #ef4444;
+      font-weight: 600;
+    }
   </style>
 
   <style>
     @keyframes pulse-glow-green {
-      0%, 100% { box-shadow: 0 0 0px rgba(34, 197, 94, 0.5); }
-      50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0px rgba(34, 197, 94, 0.5);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
+      }
     }
 
     @keyframes pulse-glow-red {
-      0%, 100% { box-shadow: 0 0 0px rgba(239, 68, 68, 0.4); }
-      50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.9); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0px rgba(239, 68, 68, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
+      }
     }
 
     .glow-green {
@@ -51,8 +83,15 @@
 
   <style>
     @keyframes fadeInUp {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .animate-fade-in {
@@ -66,20 +105,43 @@
   </style>
 
 </head>
+
 <body class="bg-[#0f172a] text-white min-h-screen font-sans">
 
   {% extends "dashboard.html" %}
 
-  {% block content %} 
-    
+  {% block content %}
+
+
+
+
+
+
+  <div id="contentOverlay"
+    class="fixed top-0 left-0 w-full h-screen z-50 bg-gray-950 bg-opacity-95 flex items-center justify-center px-4 py-8 sm:py-20 hidden">
+
+    <!-- Loading Content -->
+    <div class="text-center space-y-4">
+      <div
+        class="w-14 h-14 sm:w-16 sm:h-16 border-4 border-t-[#00e600] border-gray-700 rounded-full animate-spin mx-auto">
+      </div>
+      <div class="text-[#00e600] text-lg sm:text-xl font-bold animate-fadeIn">Almost There...</div>
+      <div class="text-sm text-gray-400 animate-fadeIn">Loading charts...</div>
+    </div>
+  </div>
+
+
+
+
 
   <div class="text-center mb-6 px-4">
     <h1 class="text-3xl font-bold text-blue-400 uppercase drop-shadow">Bakery Metrics Report</h1>
   </div>
 
-  
+
   <div class="max-w-4xl mx-auto bg-blue-800 text-blue-100 p-4 rounded shadow fade-in text-sm mb-6">
-    This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste — for each shift and line.
+    This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste
+    — for each shift and line.
   </div>
 
   <div class="max-w-6xl mx-auto px-4 mb-6">
@@ -88,20 +150,26 @@
         <label class="block mb-1 font-medium">Select Week</label>
         <select id="week" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
           {% for week in week_names %}
-            <option value="{{ week }}" {% if week == default_week %}selected{% endif %}>{{ week }}</option>
+          <option value="{{ week }}" {% if week==default_week %}selected{% endif %}>{{ week }}</option>
           {% endfor %}
         </select>
       </div>
       <div>
         <label class="block mb-1 font-medium">Select Day</label>
         <select id="day" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
-          <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option>
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
         </select>
       </div>
       <div>
         <label class="block mb-1 font-medium">Select Shift</label>
         <select id="shift" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
-          <option>First Shift</option><option>Second Shift</option><option>Both Shift</option>
+          <option>First Shift</option>
+          <option>Second Shift</option>
+          <option>Both Shift</option>
         </select>
       </div>
     </div>
@@ -122,34 +190,82 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-600">
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">OEE</td><td>DIE CUT 1</td><td>70%</td><td id="oee1">-</td><td id="oee1Avg">-</td><td>%</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">OEE</td>
+              <td>DIE CUT 1</td>
+              <td>70%</td>
+              <td id="oee1">-</td>
+              <td id="oee1Avg">-</td>
+              <td>%</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td><td>70%</td><td id="oee2">-</td><td id="oee2Avg">-</td><td>%</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td>
+              <td>70%</td>
+              <td id="oee2">-</td>
+              <td id="oee2Avg">-</td>
+              <td>%</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td><td>70%</td><td id="oeeTotal">-</td><td id="oeeTotalAvg">-</td><td>%</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td>
+              <td>70%</td>
+              <td id="oeeTotal">-</td>
+              <td id="oeeTotalAvg">-</td>
+              <td>%</td>
             </tr>
 
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">POUNDS</td><td>DIE CUT 1</td><td>Schedule</td><td id="pounds1">-</td><td id="pounds1Avg">-</td><td>LB</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">POUNDS</td>
+              <td>DIE CUT 1</td>
+              <td>Schedule</td>
+              <td id="pounds1">-</td>
+              <td id="pounds1Avg">-</td>
+              <td>LB</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td><td>Schedule</td><td id="pounds2">-</td><td id="pounds2Avg">-</td><td>LB</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td>
+              <td>Schedule</td>
+              <td id="pounds2">-</td>
+              <td id="pounds2Avg">-</td>
+              <td>LB</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td><td>Schedule</td><td id="poundsTotal">-</td><td id="poundsTotalAvg">-</td><td>LB</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td>
+              <td>Schedule</td>
+              <td id="poundsTotal">-</td>
+              <td id="poundsTotalAvg">-</td>
+              <td>LB</td>
             </tr>
 
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">WASTE</td><td>DIE CUT 1</td><td>-</td><td id="waste1">-</td><td id="waste1Avg">-</td><td>LB</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td rowspan="3" class="py-8 font-medium">WASTE</td>
+              <td>DIE CUT 1</td>
+              <td>-</td>
+              <td id="waste1">-</td>
+              <td id="waste1Avg">-</td>
+              <td>LB</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td><td>-</td><td id="waste2">-</td><td id="waste2Avg">-</td><td>LB</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>DIE CUT 2</td>
+              <td>-</td>
+              <td id="waste2">-</td>
+              <td id="waste2Avg">-</td>
+              <td>LB</td>
             </tr>
-            <tr class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td><td>3.75%</td><td id="wasteTotal">-</td><td id="wasteTotalAvg">-</td><td>%</td>
+            <tr
+              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
+              <td>TOTAL</td>
+              <td>3.75%</td>
+              <td id="wasteTotal">-</td>
+              <td id="wasteTotalAvg">-</td>
+              <td>%</td>
             </tr>
           </tbody>
         </table>
@@ -158,28 +274,30 @@
 
     <div class="text-center mt-4">
       <button onclick="downloadMetricsTable()" type="button"
-              class="px-6 py-2 bg-yellow-500 text-black font-semibold rounded shadow hover:bg-yellow-600">
+        class="px-6 py-2 bg-yellow-500 text-black font-semibold rounded shadow hover:bg-yellow-600">
         📥 Download Metrics Table as PDF
       </button>
       <button onclick="downloadMetricsExcel()" type="button"
-            class="px-6 py-2 mt-2 bg-green-500 text-black font-semibold rounded shadow hover:bg-green-600">
-      📊 Download Metrics Table as Excel
+        class="px-6 py-2 mt-2 bg-green-500 text-black font-semibold rounded shadow hover:bg-green-600">
+        📊 Download Metrics Table as Excel
       </button>
     </div>
-    
+
   </div>
 
 
   <div class="max-w-6xl mx-auto px-4 mt-12">
 
     <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">OEE (%) shows how effectively our lines are running. A higher OEE means less downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
+      <p class="font-semibold mb-1">OEE (%) shows how effectively our lines are running. A higher OEE means less
+        downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
     </div>
 
 
 
     <div id="oeeFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
-      <div id="oeeFeedbackBox" class="bg-blue-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
+      <div id="oeeFeedbackBox"
+        class="bg-blue-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
         <p id="oeeMessage" class="text-lg flex items-center gap-2">
           <span>📈</span><span class="oee-msg">Evaluating performance...</span>
         </p>
@@ -195,11 +313,13 @@
 
 
     <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">Waste (%) helps us track how much raw material is being lost. Keeping our waste below target ensures cost control. Monitoring this metric is key to bakery profitability.</p>
+      <p class="font-semibold mb-1">Waste (%) helps us track how much raw material is being lost. Keeping our waste
+        below target ensures cost control. Monitoring this metric is key to bakery profitability.</p>
     </div>
 
     <div id="wasteFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
-      <div id="wasteFeedbackBox" class="bg-red-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
+      <div id="wasteFeedbackBox"
+        class="bg-red-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
         <p id="wasteMessage" class="text-lg flex items-center gap-2">
           <span>🗑️</span><span class="waste-msg">Evaluating waste...</span>
         </p>
@@ -214,30 +334,18 @@
     </div>
 
     <div class="text-center mt-6">
-      <button
-        onclick="downloadChartsAsPDF()"
-        class="relative px-8 py-3 overflow-hidden font-semibold rounded-lg bg-gray-800 text-gray-50 hover:bg-gray-900 group"
-      >
+      <button onclick="downloadChartsAsPDF()"
+        class="relative px-8 py-3 overflow-hidden font-semibold rounded-lg bg-gray-800 text-gray-50 hover:bg-gray-900 group">
         <span
-          class="absolute top-0 right-0 px-5 py-1 text-xs tracking-wider text-center uppercase origin-bottom-left transform rotate-45 -translate-y-full translate-x-1/3 bg-violet-600"
-        >
+          class="absolute top-0 right-0 px-5 py-1 text-xs tracking-wider text-center uppercase origin-bottom-left transform rotate-45 -translate-y-full translate-x-1/3 bg-violet-600">
           New
         </span>
         <span class="relative flex items-center gap-2">
           <span>Download Charts as PDF</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            fill="none"
-            class="w-4 h-4 transition-transform duration-300 ease-out group-hover:translate-y-1"
-          >
-            <path
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              stroke-width="2"
-              stroke-linejoin="round"
-              stroke-linecap="round"
-            ></path>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+            class="w-4 h-4 transition-transform duration-300 ease-out group-hover:translate-y-1">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2"
+              stroke-linejoin="round" stroke-linecap="round"></path>
           </svg>
         </span>
       </button>
@@ -249,7 +357,7 @@
   </button>
 
   <script>
-    
+
     const set = (id, value, threshold = null, reverse = false) => {
       const cell = document.getElementById(id);
       const cleanValue = typeof value === 'string' ? value.trim().replace(/,/g, '') : value;
@@ -313,6 +421,34 @@
     }
 
 
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const overlay = document.getElementById("contentOverlay");
+      overlay.classList.remove('hidden');  // Show overlay
+
+      try {
+        await fetchReport(); // Wait for all charts to load
+      } catch (error) {
+        console.error('Failed to load charts:', error);
+      }
+
+      overlay.classList.add('hidden');  // Hide overlay
+    });
+
+
+
+
+
+
+
+
+
+
+
     document.addEventListener('DOMContentLoaded', async () => {
       await fetchReport();
       document.getElementById('week').addEventListener('change', fetchReport);
@@ -339,7 +475,7 @@
       pdf.save('Bakery_Weekly_Metrics.pdf');
     }
     */
-    
+
 
   </script>
 
@@ -383,157 +519,157 @@
 
 
   <script>
-  let chartOEE, chartWaste;
+    let chartOEE, chartWaste;
 
-  // Build chart with floating values, target line, and performance line
-  function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor }) {
-    const values = data.map(Number);
-    const colors = values.map(v => {
-      if (ctxId === 'chartWaste') {
-        return v <= target ? '#22c55e' : '#ef4444';  // reversed for Waste
-      }
-      return v >= target ? '#22c55e' : '#ef4444';    // normal for OEE
-    });
+    // Build chart with floating values, target line, and performance line
+    function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor }) {
+      const values = data.map(Number);
+      const colors = values.map(v => {
+        if (ctxId === 'chartWaste') {
+          return v <= target ? '#22c55e' : '#ef4444';  // reversed for Waste
+        }
+        return v >= target ? '#22c55e' : '#ef4444';    // normal for OEE
+      });
 
 
-    const ctx = document.getElementById(ctxId).getContext('2d');
-    if (ctxId === 'chartOEE' && chartOEE) chartOEE.destroy();
-    if (ctxId === 'chartWaste' && chartWaste) chartWaste.destroy();
+      const ctx = document.getElementById(ctxId).getContext('2d');
+      if (ctxId === 'chartOEE' && chartOEE) chartOEE.destroy();
+      if (ctxId === 'chartWaste' && chartWaste) chartWaste.destroy();
 
-    const chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        datasets: [
-          {
-            type: 'bar',
-            label: title,
-            data: values,
-            backgroundColor: colors,
-            borderRadius: 6,
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          datasets: [
+            {
+              type: 'bar',
+              label: title,
+              data: values,
+              backgroundColor: colors,
+              borderRadius: 6,
+            },
+            {
+              type: 'line',
+              label: 'Performance Trend',
+              data: values,
+              borderColor: lineColor,
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 4,
+              pointBackgroundColor: 'white',
+            },
+            {
+              type: 'line',
+              label: 'Target',
+              data: Array(5).fill(target),
+              borderColor: '#3b82f6',
+              borderDash: [5, 5],
+              borderWidth: 2,
+              pointRadius: 0,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            glowBars: {
+              target: 70,
+              glowColor: 'rgba(34, 197, 94, 0.8)'
+            },
+            legend: { labels: { color: 'white' } },
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              color: (ctx) => ctx.datasetIndex === 0 ? 'white' : 'transparent',
+              font: { weight: 'bold' },
+              formatter: value => typeof value === 'number' ? value.toFixed(2) : ''
+            }
           },
-          {
-            type: 'line',
-            label: 'Performance Trend',
-            data: values,
-            borderColor: lineColor,
-            borderWidth: 2,
-            tension: 0.3,
-            pointRadius: 4,
-            pointBackgroundColor: 'white',
-          },
-          {
-            type: 'line',
-            label: 'Target',
-            data: Array(5).fill(target),
-            borderColor: '#3b82f6',
-            borderDash: [5, 5],
-            borderWidth: 2,
-            pointRadius: 0,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          glowBars: {
-            target: 70,
-            glowColor: 'rgba(34, 197, 94, 0.8)'
-          },
-          legend: { labels: { color: 'white' } },
-          datalabels: {
-            anchor: 'end',
-            align: 'top',
-            color: (ctx) => ctx.datasetIndex === 0 ? 'white' : 'transparent',
-            font: { weight: 'bold' },
-            formatter: value => typeof value === 'number' ? value.toFixed(2) : ''
+          scales: {
+            x: {
+              ticks: { color: 'white' },
+              grid: { color: '#334155' }
+            },
+            y: {
+              beginAtZero: true,
+              suggestedMax: ctxId === 'chartOEE' ? 120 : undefined, // only apply to OEE chart
+              title: {
+                display: true,
+                text: yLabel,
+                color: 'white'
+              },
+              ticks: {
+                color: 'white',
+                callback: function (value) {
+                  return value + (yLabel.includes('%') ? '%' : '');
+                }
+              },
+              grid: { color: '#334155' }
+            }
+
           }
         },
-        scales: {
-          x: {
-            ticks: { color: 'white' },
-            grid: { color: '#334155' }
-          },
-          y: {
-            beginAtZero: true,
-            suggestedMax: ctxId === 'chartOEE' ? 120 : undefined, // only apply to OEE chart
-            title: {
-              display: true,
-              text: yLabel,
-              color: 'white'
-            },
-            ticks: {
-              color: 'white',
-              callback: function(value) {
-                return value + (yLabel.includes('%') ? '%' : '');
-              }
-            },
-            grid: { color: '#334155' }
-          }
+        plugins: [ChartDataLabels]
+      });
 
-        }
-      },
-      plugins: [ChartDataLabels]
+      if (ctxId === 'chartOEE') chartOEE = chart;
+      if (ctxId === 'chartWaste') chartWaste = chart;
+    }
+
+
+    // Fetch values from your server-side endpoint based on selected week
+    async function updateDynamicCharts() {
+      const week = document.getElementById('week').value;
+      const response = await fetch(`/api/weekly-metrics?week=${week}`);
+      const result = await response.json();
+
+      renderMetricChart({
+        ctxId: 'chartOEE',
+        title: 'OEE (%)',
+        data: result.oee, // Expecting array of 5 values
+        target: 70,
+        yLabel: 'OEE (%)',
+        bgColor: '#1e293b',
+        barColor: '#60a5fa',
+        lineColor: '#facc15'
+      });
+
+      renderMetricChart({
+        ctxId: 'chartWaste',
+        title: 'Waste (%)',
+        data: result.waste, // Expecting array of 5 values
+        target: 3.75,
+        yLabel: 'Waste (%)',
+        bgColor: '#1e293b',
+        barColor: '#f87171',
+        lineColor: '#facc15'
+      });
+
+      const applyGlowEffect = (chartId, average, target, reverse = false) => {
+        const wrapper = document.getElementById(chartId).parentElement.parentElement;
+        wrapper.classList.remove('glow-green', 'glow-red');
+
+        const avg = parseFloat(average); // just in case
+        const pass = reverse ? avg <= target : avg >= target;
+
+        wrapper.classList.add(pass ? 'glow-green' : 'glow-red');
+      };
+
+      // After rendering both charts:
+      applyGlowEffect('chartOEE', result.oeeAvg, 70);       // OEE - Cell I36
+      applyGlowEffect('chartWaste', result.wasteAvg, 3.75, true); // Waste - Cell I42
+
+
+      updateFeedbackMessages(result.oeeAvg, result.wasteAvg);
+
+    }
+
+    // Trigger on page load and when week changes
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDynamicCharts();
+      document.getElementById('week').addEventListener('change', updateDynamicCharts);
     });
-
-    if (ctxId === 'chartOEE') chartOEE = chart;
-    if (ctxId === 'chartWaste') chartWaste = chart;
-  }
-  
-
-  // Fetch values from your server-side endpoint based on selected week
-  async function updateDynamicCharts() {
-    const week = document.getElementById('week').value;
-    const response = await fetch(`/api/weekly-metrics?week=${week}`);
-    const result = await response.json();
-
-    renderMetricChart({
-      ctxId: 'chartOEE',
-      title: 'OEE (%)',
-      data: result.oee, // Expecting array of 5 values
-      target: 70,
-      yLabel: 'OEE (%)',
-      bgColor: '#1e293b',
-      barColor: '#60a5fa',
-      lineColor: '#facc15'
-    });
-
-    renderMetricChart({
-      ctxId: 'chartWaste',
-      title: 'Waste (%)',
-      data: result.waste, // Expecting array of 5 values
-      target: 3.75,
-      yLabel: 'Waste (%)',
-      bgColor: '#1e293b',
-      barColor: '#f87171',
-      lineColor: '#facc15'
-    });
-
-    const applyGlowEffect = (chartId, average, target, reverse = false) => {
-      const wrapper = document.getElementById(chartId).parentElement.parentElement;
-      wrapper.classList.remove('glow-green', 'glow-red');
-
-      const avg = parseFloat(average); // just in case
-      const pass = reverse ? avg <= target : avg >= target;
-
-      wrapper.classList.add(pass ? 'glow-green' : 'glow-red');
-    };
-
-    // After rendering both charts:
-    applyGlowEffect('chartOEE', result.oeeAvg, 70);       // OEE - Cell I36
-    applyGlowEffect('chartWaste', result.wasteAvg, 3.75, true); // Waste - Cell I42
-
-
-    updateFeedbackMessages(result.oeeAvg, result.wasteAvg);
-
-  }
-
-  // Trigger on page load and when week changes
-  document.addEventListener('DOMContentLoaded', () => {
-    updateDynamicCharts();
-    document.getElementById('week').addEventListener('change', updateDynamicCharts);
-  });
   </script>
 
 
@@ -627,7 +763,7 @@
 
       // Insert logo/title row at the top
       XLSX.utils.sheet_add_aoa(ws, [
-        ["DON MIGUEL FOODS"], 
+        ["DON MIGUEL FOODS"],
         ["Bakery Metrics Report"]
       ], { origin: "A1" });
 
@@ -749,13 +885,11 @@
       const wasteBox = document.getElementById("wasteFeedbackBox");
 
       // Update background colors based on performance
-      oeeBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${
-        oeeGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
-      }`;
+      oeeBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${oeeGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
+        }`;
 
-      wasteBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${
-        wasteGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
-      }`;
+      wasteBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${wasteGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
+        }`;
 
       cycleFeedback('oee', oeeGood, 'oeeFeedback', oeeMessages, 'oee-msg');
       cycleFeedback('waste', wasteGood, 'wasteFeedback', wasteMessages, 'waste-msg');
@@ -806,4 +940,5 @@
   </script>
   {% endblock %}
 </body>
+
 </html>

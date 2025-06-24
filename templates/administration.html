@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Administration Dashboard</title>
@@ -7,8 +8,9 @@
   <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
+
 <body class="bg-gray-900 text-gray-100 font-sans">
-  
+
   <!-- Header -->
   <div class="text-center mt-8">
     <img src="/static/DON MIGUEL.png" class="mx-auto w-56" />
@@ -32,30 +34,36 @@
     <label class="block mb-1 font-medium">Generated Access Key</label>
     <div class="flex mb-4">
       <input id="generatedKey" class="w-full rounded-l bg-gray-700 border border-gray-600 px-4 py-2" readonly />
-      <button onclick="copyKey(this)" class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
+      <button onclick="copyKey(this)"
+        class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
         <i class="fas fa-copy"></i> <span>Copy Key</span>
       </button>
     </div>
-    <button onclick="generateKey()" class="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🎲 Generate Key</button>
+    <button onclick="generateKey()" class="mb-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">🎲 Generate
+      Key</button>
 
     <!-- Key Registration -->
     <label class="block mb-1 font-medium">Input Access Key</label>
     <div class="flex mb-4">
-      <input id="inputKey" class="w-full rounded-l bg-gray-700 border border-gray-600 px-4 py-2" maxlength="13" placeholder="Click Paste Key" />
-      <button onclick="pasteKey()" class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
+      <input id="inputKey" class="w-full rounded-l bg-gray-700 border border-gray-600 px-4 py-2" maxlength="13"
+        placeholder="Click Paste Key" />
+      <button onclick="pasteKey()"
+        class="bg-gray-600 hover:bg-gray-700 px-4 text-white rounded-r flex items-center space-x-2">
         <i class="fas fa-paste"></i> <span>Paste Key</span>
       </button>
     </div>
-    <button onclick="registerKey()" class="mb-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">✅ Register Key</button>
+    <button onclick="registerKey()" class="mb-6 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">✅ Register
+      Key</button>
     <div id="keyMessage" class="hidden p-2 rounded text-sm mt-2"></div>
 
     <!-- Users Table -->
     <div class="text-center text-gray-300 mb-3">USER ACCOUNTS - All users in the Bakery Department</div>
     <input id="searchInput" oninput="searchUser()" placeholder="Search by Last name"
-           class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded" />
+      class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded" />
 
     <div class="max-h-64 overflow-y-auto rounded shadow mb-6 border border-gray-600">
-      <table class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
+      <table
+        class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
         <thead class="bg-gray-600 text-white sticky top-0 z-10">
           <tr>
             <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Email</th>
@@ -74,8 +82,10 @@
 
     <!-- Remove User -->
     <label class="block mb-1 font-medium">Select User</label>
-    <select id="userDropdown" class="w-full mb-2 bg-gray-700 border border-gray-600 text-white rounded px-3 py-2"></select>
-    <button onclick="confirmRemove()" class="bg-red-600 hover:bg-red-700 px-4 py-2 text-white rounded">🗑 Remove User</button>
+    <select id="userDropdown"
+      class="w-full mb-2 bg-gray-700 border border-gray-600 text-white rounded px-3 py-2"></select>
+    <button onclick="confirmRemove()" class="bg-red-600 hover:bg-red-700 px-4 py-2 text-white rounded">🗑 Remove
+      User</button>
   </div>
 
   <!-- Submission Logs -->
@@ -83,11 +93,12 @@
     <h5 class="text-center text-xl font-bold text-white mb-4">📊 Bakery Metrics Submission Logs</h5>
 
     <input id="logSearchInput" oninput="searchLogs()"
-           class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded"
-           placeholder="🔍 Search by User Email..." />
+      class="w-full mb-4 px-4 py-2 bg-gray-700 border border-gray-600 rounded"
+      placeholder="🔍 Search by User Email..." />
 
     <div class="max-h-72 overflow-y-auto rounded shadow-sm animated fadeIn border border-gray-600">
-      <table class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
+      <table
+        class="min-w-full table-auto bg-gray-700 text-left text-sm divide-y divide-gray-600 border border-gray-600">
         <thead class="bg-gray-600 text-white sticky top-0 z-10">
           <tr>
             <th class="px-4 py-2 border border-gray-600 whitespace-nowrap">Submitted By</th>
@@ -260,10 +271,11 @@
   <footer class="text-center text-sm text-gray-600 mt-12 mb-6">
     &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
   </footer>
-  
+
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
 </body>
+
 </html>
