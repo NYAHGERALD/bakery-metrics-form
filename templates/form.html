@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="{{ url_for('static', filename='notification-manager.js') }}"></script>
   <style>
     .form-step {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -116,6 +117,27 @@
       .mobile-text-sm {
         font-size: 0.9rem;
       }
+    }
+
+    /* Enhanced backdrop blur support */
+    .backdrop-blur-md {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .backdrop-blur-lg {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Fallback for browsers that don't support backdrop-filter */
+    @supports not (backdrop-filter: blur(12px)) {
+        .backdrop-blur-md {
+            background: rgba(59, 130, 246, 0.3) !important;
+        }
+        .backdrop-blur-lg {
+            background: rgba(79, 70, 229, 0.3) !important;
+        }
     }
   </style>
 </head>
@@ -323,7 +345,7 @@
           </div>
         </div>
 
-        <!-- Add this after the quickStats div and before the closing of step1 -->
+        <!-- Add this after the quickStats div and before the closing of step1 
         {% if user_role in ['admin', 'supervisor'] %}
         <div class="mt-8">
           <button type="button" id="importDataBtn"
@@ -333,11 +355,12 @@
           </button>
         </div>
         {% endif %}
+        -->
 
         <!-- Import Modal -->
         <div id="importModal" class="fixed inset-0 z-50 hidden">
           <!-- Backdrop -->
-          <div class="absolute inset-0 backdrop-blur-sm bg-black/20"></div>
+          <div class="absolute inset-0 backdrop-blur-md bg-gradient-to-br from-blue-500/20 to-indigo-600/30"></div>
 
           <!-- Modal container -->
           <div class="relative h-full flex items-center justify-center p-4">
@@ -883,7 +906,7 @@
   <!-- All Submissions Modal - Fixed positioning for proper display -->
   <div id="allSubmissionsModal" class="fixed inset-0 z-50 hidden">
     <!-- Glassy backdrop with blur -->
-    <div class="absolute inset-0 backdrop-blur-sm bg-black/20 rounded-none"></div>
+    <div class="absolute inset-0 backdrop-blur-md bg-gradient-to-br from-blue-500/20 to-indigo-600/30 rounded-none"></div>
 
     <!-- Modal container -->
     <div class="relative h-full flex items-center justify-center p-4">
@@ -1484,8 +1507,9 @@
       console.error('resetBtn element not found');
     }
 
-    // Enhanced notification system
+    // Enhanced notification system with native notifications
     function showNotification(message, type = 'info') {
+      // Show in-app notification
       const notification = document.createElement('div');
       notification.className = `fixed top-6 right-6 z-50 p-6 rounded-2xl shadow-2xl max-w-sm border-2`;
 
@@ -1532,6 +1556,36 @@
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 300);
       }, 5000);
+
+      // Show native notification for important messages
+      if (window.notificationManager && window.notificationManager.canShowNotifications()) {
+        const shouldShowNative = type === 'success' || type === 'error';
+        
+        if (shouldShowNative) {
+          const iconMap = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+          };
+          
+          setTimeout(async () => {
+            await window.notificationManager.showNativeNotification(
+              `${iconMap[type]} Form Submission`,
+              {
+                body: message,
+                icon: '/static/avatar.png',
+                tag: `form-notification-${type}`,
+                requireInteraction: type === 'error',
+                data: {
+                  type: 'form_submission',
+                  url: window.location.href
+                }
+              }
+            );
+          }, 500);
+        }
+      }
     }
 
     // Auto-save functionality (optional)

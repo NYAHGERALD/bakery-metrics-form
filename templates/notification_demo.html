@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Demo</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ url_for('static', filename='notification-manager.js') }}"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+  
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                <i data-lucide="bell-ring" class="w-8 h-8 mr-3 text-blue-600"></i>
+                Enhanced Notification System Demo
+            </h1>
+            <p class="text-gray-600 mb-8">Test the new native notification system for the Bakery Metrics application</p>
+
+            <!-- Notification Status -->
+            <div id="notificationStatus" class="mb-8 p-4 rounded-xl border">
+                <h3 class="font-semibold mb-2 flex items-center">
+                    <i data-lucide="info" class="w-5 h-5 mr-2"></i>
+                    Notification System Status
+                </h3>
+                <div id="statusContent" class="text-sm text-gray-600">
+                    Loading...
+                </div>
+            </div>
+
+            <!-- Test Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                <button onclick="testInAppNotification('success')"
+                    class="p-4 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span>Success Notification</span>
+                </button>
+
+                <button onclick="testInAppNotification('error')"
+                    class="p-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <span>Error Notification</span>
+                </button>
+
+                <button onclick="testInAppNotification('warning')"
+                    class="p-4 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span>Warning Notification</span>
+                </button>
+
+                <button onclick="testNativeNotification('form_submission')"
+                    class="p-4 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span>Form Submission</span>
+                </button>
+
+                <button onclick="testNativeNotification('kpi_alert')"
+                    class="p-4 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="trending-down" class="w-5 h-5"></i>
+                    <span>KPI Alert</span>
+                </button>
+
+                <button onclick="enableNotifications()"
+                    class="p-4 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span>Enable Native</span>
+                </button>
+            </div>
+
+            <!-- Simulated Notification Panel -->
+            <div class="bg-gray-50 rounded-xl p-6">
+                <h3 class="font-semibold mb-4 flex items-center">
+                    <i data-lucide="activity" class="w-5 h-5 mr-2"></i>
+                    Recent Test Notifications
+                </h3>
+                <div id="notificationLog" class="space-y-2 max-h-60 overflow-y-auto">
+                    <div class="text-sm text-gray-500 italic">No notifications yet. Test the buttons above!</div>
+                </div>
+            </div>
+
+            <!-- Back to Dashboard -->
+            <div class="mt-8 text-center">
+                <a href="/"
+                    class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors">
+                    <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Update notification status
+        function updateNotificationStatus() {
+            const statusDiv = document.getElementById('notificationStatus');
+            const contentDiv = document.getElementById('statusContent');
+
+            if (!window.notificationManager) {
+                statusDiv.className = 'mb-8 p-4 rounded-xl border border-red-200 bg-red-50';
+                contentDiv.innerHTML = `
+                    <div class="text-red-800">❌ Notification Manager not loaded</div>
+                `;
+                return;
+            }
+
+            const stats = window.notificationManager.getNotificationStats();
+
+            if (stats.canShow) {
+                statusDiv.className = 'mb-8 p-4 rounded-xl border border-green-200 bg-green-50';
+                contentDiv.innerHTML = `
+                    <div class="text-green-800">✅ Native notifications enabled and ready</div>
+                    <div class="text-green-600 text-xs mt-1">Permission: ${stats.permission} | Service Worker: ${stats.serviceWorkerActive ? 'Active' : 'Inactive'}</div>
+                `;
+            } else if (stats.permission === 'denied') {
+                statusDiv.className = 'mb-8 p-4 rounded-xl border border-red-200 bg-red-50';
+                contentDiv.innerHTML = `
+                    <div class="text-red-800">❌ Notifications blocked</div>
+                    <div class="text-red-600 text-xs mt-1">Please enable notifications in your browser settings</div>
+                `;
+            } else {
+                statusDiv.className = 'mb-8 p-4 rounded-xl border border-yellow-200 bg-yellow-50';
+                contentDiv.innerHTML = `
+                    <div class="text-yellow-800">⚠️ Native notifications not enabled</div>
+                    <div class="text-yellow-600 text-xs mt-1">Click "Enable Native" to allow notifications</div>
+                `;
+            }
+        }
+
+        // Test in-app notifications
+        function testInAppNotification(type) {
+            const messages = {
+                success: 'Form submitted successfully! ✅',
+                error: 'An error occurred during submission ❌',
+                warning: 'Please check your input data ⚠️',
+                info: 'Processing your request ℹ️'
+            };
+
+            showNotification(messages[type] || messages.info, type);
+            logNotification(`In-app ${type} notification`, messages[type]);
+        }
+
+        // Test native notifications
+        async function testNativeNotification(type) {
+            if (!window.notificationManager || !window.notificationManager.canShowNotifications()) {
+                showNotification('Native notifications not enabled. Please enable them first.', 'warning');
+                return;
+            }
+
+            const notifications = {
+                'form_submission': {
+                    title: '✅ Form Submission',
+                    body: 'Bakery metrics submitted successfully for Monday',
+                    requireInteraction: false
+                },
+                'kpi_alert': {
+                    title: '📊 Performance Alert',
+                    body: 'OEE below target: 65% vs goal 70%',
+                    requireInteraction: true
+                },
+                'inventory_alert': {
+                    title: '📦 Inventory Update',
+                    body: 'Low stock alert: Flour inventory below threshold',
+                    requireInteraction: false
+                },
+                'issue_report': {
+                    title: '⚠️ Issue Report',
+                    body: 'New issue reported on production line 2',
+                    requireInteraction: true
+                }
+            };
+
+            const notif = notifications[type] || notifications['form_submission'];
+
+            try {
+                await window.notificationManager.showNativeNotification(
+                    notif.title,
+                    {
+                        body: notif.body,
+                        icon: '/static/avatar.png',
+                        tag: `test-${type}`,
+                        requireInteraction: notif.requireInteraction,
+                        data: { type, url: window.location.href }
+                    }
+                );
+
+                showNotification(`Native ${type} notification sent!`, 'success');
+                logNotification(`Native ${type} notification`, notif.body);
+            } catch (error) {
+                showNotification('Failed to send native notification', 'error');
+                console.error('Native notification error:', error);
+            }
+        }
+
+        // Enable notifications
+        async function enableNotifications() {
+            if (!window.notificationManager) {
+                showNotification('Notification manager not available', 'error');
+                return;
+            }
+
+            const permission = await window.notificationManager.requestPermission();
+
+            if (permission === 'granted') {
+                showNotification('Native notifications enabled!', 'success');
+
+                // Show test notification
+                setTimeout(async () => {
+                    await window.notificationManager.showNativeNotification(
+                        '🎉 Notifications Enabled',
+                        {
+                            body: 'You will now receive bakery alerts on this device',
+                            icon: '/static/avatar.png',
+                            tag: 'welcome-notification'
+                        }
+                    );
+                }, 1000);
+
+                updateNotificationStatus();
+            } else {
+                showNotification('Notification permission not granted', 'warning');
+            }
+        }
+
+        // Log notifications for demo
+        function logNotification(type, message) {
+            const log = document.getElementById('notificationLog');
+            const entry = document.createElement('div');
+            entry.className = 'p-3 bg-white rounded-lg border text-sm';
+            entry.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="font-medium text-gray-900">${type}</div>
+                        <div class="text-gray-600">${message}</div>
+                    </div>
+                    <div class="text-xs text-gray-400">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+
+            // Remove placeholder if exists
+            if (log.querySelector('.italic')) {
+                log.innerHTML = '';
+            }
+
+            log.insertBefore(entry, log.firstChild);
+
+            // Keep only last 10 entries
+            while (log.children.length > 10) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Enhanced notification function (same as in dashboard)
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            const bgColor = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            }[type] || 'bg-blue-500';
+
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Slide in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Slide out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            // Wait a bit for notification manager to initialize
+            setTimeout(() => {
+                updateNotificationStatus();
+            }, 1000);
+
+            // Update status every 5 seconds
+            setInterval(updateNotificationStatus, 5000);
+        });
+    </script>
+ 
+</body>
+
+</html>

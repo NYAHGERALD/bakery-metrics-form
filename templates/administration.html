@@ -780,6 +780,27 @@
             white-space: nowrap;
             border: 0;
         }
+
+        /* Enhanced backdrop blur support */
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .backdrop-blur-lg {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Fallback for browsers that don't support backdrop-filter */
+        @supports not (backdrop-filter: blur(12px)) {
+            .backdrop-blur-md {
+                background: rgba(59, 130, 246, 0.3) !important;
+            }
+            .backdrop-blur-lg {
+                background: rgba(79, 70, 229, 0.3) !important;
+            }
+        }
     </style>
 </head>
 
@@ -998,7 +1019,7 @@
         </aside>
 
         <!-- Mobile Menu Overlay -->
-        <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"></div>
+        <div id="mobileMenuOverlay" class="fixed inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/30 backdrop-blur-md z-30 lg:hidden hidden"></div>
 
         <!-- Main Content -->
         <main class="flex-1 w-full lg:ml-0 min-h-screen">
@@ -2513,7 +2534,7 @@
     </div>
 
     <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="loadingSpinner" class="fixed inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/30 backdrop-blur-md flex items-center justify-center z-50 hidden">
         <div class="glass-card p-8 rounded-2xl">
             <div class="flex items-center space-x-4">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -5773,7 +5794,7 @@
             if (!overlay) {
                 overlay = document.createElement('div');
                 overlay.id = 'loadingOverlay';
-                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                overlay.className = 'fixed inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-600/30 backdrop-blur-md flex items-center justify-center z-50';
                 overlay.innerHTML = `
                     <div class="bg-white rounded-xl p-6 text-center shadow-2xl">
                         <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>

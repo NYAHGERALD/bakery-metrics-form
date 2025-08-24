@@ -509,6 +509,16 @@ def public_info():
     except Exception as e:
         logger.error(f"Error loading info page: {e}")
         return render_template('index.html'), 500
+
+
+@app.route('/sw.js')
+def service_worker():
+    """Serve the service worker file"""
+    try:
+        return app.send_static_file('sw.js')
+    except Exception as e:
+        logger.error(f"Error serving service worker: {e}")
+        return "Service worker not found", 404
       
 
 @app.route('/verify-email', methods=['POST'])

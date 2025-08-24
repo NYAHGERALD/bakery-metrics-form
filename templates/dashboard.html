@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="{{ url_for('static', filename='notification-manager.js') }}"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -186,6 +187,27 @@
 
             50% {
                 opacity: 0.5;
+            }
+        }
+
+        /* Enhanced backdrop blur support */
+        .backdrop-blur-md {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .backdrop-blur-lg {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Fallback for browsers that don't support backdrop-filter */
+        @supports not (backdrop-filter: blur(12px)) {
+            .backdrop-blur-md {
+                background: rgba(59, 130, 246, 0.3) !important;
+            }
+            .backdrop-blur-lg {
+                background: rgba(79, 70, 229, 0.3) !important;
             }
         }
 
@@ -1277,7 +1299,7 @@
 
         <!-- Mobile Sidebar Overlay -->
         <div id="mobileSidebarOverlay"
-            class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden backdrop-blur-sm"></div>
+            class="fixed inset-0 bg-gradient-to-br from-blue-500/15 to-indigo-600/25 backdrop-blur-sm z-40 lg:hidden hidden"></div>
 
         <!-- Mobile Sidebar -->
         <aside id="mobileSidebar"
@@ -1520,7 +1542,8 @@
                         <!-- Settings -->
                         <div class="relative">
                             <button id="settingsBtn"
-                                class="p-3 hover:bg-gray-100 rounded-xl transition-all duration-300 group">
+                                class="p-3 hover:bg-gray-100 rounded-xl transition-all duration-300 group"
+                                title="Settings & Preferences">
                                 <i data-lucide="settings"
                                     class="w-5 h-5 text-gray-600 group-hover:rotate-90 group-hover:scale-110 transition-all duration-300"></i>
                             </button>
@@ -2157,9 +2180,16 @@
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
-                <button id="closeNotificationPanel" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button id="notificationPanelSettings" onclick="showNotificationSettings()" 
+                            class="p-2 hover:bg-gray-100 rounded-xl transition-colors" 
+                            title="Notification Preferences">
+                        <i data-lucide="settings" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                    <button id="closeNotificationPanel" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <div id="notificationContent" class="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-120px)]">
@@ -2691,7 +2721,7 @@
             }
         }
 
-        // Load notifications from API
+        // Enhanced notification loading with native notifications
         async function loadNotifications() {
             try {
                 const response = await fetch('/api/notifications', {
@@ -2709,6 +2739,9 @@
                 const data = await response.json();
 
                 if (data.success && data.notifications) {
+                    // Check for new notifications since last load
+                    await checkForNewNotifications(data.notifications);
+                    
                     // Filter notifications to only show recent ones (24 hours)
                     const recentNotifications = filterRecentNotifications(data.notifications);
 
@@ -2726,6 +2759,87 @@
                 console.error('Failed to load notifications:', error);
                 updateNotificationBadge(0);
                 showNotificationError();
+            }
+        }
+
+        // Check for new notifications and show native notifications
+        async function checkForNewNotifications(notifications) {
+            if (!window.notificationManager || !window.notificationManager.canShowNotifications()) {
+                return;
+            }
+
+            const lastCheckTime = localStorage.getItem('lastNotificationCheck') || new Date(0).toISOString();
+            const lastCheck = new Date(lastCheckTime);
+
+            // Find notifications that are newer than last check
+            const newNotifications = notifications.filter(notification => 
+                new Date(notification.created_at) > lastCheck
+            );
+
+            // Show native notifications for new items
+            for (const notification of newNotifications) {
+                await showNativeNotificationFromData(notification);
+            }
+
+            // Update last check time
+            if (newNotifications.length > 0) {
+                const now = new Date().toISOString();
+                localStorage.setItem('lastNotificationCheck', now);
+            }
+        }
+
+        // Show native notification from notification data
+        async function showNativeNotificationFromData(notificationData) {
+            if (!window.notificationManager) return;
+
+            const iconMap = {
+                'form_submission': '/static/avatar.png',
+                'issue_report': '/static/avatar.png',
+                'inventory_alert': '/static/avatar.png',
+                'kpi_alert': '/static/avatar.png',
+                'week_update': '/static/avatar.png'
+            };
+
+            const titleMap = {
+                'form_submission': '✅ Form Submission',
+                'issue_report': '⚠️ Issue Report',
+                'inventory_alert': '📦 Inventory Update',
+                'kpi_alert': '📊 Performance Alert',
+                'week_update': '📅 Week Update'
+            };
+
+            const urgencyMap = {
+                'kpi_alert': true,
+                'issue_report': true,
+                'inventory_alert': false,
+                'form_submission': false,
+                'week_update': false
+            };
+
+            const title = titleMap[notificationData.type] || '🔔 Bakery Notification';
+            const options = {
+                body: notificationData.description,
+                icon: iconMap[notificationData.type] || '/static/avatar.png',
+                badge: '/static/avatar.png',
+                tag: `bakery-${notificationData.type}-${Date.now()}`,
+                timestamp: new Date(notificationData.created_at).getTime(),
+                requireInteraction: urgencyMap[notificationData.type] || false,
+                data: {
+                    type: notificationData.type,
+                    url: '/',
+                    timestamp: notificationData.created_at
+                }
+            };
+
+            // Add vibration for mobile devices on urgent notifications
+            if (urgencyMap[notificationData.type] && 'vibrate' in navigator) {
+                options.vibrate = [200, 100, 200];
+            }
+
+            try {
+                await window.notificationManager.showEnhancedNotification(title, options);
+            } catch (error) {
+                console.error('Error showing native notification:', error);
             }
         }
 
@@ -2825,13 +2939,39 @@
         // Show empty state
         function showNoNotifications() {
             const container = document.getElementById('notificationContent');
+            
+            // Check if native notifications are enabled
+            const nativeEnabled = window.notificationManager?.canShowNotifications() || false;
+            
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-12 text-gray-500">
                     <i data-lucide="bell-off" class="w-12 h-12 text-gray-300 mb-4"></i>
                     <h4 class="text-lg font-medium text-gray-600 mb-2">No notifications yet</h4>
-                    <p class="text-sm text-gray-400 text-center">
+                    <p class="text-sm text-gray-400 text-center mb-4">
                         New notifications will appear here when there's activity in your bakery operations.
                     </p>
+                    ${!nativeEnabled ? `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4 max-w-sm">
+                            <div class="flex items-start space-x-3">
+                                <i data-lucide="smartphone" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                                <div>
+                                    <h5 class="text-sm font-medium text-blue-900 mb-1">Enable Native Notifications</h5>
+                                    <p class="text-xs text-blue-700 mb-2">Get desktop & mobile alerts even when the app is closed</p>
+                                    <button onclick="showNotificationSettings()" 
+                                            class="text-xs bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors">
+                                        Enable Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-4 max-w-sm">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                                <span class="text-xs text-green-700">Native notifications enabled</span>
+                            </div>
+                        </div>
+                    `}
                 </div>
             `;
             lucide.createIcons();
@@ -4390,7 +4530,7 @@
 
         function showAboutModal() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-600/30 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-white rounded-2xl p-8 max-w-md mx-4 relative animate-scale-in">
                     <button onclick="this.closest('.fixed').remove()" class="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg">
@@ -4417,7 +4557,15 @@
 
         function showNotificationSettings() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-indigo-600/30 backdrop-blur-md';
+            
+            // Get current notification status
+            const nativeNotificationStatus = window.notificationManager?.getNotificationStats() || {
+                isSupported: false,
+                permission: 'denied',
+                canShow: false
+            };
+            
             modal.innerHTML = `
                 <div class="bg-white rounded-2xl p-8 max-w-lg mx-4 relative animate-scale-in">
                     <button onclick="this.closest('.fixed').remove()" class="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg">
@@ -4429,33 +4577,77 @@
                             Notification Preferences
                         </h3>
                         <div class="space-y-4">
+                            <!-- Native Browser Notifications -->
+                            <div class="p-4 border-2 border-blue-100 bg-blue-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-medium text-blue-900 flex items-center">
+                                            <i data-lucide="smartphone" class="w-4 h-4 mr-2"></i>
+                                            Native Notifications
+                                        </h4>
+                                        <p class="text-sm text-blue-700">Desktop & mobile push notifications</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        ${nativeNotificationStatus.canShow 
+                                            ? '<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Enabled</span>'
+                                            : '<span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Disabled</span>'
+                                        }
+                                    </div>
+                                </div>
+                                <div class="text-xs text-blue-600 mb-3">
+                                    Status: ${nativeNotificationStatus.permission === 'granted' ? 'Allowed' : 
+                                             nativeNotificationStatus.permission === 'denied' ? 'Blocked' : 'Not Asked'}
+                                    ${!nativeNotificationStatus.isSupported ? '(Not Supported)' : ''}
+                                </div>
+                                ${!nativeNotificationStatus.canShow ? `
+                                    <button onclick="enableNativeNotifications()" 
+                                            class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                                        <i data-lucide="bell" class="w-4 h-4 mr-2 inline"></i>
+                                        Enable Native Notifications
+                                    </button>
+                                ` : `
+                                    <div class="flex items-center text-sm text-green-700">
+                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                                        Native notifications are active
+                                    </div>
+                                `}
+                            </div>
+                            
+                            <!-- In-App Notifications -->
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <h4 class="font-medium text-gray-900">System Alerts</h4>
-                                    <p class="text-sm text-gray-500">Get notified about system issues</p>
+                                    <p class="text-sm text-gray-500">Performance and KPI alerts</p>
                                 </div>
-                                <input type="checkbox" checked class="rounded">
+                                <input type="checkbox" id="systemAlertsToggle" checked class="rounded">
                             </div>
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <h4 class="font-medium text-gray-900">Inventory Alerts</h4>
                                     <p class="text-sm text-gray-500">Low stock and inventory updates</p>
                                 </div>
-                                <input type="checkbox" checked class="rounded">
+                                <input type="checkbox" id="inventoryAlertsToggle" checked class="rounded">
                             </div>
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
-                                    <h4 class="font-medium text-gray-900">Order Updates</h4>
-                                    <p class="text-sm text-gray-500">New orders and status changes</p>
+                                    <h4 class="font-medium text-gray-900">Form Submissions</h4>
+                                    <p class="text-sm text-gray-500">New form submissions and updates</p>
                                 </div>
-                                <input type="checkbox" class="rounded">
+                                <input type="checkbox" id="formAlertsToggle" checked class="rounded">
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Sound Alerts</h4>
+                                    <p class="text-sm text-gray-500">Audio notifications for alerts</p>
+                                </div>
+                                <input type="checkbox" id="soundAlertsModal" ${localStorage.getItem('soundAlerts') !== 'false' ? 'checked' : ''} class="rounded">
                             </div>
                         </div>
                         <div class="flex justify-end space-x-3 mt-6">
                             <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                                 Cancel
                             </button>
-                            <button onclick="this.closest('.fixed').remove(); showNotification('Notification preferences saved!', 'success')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <button onclick="saveNotificationPreferences(); this.closest('.fixed').remove()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                 Save Changes
                             </button>
                         </div>
@@ -4464,6 +4656,71 @@
             `;
             document.body.appendChild(modal);
             lucide.createIcons();
+        }
+
+        // Enable native notifications
+        async function enableNativeNotifications() {
+            if (!window.notificationManager) {
+                showNotification('Notification manager not available', 'error');
+                return;
+            }
+            
+            const permission = await window.notificationManager.requestPermission();
+            
+            if (permission === 'granted') {
+                showNotification('Native notifications enabled! You will now receive desktop notifications.', 'success');
+                
+                // Show a test notification
+                setTimeout(async () => {
+                    await window.notificationManager.showNativeNotification(
+                        '🎉 Notifications Enabled',
+                        {
+                            body: 'You will now receive bakery alerts on this device',
+                            icon: '/static/avatar.png',
+                            tag: 'test-notification'
+                        }
+                    );
+                }, 1000);
+                
+                // Close and reopen modal to update status
+                setTimeout(() => {
+                    document.querySelector('.fixed.inset-0').remove();
+                    showNotificationSettings();
+                }, 2000);
+            } else if (permission === 'denied') {
+                showNotification('Notifications blocked. Please enable in browser settings.', 'warning');
+            } else {
+                showNotification('Notification permission not granted', 'warning');
+            }
+        }
+
+        // Save notification preferences
+        function saveNotificationPreferences() {
+            const systemAlerts = document.getElementById('systemAlertsToggle')?.checked || false;
+            const inventoryAlerts = document.getElementById('inventoryAlertsToggle')?.checked || false;
+            const formAlerts = document.getElementById('formAlertsToggle')?.checked || false;
+            const soundAlerts = document.getElementById('soundAlertsModal')?.checked || false;
+            
+            // Save to localStorage
+            localStorage.setItem('systemAlertsEnabled', systemAlerts.toString());
+            localStorage.setItem('inventoryAlertsEnabled', inventoryAlerts.toString());
+            localStorage.setItem('formAlertsEnabled', formAlerts.toString());
+            localStorage.setItem('soundAlerts', soundAlerts.toString());
+            
+            // Update main sound toggle
+            const mainSoundToggle = document.getElementById('soundToggle');
+            if (mainSoundToggle) {
+                const toggleSwitch = mainSoundToggle.querySelector('.relative');
+                if (soundAlerts) {
+                    toggleSwitch?.classList.add('bg-blue-600');
+                    toggleSwitch?.classList.remove('bg-gray-200');
+                } else {
+                    toggleSwitch?.classList.remove('bg-blue-600');
+                    toggleSwitch?.classList.add('bg-gray-200');
+                }
+            }
+            
+            showNotification('Notification preferences saved!', 'success');
         }
 
         function loadUserSettings() {
@@ -4534,7 +4791,7 @@
             // Create blocking modal
             const modal = document.createElement('div');
             modal.id = 'password-change-modal';
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center';
+            modal.className = 'fixed inset-0 bg-gradient-to-br from-blue-500/25 to-indigo-600/35 backdrop-blur-lg z-[9999] flex items-center justify-center';
             modal.style.pointerEvents = 'all';
             
             modal.innerHTML = `
@@ -4593,6 +4850,91 @@
         document.addEventListener('DOMContentLoaded', function() {
             startPasswordChangeEnforcement();
         });
+
+        // Initialize native notification system
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for notification manager to be available
+            if (window.notificationManager) {
+                console.log('Notification Manager initialized:', window.notificationManager.getNotificationStats());
+                
+                // Set initial check time if not set
+                if (!localStorage.getItem('lastNotificationCheck')) {
+                    localStorage.setItem('lastNotificationCheck', new Date().toISOString());
+                }
+                
+                // Show welcome notification if native notifications are enabled
+                if (window.notificationManager.canShowNotifications()) {
+                    setTimeout(async () => {
+                        await window.notificationManager.showNativeNotification(
+                            '🏪 Bakery Dashboard Ready',
+                            {
+                                body: 'You will receive notifications for important bakery updates',
+                                icon: '/static/avatar.png',
+                                tag: 'welcome-notification',
+                                requireInteraction: false
+                            }
+                        );
+                    }, 3000);
+                }
+            } else {
+                console.warn('Notification Manager not available');
+            }
+        });
+
+        // Enhanced in-app notification function with native notification integration
+        function showNotification(message, type = 'info') {
+            // Show in-app notification
+            const notification = document.createElement('div');
+            const bgColor = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            }[type] || 'bg-blue-500';
+            
+            notification.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Slide in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Slide out and remove
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+
+            // Also show as native notification for important messages
+            if (window.notificationManager && window.notificationManager.canShowNotifications()) {
+                const shouldShowNative = (type === 'error' || type === 'warning') || 
+                                       (type === 'success' && (message.includes('submitted') || message.includes('alert')));
+                
+                if (shouldShowNative) {
+                    const iconMap = {
+                        success: '✅',
+                        error: '❌',
+                        warning: '⚠️',
+                        info: 'ℹ️'
+                    };
+                    
+                    setTimeout(async () => {
+                        await window.notificationManager.showNativeNotification(
+                            `${iconMap[type]} Bakery Alert`,
+                            {
+                                body: message,
+                                icon: '/static/avatar.png',
+                                tag: `app-notification-${type}`,
+                                requireInteraction: type === 'error'
+                            }
+                        );
+                    }, 500);
+                }
+            }
+        }
 
     </script>
 </body>
