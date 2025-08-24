@@ -25,7 +25,7 @@ load_dotenv()
 
 # Flask App Configuration
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', '')
+app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 app.permanent_session_lifetime = timedelta(hours=2)
 
 # Database Configuration
@@ -230,6 +230,47 @@ def add_cache_control_headers(f):
 @app.before_request
 def make_session_permanent():
     session.permanent = True
+
+# Google Sheets Configuration (for legacy compatibility if needed)
+try:
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
+    from googleapiclient.discovery import build
+    
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    credentials_path = os.getenv('GOOGLE_CREDENTIALS_PATH', '/etc/secrets/credentials.json')
+    
+    if os.path.exists(credentials_path):
+        creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+        client = gspread.authorize(creds)
+        drive_service = build('drive', 'v3', credentials=creds)
+        SPREADSHEET_ID = os.getenv('GOOGLE_SPREADSHEET_ID', '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ')
+        SHEET_NAME = "Foreign Material Reports"
+        SPREADSHEET_NAME = 'BAKERY METRICS_2024-2025'
+        
+        # Helper to get latest week sheet name
+        def get_latest_week_sheet():
+            spreadsheet = client.open_by_key(SPREADSHEET_ID)
+            sheet_names = spreadsheet.worksheets()
+            pattern = re.compile(r"(\d{2}-\d{2}-\d{4})_\d{2}-\d{2}-\d{4}")
+
+            def extract_date(sheet):
+                match = pattern.match(sheet.title)
+                if match:
+                    return datetime.strptime(match.group(1), "%m-%d-%Y")
+                return datetime.min
+
+            sorted_sheets = sorted(sheet_names, key=extract_date, reverse=True)
+            return sorted_sheets[0].title if sorted_sheets else ""
+    else:
+        logger.warning("Google credentials not found, Google Sheets functionality disabled")
+        client = None
+        drive_service = None
+        
+except ImportError:
+    logger.warning("Google API libraries not installed, Google Sheets functionality disabled")
+    client = None
+    drive_service = None
 
 # Helper Functions
 def log_submission(user_id, user_name, user_email, submission_type, message, week_sheet=None, day_of_week=None, success=True):

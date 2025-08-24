@@ -1,26 +1,50 @@
 
-# Environment variables and secrets
+# -------------------------
+# Environment / Secrets
+# -------------------------
 .env
+.env.*
 .env.local
 .env.development
 .env.production
 .env.test
 *.env
+.envrc
 
-# Google API credentials
+# -------------------------
+# Credentials / Keys / Certificates
+# -------------------------
 credentials.json
 credentials.json.save
 service-account-key.json
 google-credentials.json
+service*.json
+*.pem
+*.key
+*.crt
+*.cer
+*.csr
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+auth.json
+token.json
 
+# -------------------------
 # Database files
+# -------------------------
 *.db
 *.sqlite
 *.sqlite3
+*.dump
+*.sql.gz
 bakery_data.db
 bakery_metrics_db
 
+# -------------------------
 # Python
+# -------------------------
 __pycache__/
 *.py[cod]
 *$py.class
@@ -39,12 +63,15 @@ sdist/
 var/
 wheels/
 share/python-wheels/
+pip-wheel-metadata/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Virtual environments
+# -------------------------
+# Virtual Environments
+# -------------------------
 venv/
 test_env/
 env/
@@ -53,31 +80,26 @@ env.bak/
 venv.bak/
 .venv/
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# Node.js (if using Node for frontend tools)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
-
-# Logs and temporary files
+# -------------------------
+# Logs
+# -------------------------
 *.log
 logs/
+*.out
 temp/
 tmp/
-cookies.txt
 
-# OS generated files
+# -------------------------
+# Temporary / Cache files
+# -------------------------
+cookies.txt
+*.tmp
+*.temp
+*.cache
+
+# -------------------------
+# OS / Editor
+# -------------------------
 .DS_Store
 .DS_Store?
 ._*
@@ -85,30 +107,74 @@ cookies.txt
 .Trashes
 ehthumbs.db
 Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Security and authentication
-*.key
-*.pem
-*.p12
-*.crt
-*.csr
-auth.json
-token.json
+# -------------------------
+# Node.js (Tailwind CLI, frontend tools)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
 
-# Backup files
+# Tailwind / CSS build artifacts
+static/css/output.css   # (ignore if Render builds it from input.css)
+*.map
+
+# -------------------------
+# Testing / Coverage
+# -------------------------
+*.cover
+*.coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.hypothesis/
+*test*.py
+*debug*.py
+*test*.html
+profile_dropdown_test.html
+
+# -------------------------
+# Jupyter
+# -------------------------
+.ipynb_checkpoints
+
+# -------------------------
+# Security and backup files
+# -------------------------
 *.bak
 *.backup
 *.old
 *.orig
 
+# -------------------------
 # Cache directories
+# -------------------------
 .cache/
-.pytest_cache/
-.coverage
-htmlcov/
 
+# -------------------------
 # Application specific
+# -------------------------
 uploads/
 static/uploads/
 media/
-static/css/output.css   # (ignore if Render builds it from input.css)
+
+# -------------------------
+# Deployment
+# -------------------------
+# Keep render.yaml for Render deployments
+# Ignore any local-only migration/testing scripts
+*migration*.sql
+*backup*.sql
+*test*.sql
+*MIGRATION*.md
+*WASTE*.md
