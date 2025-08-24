@@ -1,5 +1,121 @@
-
+# -------------------------
+# Python
+# -------------------------
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Build & Distribution
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+
+# -------------------------
+# Environment / Secrets
+# -------------------------
 .env
+.env.*
+*.env
+.envrc
+
+# Database files (SQLite or local testing)
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+
+# Credentials / Keys / Certificates
 credentials.json
-credentials.json.save
+service*.json
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# -------------------------
+# Logs
+# -------------------------
+*.log
+logs/
+*.out
+
+# -------------------------
+# OS / Editor
+# -------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# -------------------------
+# Node.js (Tailwind CLI, frontend tools)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Tailwind / CSS build artifacts
+static/css/output.css   # (ignore if Render builds it from input.css)
+*.map
+dist/
+build/
+
+# -------------------------
+# Testing / Coverage
+# -------------------------
+*.cover
+*.coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.hypothesis/
+*test*.py
+*debug*.py
+*test*.html
+profile_dropdown_test.html
+
+# -------------------------
+# Jupyter
+# -------------------------
+.ipynb_checkpoints
+
+# -------------------------
+# Deployment
+# -------------------------
+# Keep render.yaml for Render deployments
+# Ignore any local-only migration/testing scripts
+*migration*.sql
+*backup*.sql
+*test*.sql
+*MIGRATION*.md
+*WASTE*.md

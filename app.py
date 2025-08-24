@@ -29,7 +29,7 @@ shift_data_ranges = {
 # --- Flask App Config ---
 load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'v@^i4N9r#2LjkU7!XzYp0aE&$RmW'
+app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 app.permanent_session_lifetime = timedelta(hours=1)
 
 @app.before_request
@@ -37,12 +37,13 @@ def make_session_permanent():
     session.permanent = True
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-#creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
-creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/credentials.json', scope)
+# Use environment variable for credentials path, fallback to /etc/secrets for Render
+credentials_path = os.getenv('GOOGLE_CREDENTIALS_PATH', '/etc/secrets/credentials.json')
+creds = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 client = gspread.authorize(creds)
-SPREADSHEET_ID = '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ'
+SPREADSHEET_ID = os.getenv('GOOGLE_SPREADSHEET_ID', '15YC7uMlrecjNDuwyT1fzRhipxmtjjzhfibxnLxoYkoQ')
 SHEET_NAME = "Foreign Material Reports"
-GOOGLE_DRIVE_FOLDER_ID = "1O5-wG6PWFTXI-gldzZhqknp03gxyXRyv"  # create or reuse "FM-Images" folder
+GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', "1O5-wG6PWFTXI-gldzZhqknp03gxyXRyv")
 # Your Spreadsheet name
 SPREADSHEET_NAME = 'BAKERY METRICS_2024-2025'
 
@@ -135,7 +136,9 @@ def verify_email():
         session['email'] = email  # ✅ Add this line here
         session['user_full_name'] = full_name
 
-        if stored_password == "tortilla#" and password == "tortilla#":
+        # Check for default password that requires change
+        default_password = os.getenv('DEFAULT_TEMP_PASSWORD', 'tortilla#')
+        if stored_password == default_password and password == default_password:
             return redirect(url_for('set_password'))
 
         if stored_password == password:
