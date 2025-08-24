@@ -111,3 +111,4 @@ htmlcov/
 uploads/
 static/uploads/
 media/
+static/css/output.css   # (ignore if Render builds it from input.css)
