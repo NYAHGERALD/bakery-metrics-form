@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ document_type }} - Bakery Metrics">
+    <meta name="robots" content="index, follow">
+    <title>{{ document_type }} - Bakery Metrics</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .legal-content {
+            line-height: 1.8;
+        }
+        
+        .legal-content h1 {
+            @apply text-3xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-4;
+        }
+        
+        .legal-content h2 {
+            @apply text-2xl font-semibold text-gray-800 mb-4 mt-8;
+        }
+        
+        .legal-content h3 {
+            @apply text-xl font-medium text-gray-700 mb-3 mt-6;
+        }
+        
+        .legal-content p {
+            @apply text-gray-600 mb-4;
+        }
+        
+        .legal-content ul, .legal-content ol {
+            @apply text-gray-600 mb-4 pl-6;
+        }
+        
+        .legal-content li {
+            @apply mb-2;
+        }
+        
+        .legal-content ul li {
+            @apply list-disc;
+        }
+        
+        .legal-content ol li {
+            @apply list-decimal;
+        }
+        
+        .legal-content strong {
+            @apply font-semibold text-gray-800;
+        }
+        
+        .legal-content em {
+            @apply italic;
+        }
+        
+        .legal-content a {
+            @apply text-blue-600 hover:text-blue-800 underline transition-colors duration-200;
+        }
+        
+        .legal-content blockquote {
+            @apply border-l-4 border-blue-300 pl-4 py-2 my-4 bg-blue-50 text-gray-700 italic;
+        }
+        
+        .legal-content table {
+            @apply w-full border-collapse border border-gray-300 my-6;
+        }
+        
+        .legal-content th, .legal-content td {
+            @apply border border-gray-300 px-4 py-2 text-left;
+        }
+        
+        .legal-content th {
+            @apply bg-gray-50 font-semibold text-gray-800;
+        }
+        
+        .legal-content td {
+            @apply text-gray-600;
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased bg-gray-50">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50">
+        Skip to main content
+    </a>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200" role="navigation" aria-label="Main navigation">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <a href="/" class="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors duration-200">Bakery Department</a>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="flex space-x-4">
+                    <a href="/" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content" class="py-8 lg:py-12">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <!-- Breadcrumb -->
+            <nav class="mb-8" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2 text-sm text-gray-500">
+                    <li>
+                        <a href="/" class="hover:text-blue-600 transition-colors duration-200">Home</a>
+                    </li>
+                    <li>
+                        <svg class="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </li>
+                    <li aria-current="page" class="font-medium text-gray-900">{{ document_type }}</li>
+                </ol>
+            </nav>
+
+            {% if error %}
+                <!-- Error State -->
+                <div class="bg-white rounded-lg shadow-sm border border-red-200 p-8 text-center">
+                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ document_type }}</h1>
+                    <p class="text-gray-600 mb-6">{{ error }}</p>
+                    <a href="/" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Return to Home
+                    </a>
+                </div>
+            {% else %}
+                <!-- Document Content -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <!-- Header -->
+                    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h1 class="text-2xl font-bold text-gray-900">{{ document_type }}</h1>
+                            {% if document and document.version %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    Version {{ document.version }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        {% if document and document.effective_date %}
+                            <p class="mt-2 text-sm text-gray-600">
+                                Effective Date: {{ document.effective_date.strftime('%B %d, %Y') if document.effective_date else 'Not specified' }}
+                            </p>
+                        {% endif %}
+                        {% if document and document.updated_at %}
+                            <p class="text-sm text-gray-500">
+                                Last Updated: {{ document.updated_at.strftime('%B %d, %Y at %I:%M %p') if document.updated_at else 'Not specified' }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content -->
+                    <div class="px-6 py-8">
+                        {% if document and document.content %}
+                            <div class="legal-content prose prose-lg max-w-none">
+                                {{ document.content | safe }}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-12">
+                                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mb-4">
+                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No Content Available</h3>
+                                <p class="text-gray-600">This document is currently being prepared and will be available soon.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="mt-8 bg-blue-50 rounded-lg border border-blue-200 p-6">
+                    <h2 class="text-lg font-semibold text-blue-900 mb-3">Questions or Concerns?</h2>
+                    <p class="text-blue-800 mb-4">
+                        If you have any questions about this {{ document_type.lower() }}, please don't hesitate to contact us.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <a href="/#contact" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Contact Support
+                        </a>
+                        <a href="/" class="inline-flex items-center justify-center px-4 py-2 bg-white text-blue-600 font-medium rounded-md border border-blue-300 hover:bg-blue-50 transition-colors duration-200">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16" role="contentinfo">
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                <!-- Logo and Company -->
+                <div class="flex items-center space-x-3">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
+                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <span class="font-semibold">Bakery Metrics</span>
+                </div>
+
+                <!-- Legal Links -->
+                <div class="flex flex-wrap items-center gap-6 text-sm">
+                    <a href="/privacy-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Privacy Policy</a>
+                    <a href="/terms-of-service" class="text-gray-400 hover:text-white transition-colors duration-200">Terms of Service</a>
+                    <a href="/cookie-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Cookie Policy</a>
+                    <a href="/security-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Security</a>
+                    <a href="/compliance-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Compliance</a>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="border-t border-gray-800 mt-6 pt-6 text-center">
+                <p class="text-gray-400 text-sm">
+                    &copy; 2025 Bakery Metrics. All rights reserved. Created by Gerald Nyah.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Print Styles -->
+    <style media="print">
+        @page {
+            margin: 1in;
+        }
+        
+        nav, footer, .no-print {
+            display: none !important;
+        }
+        
+        .legal-content {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+        
+        .legal-content h1 {
+            font-size: 18pt;
+            margin-bottom: 16pt;
+        }
+        
+        .legal-content h2 {
+            font-size: 16pt;
+            margin-bottom: 12pt;
+            margin-top: 20pt;
+        }
+        
+        .legal-content h3 {
+            font-size: 14pt;
+            margin-bottom: 8pt;
+            margin-top: 16pt;
+        }
+        
+        .legal-content p {
+            margin-bottom: 8pt;
+        }
+        
+        a {
+            color: black !important;
+            text-decoration: none !important;
+        }
+        
+        .bg-blue-50, .bg-gray-50 {
+            background: white !important;
+        }
+        
+        .border {
+            border: 1px solid #ccc !important;
+        }
+    </style>
+</body>
+</html>

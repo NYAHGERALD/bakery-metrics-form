@@ -1,13 +1,869 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="../static/css/output.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional analytics platform for modern bakeries. Track metrics, manage inventory, and optimize performance with enterprise-grade tools.">
+    <meta name="keywords" content="bakery analytics, production metrics, inventory management, OEE tracking, food production software">
+    <meta name="author" content="Bakery Metrics">
+    <meta property="og:title" content="Bakery Metrics - Transform Your Bakery Operations">
+    <meta property="og:description" content="Professional analytics platform for modern bakeries. Track metrics, manage inventory, and optimize performance.">
+    <meta property="og:type" content="website">
+    <title>Bakery Metrics - Transforming Our Bakery Operations</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-  <h1 class="text-3xl font-bold underline bg-red-500">
-    Hello world!
-  </h1>
+
+<body class="font-sans antialiased">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50">
+        Skip to main content
+    </a>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 backdrop-blur-lg shadow-xl z-50 transition-all duration-300" role="navigation" aria-label="Main navigation">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 md:h-20 items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 shadow-lg ring-2 ring-white/20">
+                        <svg class="h-6 w-6 md:h-7 md:w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xl md:text-2xl font-bold text-white">Bakery Metrics</span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex md:space-x-2">
+                    <a href="#features" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Features</a>
+                    <a href="#about" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">About</a>
+                    <a href="#reviews" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Reviews</a>
+                </div>
+                
+                <!-- CTA Buttons -->
+                <div class="hidden md:flex items-center space-x-3">
+                    <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg hover:from-yellow-300 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">Login</a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <button type="button" id="mobile-menu-button" class="md:hidden rounded-lg p-2 text-white hover:text-yellow-300 hover:bg-white/10 transition-all duration-200 backdrop-blur-sm" aria-expanded="false" aria-label="Toggle main menu">
+                    <svg id="menu-icon" class="h-6 w-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg id="close-icon" class="h-6 w-6 hidden transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 border-t border-white/10">
+            <div class="px-4 py-4 space-y-2">
+                <a href="#features" class="block px-4 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 transform hover:translate-x-2">
+                    <i class="fas fa-chart-bar mr-3 text-yellow-400"></i>Features
+                </a>
+                <a href="#about" class="block px-4 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 transform hover:translate-x-2">
+                    <i class="fas fa-info-circle mr-3 text-green-400"></i>About
+                </a>
+                <a href="#reviews" class="block px-4 py-3 text-base font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 transform hover:translate-x-2">
+                    <i class="fas fa-star mr-3 text-purple-400"></i>Reviews
+                </a>
+                <div class="border-t border-white/10 pt-4 mt-4">
+                    <a href="/login" class="block mt-2 px-4 py-3 text-base font-semibold text-gray-900 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg hover:from-yellow-300 hover:to-orange-400 transition-all duration-200 transform hover:scale-105 text-center">
+                        <i class="fas fa-user-plus mr-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" aria-labelledby="hero-heading">
+            <!-- Animated background elements -->
+            <div class="absolute inset-0 overflow-hidden">
+                <div class="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-white/10 blur-3xl animate-pulse"></div>
+                <div class="absolute bottom-1/4 left-1/4 h-48 w-48 rounded-full bg-white/10 blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+                <div class="absolute top-1/2 left-1/2 h-36 w-36 rounded-full bg-white/10 blur-3xl animate-pulse" style="animation-delay: 4s;"></div>
+            </div>
+            
+            <div class="relative z-10 w-full pt-16">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+                    <div class="mx-auto max-w-4xl">
+                        <h1 id="hero-heading" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
+                            Transform Your 
+                            <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                                Bakery Operations
+                            </span>
+                        </h1>
+                        
+                        <p class="text-lg md:text-xl text-white/90 leading-8 mb-8 mx-auto max-w-3xl">
+                            Our professional analytics platform to Track metrics, verify inventory, and optimize performance with enterprise-grade tools.
+                        </p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                            <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105 hover:shadow-xl">
+                                Get Started Today
+                            </a>
+                            <a href="#features" class="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-4 text-lg font-semibold text-white hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
+                                Learn More
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce" aria-hidden="true">
+                <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-16 md:py-24 bg-white" aria-labelledby="features-heading">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 id="features-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6">Powerful Features</h2>
+                    <p class="text-lg md:text-xl text-gray-600 leading-8 mx-auto max-w-3xl">
+                        Everything you need to optimize your bakery operations with industry-leading tools and insights.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <!-- Real-time Analytics -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-blue-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Real-time Analytics</h3>
+                        <p class="text-gray-600 leading-7">
+                            Monitor OEE, production metrics, and waste with beautiful, interactive dashboards that provide actionable insights.
+                        </p>
+                    </article>
+                    
+                    <!-- Inventory Management -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-green-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Inventory Management</h3>
+                        <p class="text-gray-600 leading-7">
+                            Track raw materials, and optimize inventory accuracy with automated workflows.
+                        </p>
+                    </article>
+                    
+                    <!-- Advanced Reporting -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-purple-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Advanced Reporting</h3>
+                        <p class="text-gray-600 leading-7">
+                            Generate comprehensive reports with exportable data and metrics visualization for informed decision-making.
+                        </p>
+                    </article>
+                    
+                    <!-- Team Collaboration -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-orange-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Team Collaboration</h3>
+                        <p class="text-gray-600 leading-7">
+                            Coordinate across shifts with role-based access, real-time notifications, and integrated machine issues reporting tools.
+                        </p>
+                    </article>
+                    
+                    <!-- 24/7 Support -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-red-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">24/7 Support</h3>
+                        <p class="text-gray-600 leading-7">
+                            Integrated ticketing system with dedicated technical support from our experts.
+                        </p>
+                    </article>
+                    
+                    <!-- Security & Compliance -->
+                    <article class="group relative rounded-2xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-indigo-100 mb-6 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="h-6 w-6 md:h-8 md:w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Security & Compliance</h3>
+                        <p class="text-gray-600 leading-7">
+                            Enterprise-grade security, data encryption, and compliance monitoring for food safety standards.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats/About Section -->
+        <section id="about" class="py-16 md:py-24 bg-gray-50" aria-labelledby="about-heading">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    <div>
+                        <h2 id="about-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6 md:mb-8">About Bakery Metrics</h2>
+                        <p class="text-lg md:text-xl text-gray-600 leading-8 mb-6 md:mb-8">
+                            We're dedicated to transforming how our bakery department operate through data-driven insights and modern technology. Our platform helps bakery manager and supervisors make informed decisions, reduce waste, and optimize production and equipment efficiency.
+                        </p>
+                        <p class="text-lg md:text-xl text-gray-600 leading-8 mb-8 md:mb-12">
+                            With years of experience in bakery operations and food production, we understand the unique challenges faced by modern bakeries and have built our solution to address them directly.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 md:px-8 py-3 md:py-4 text-base font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
+                                Start Your journey here
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6 md:gap-8">
+                        <!-- Stats Cards -->
+                        <div class="rounded-2xl bg-white p-6 md:p-8 text-center shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Positive</div>
+                            <div class="text-gray-600 font-medium text-sm md:text-base">Active Users</div>
+                        </div>
+                        <div class="rounded-2xl bg-white p-6 md:p-8 text-center shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">99.9%</div>
+                            <div class="text-gray-600 font-medium text-sm md:text-base">Uptime</div>
+                        </div>
+                        <div class="rounded-2xl bg-white p-6 md:p-8 text-center shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">24/7</div>
+                            <div class="text-gray-600 font-medium text-sm md:text-base">Support</div>
+                        </div>
+                        <div class="rounded-2xl bg-white p-6 md:p-8 text-center shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">15%</div>
+                            <div class="text-gray-600 font-medium text-sm md:text-base">Avg Efficiency Gain</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Customer Reviews Section -->
+        <section id="reviews" class="py-16 md:py-24 bg-white" aria-labelledby="reviews-heading">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <!-- Section Header -->
+                <div class="text-center mb-12 md:mb-16">
+                    <h2 id="reviews-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+                        What Our Users Say
+                    </h2>
+                    <p class="text-lg md:text-xl text-gray-600 leading-8 mb-8 max-w-3xl mx-auto">
+                        See what other Leads Supervisors and Managers are saying about their experience with our platform.
+                    </p>
+                    
+                    <!-- Average Rating Display -->
+                    <div id="averageRating" class="flex items-center justify-center space-x-4 mb-8">
+                        <div class="flex items-center space-x-1" id="avgStars">
+                            <!-- Stars populated by JavaScript or server-side -->
+                            {% if reviews_data.average_rating > 0 %}
+                                {% for i in range(1, 6) %}
+                                    {% if i <= reviews_data.average_rating|round %}
+                                        <svg class="w-6 h-6 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="w-6 h-6 text-gray-300 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <span id="avgRatingText" class="text-xl font-semibold text-gray-900">
+                            {% if reviews_data.average_rating > 0 %}
+                                {{ reviews_data.average_rating }} out of 5
+                            {% else %}
+                                No ratings yet
+                            {% endif %}
+                        </span>
+                        <span id="totalReviewsText" class="text-gray-600">
+                            {% if reviews_data.total_reviews > 0 %}
+                                Based on {{ reviews_data.total_reviews }} review{{ 's' if reviews_data.total_reviews != 1 else '' }}
+                            {% else %}
+                                Be the first to review!
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Reviews Container -->
+                <div id="reviewsContainer" class="space-y-6 mb-12">
+                    <!-- Loading State -->
+                    <div id="reviewsLoading" class="flex justify-center items-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+
+                    <!-- Reviews Grid -->
+                    <div id="reviewsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style="display: none;">
+                        <!-- Reviews will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- Server-side rendered reviews (fallback) -->
+                    <div id="serverSideReviews" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style="{% if reviews_data.reviews %}display: grid;{% else %}display: none;{% endif %}">
+                        {% if reviews_data.reviews %}
+                            {% for review in reviews_data.reviews %}
+                            <div class="relative rounded-2xl {% if review.is_featured %}ring-2 ring-blue-500 bg-blue-50{% else %}ring-1 ring-gray-200 bg-white{% endif %} p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                {% if review.is_featured %}
+                                <div class="absolute top-4 left-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">Featured</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="flex items-start space-x-4 {% if review.is_featured %}mt-6{% endif %}">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                            {{ review.author_name[0].upper() }}
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4 class="text-lg font-semibold text-gray-900 truncate pr-2">{{ review.author_name }}</h4>
+                                            <div class="flex items-center space-x-1 flex-shrink-0">
+                                                {% for i in range(1, 6) %}
+                                                    {% if i <= review.rating %}
+                                                        <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                                        </svg>
+                                                    {% else %}
+                                                        <svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 24 24">
+                                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                                        </svg>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700 leading-relaxed mb-3 line-clamp-3">{{ review.review_text }}</p>
+                                        <div class="flex items-center justify-between text-sm text-gray-500">
+                                            <span class="capitalize">{{ review.category }}</span>
+                                            <span>{{ review.created_at }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="reviewsEmpty" class="text-center py-12" style="display: none;">
+                        <div class="text-gray-400 mb-4">
+                            <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-500 text-lg">No reviews available at the moment.</p>
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div id="paginationControls" class="flex justify-center items-center space-x-4" style="display: none;">
+                    <button id="prevPageBtn" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span>Previous</span>
+                    </button>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span id="pageInfo" class="text-gray-600 font-medium">Page 1 of 1</span>
+                    </div>
+                    
+                    <button id="nextPageBtn" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <span>Next</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-16 md:py-24 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" aria-labelledby="cta-heading">
+            <div class="mx-auto max-w-4xl text-center px-4 sm:px-6 lg:px-8">
+                <h2 id="cta-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6 md:mb-8">Ready to Optimize Your Process?</h2>
+                <p class="text-lg md:text-xl text-white/90 leading-8 mb-8 md:mb-12">
+                    Join our current users who are already using our platform to improve efficiency and reduce waste.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center">
+                    <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
+                        Start Here
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white" role="contentinfo">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
+                <!-- Company Info -->
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-white">Bakery Metrics</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 leading-relaxed">
+                        Professional analytics platform. Transform your operations with data-driven insights.
+                    </p>
+
+                </div>
+                
+                <!-- Product Links -->
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-6">The Bakery</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors duration-200">Features</a></li>
+                        <li><a href="/security-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Security</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Company Links -->
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-6">Department</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors duration-200">About Us</a></li>
+                        <li><a href="/compliance-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Compliance</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal Links -->
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-6">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="/privacy-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Privacy Policy</a></li>
+                        <li><a href="/terms-of-service" class="text-gray-400 hover:text-white transition-colors duration-200">Terms of Service</a></li>
+                        <li><a href="/cookie-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Cookie Policy</a></li>
+                        
+                        
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer Bottom -->
+            <div class="border-t border-gray-800 pt-8 md:pt-12 text-center">
+                <p class="text-gray-400 text-base md:text-lg">
+                    &copy; 2025 Bakery Metrics. All rights reserved. Created by Gerald Nyah.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for functionality -->
+    <script>
+        console.log('Reviews script loaded successfully'); // Debug log
+        
+        // Reviews functionality
+        let currentPage = 1;
+        const reviewsPerPage = 6;
+
+        // Function to create star rating display
+        function createStarRating(rating, size = 'small') {
+            const starSize = size === 'large' ? 'w-6 h-6' : 'w-4 h-4';
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += `<svg class="${starSize} text-yellow-400 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+                } else {
+                    stars += `<svg class="${starSize} text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+                }
+            }
+            return stars;
+        }
+
+        // Function to create a single review card
+        function createReviewCard(review) {
+            const isFeatured = review.is_featured;
+            const cardClass = isFeatured ? 'ring-2 ring-blue-500 bg-blue-50' : 'ring-1 ring-gray-200 bg-white';
+            const featuredBadge = isFeatured ? '<div class="absolute top-4 left-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">Featured</span></div>' : '';
+            
+            return `
+                <div class="relative rounded-2xl ${cardClass} p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    ${featuredBadge}
+                    <div class="flex items-start space-x-4 ${isFeatured ? 'mt-6' : ''}">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                ${review.author_name.charAt(0).toUpperCase()}
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-lg font-semibold text-gray-900 truncate pr-2">${review.author_name}</h4>
+                                <div class="flex items-center space-x-1 flex-shrink-0">
+                                    ${createStarRating(review.rating)}
+                                </div>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed mb-3 line-clamp-3">${review.review_text}</p>
+                            <div class="flex items-center justify-between text-sm text-gray-500">
+                                <span class="capitalize">${review.category}</span>
+                                <span>${review.created_at}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to load reviews
+        async function loadReviews(page = 1) {
+            console.log('Loading reviews for page:', page); // Debug log
+            
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            const reviewsGrid = document.getElementById('reviewsGrid');
+            const reviewsLoading = document.getElementById('reviewsLoading');
+            const reviewsEmpty = document.getElementById('reviewsEmpty');
+            const serverSideReviews = document.getElementById('serverSideReviews');
+            const paginationControls = document.getElementById('paginationControls');
+
+            if (!reviewsContainer || !reviewsGrid || !reviewsLoading || !reviewsEmpty) {
+                console.error('One or more review elements not found!');
+                return;
+            }
+
+            try {
+                // Show loading state
+                reviewsLoading.style.display = 'flex';
+                reviewsGrid.style.display = 'none';
+                reviewsEmpty.style.display = 'none';
+                if (serverSideReviews) serverSideReviews.style.display = 'none';
+                if (paginationControls) paginationControls.style.display = 'none';
+
+                console.log('Fetching reviews from API...'); // Debug log
+                const response = await fetch(`/api/public/reviews?page=${page}&per_page=${reviewsPerPage}`);
+                console.log('API response status:', response.status); // Debug log
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API response data:', data); // Debug log
+
+                // Hide loading state
+                reviewsLoading.style.display = 'none';
+
+                if (data.success && data.reviews.length > 0) {
+                    console.log('Reviews found, displaying...'); // Debug log
+                    // Update average rating display
+                    updateAverageRating(data.average_rating, data.total_reviews);
+
+                    // Populate reviews grid
+                    reviewsGrid.innerHTML = data.reviews.map(review => createReviewCard(review)).join('');
+                    reviewsGrid.style.display = 'grid';
+
+                    // Update pagination
+                    updatePagination(data.pagination);
+                    if (paginationControls) paginationControls.style.display = 'flex';
+                } else {
+                    console.log('No reviews found, showing empty state'); // Debug log
+                    // Show empty state (but leave server-side reviews visible if they exist)
+                    const serverSideReviews = document.getElementById('serverSideReviews');
+                    if (serverSideReviews && serverSideReviews.children.length > 0) {
+                        // Server-side reviews exist, keep them visible
+                        console.log('Keeping server-side reviews visible');
+                        serverSideReviews.style.display = 'grid';
+                    } else {
+                        // No server-side reviews, show empty state
+                        reviewsEmpty.style.display = 'block';
+                    }
+                    updateAverageRating(0, 0);
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                console.error('Error details:', error.message); // More detailed error
+                
+                // Hide loading
+                reviewsLoading.style.display = 'none';
+                
+                // Check if we have server-side reviews to fall back to
+                const serverSideReviews = document.getElementById('serverSideReviews');
+                if (serverSideReviews && serverSideReviews.children.length > 0) {
+                    console.log('API failed, but showing server-side reviews as fallback');
+                    serverSideReviews.style.display = 'grid';
+                } else {
+                    // Show error message
+                    reviewsEmpty.style.display = 'block';
+                    const emptyContent = reviewsEmpty.querySelector('p');
+                    if (emptyContent) {
+                        emptyContent.innerHTML = `Unable to load reviews: ${error.message}<br><small>API might be loading, please refresh the page.</small>`;
+                    }
+                }
+                
+                updateAverageRating(0, 0);
+            }
+        }
+
+        // Function to update average rating display
+        function updateAverageRating(rating, totalReviews) {
+            const avgStars = document.getElementById('avgStars');
+            const avgRatingText = document.getElementById('avgRatingText');
+            const totalReviewsText = document.getElementById('totalReviewsText');
+
+            if (rating > 0) {
+                avgStars.innerHTML = createStarRating(Math.round(rating), 'large');
+                avgRatingText.textContent = `${rating} out of 5`;
+                totalReviewsText.textContent = `Based on ${totalReviews} review${totalReviews !== 1 ? 's' : ''}`;
+            } else {
+                avgStars.innerHTML = createStarRating(0, 'large');
+                avgRatingText.textContent = 'No ratings yet';
+                totalReviewsText.textContent = 'Be the first to review!';
+            }
+        }
+
+        // Function to update pagination controls
+        function updatePagination(pagination) {
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const pageInfo = document.getElementById('pageInfo');
+
+            prevBtn.disabled = !pagination.has_prev;
+            nextBtn.disabled = !pagination.has_next;
+            
+            if (pagination.has_prev) {
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevBtn.classList.add('hover:bg-gray-200');
+            } else {
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                prevBtn.classList.remove('hover:bg-gray-200');
+            }
+
+            if (pagination.has_next) {
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('hover:bg-blue-700');
+            } else {
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.remove('hover:bg-blue-700');
+            }
+
+            pageInfo.textContent = `Page ${pagination.current_page} of ${pagination.total_pages}`;
+            currentPage = pagination.current_page;
+        }
+
+        // Event listeners for pagination
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                loadReviews(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            loadReviews(currentPage + 1);
+        });
+
+        // Load reviews when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing reviews...'); // Debug log
+            
+            // Add a visible indicator that the script is running
+            const reviewsSection = document.getElementById('reviews');
+            if (reviewsSection) {
+                console.log('Reviews section found, adding debug indicator');
+                const debugDiv = document.createElement('div');
+                debugDiv.className = 'fixed top-4 right-4 bg-blue-500 text-white p-2 rounded z-50';
+                debugDiv.textContent = 'Loading reviews...';
+                //document.body.appendChild(debugDiv);
+                
+                // Remove debug indicator after 5 seconds
+                setTimeout(() => {
+                    debugDiv.remove();
+                }, 5000);
+            }
+            
+            loadReviews(1);
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.offsetTop - 80; // Account for navbar height
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        const navbar = document.querySelector('nav');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-gradient-to-r', 'from-blue-700', 'via-purple-700', 'to-indigo-800', 'shadow-2xl');
+                navbar.classList.remove('from-blue-600', 'via-purple-600', 'to-indigo-700', 'shadow-xl');
+            } else {
+                navbar.classList.add('bg-gradient-to-r', 'from-blue-600', 'via-purple-600', 'to-indigo-700', 'shadow-xl');
+                navbar.classList.remove('from-blue-700', 'via-purple-700', 'to-indigo-800', 'shadow-2xl');
+            }
+        }, { passive: true });
+
+        // Enhanced keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-navigation');
+        });
+
+        // Mobile menu toggle (enhanced implementation)
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                const isOpen = !mobileMenu.classList.contains('hidden');
+                
+                if (isOpen) {
+                    // Close menu
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = 'auto';
+                } else {
+                    // Open menu
+                    mobileMenu.classList.remove('hidden');
+                    menuIcon.classList.add('hidden');
+                    closeIcon.classList.remove('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'true');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+            
+            // Close menu when clicking on menu links
+            const mobileMenuLinks = mobileMenu.querySelectorAll('a[href^="#"]');
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = 'auto';
+                });
+            });
+            
+            // Close menu when window is resized to desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                    mobileMenuButton.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        }
+    </script>
+
+    <!-- Enhanced keyboard navigation and accessibility styles -->
+    <style>
+        body.keyboard-navigation *:focus {
+            outline: 2px solid #2563eb !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Line clamp utility for review text */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Review card hover effects */
+        .review-card {
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Featured review special styling */
+        .featured-review {
+            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+            border: 2px solid #3b82f6;
+        }
+
+        /* Reduced motion for accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            nav, footer {
+                display: none !important;
+            }
+            
+            section {
+                break-inside: avoid;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </body>
 </html>

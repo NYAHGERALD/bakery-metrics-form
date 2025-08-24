@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administration Dashboard</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-subtle': 'bounceSubtle 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        bounceSubtle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-2px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Next-Gen Professional Administration UI */
+        :root {
+            /* Modern Color Palette */
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-200: #bfdbfe;
+            --primary-300: #93c5fd;
+            --primary-400: #60a5fa;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --primary-800: #1e40af;
+            --primary-900: #1e3a8a;
+            
+            /* Advanced Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --gradient-admin: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 75%, #f5576c 100%);
+            --gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+            
+            /* Sophisticated Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.15);
+            --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.3);
+            
+            /* Glass Morphism */
+            --glass-blur: blur(20px);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+        }
+
+        /* Global Enhancements */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            overflow-x: hidden;
+        }
+
+        /* Animated Background for Main Content */
+        #adminContent {
+            background: var(--gradient-admin);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            position: relative;
+        }
+
+        #adminContent::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glass Morphism Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.8) 50%,
+                transparent 100%);
+            z-index: 1;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px) rotateX(5deg);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-card:hover::after {
+            opacity: 1;
+        }
+
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%);
+            transition: all 0.6s ease;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        .glass-card:hover::after {
+            left: 100%;
+            opacity: 1;
+        }
+
+        /* Enhanced Stats Cards */
+        .stat-card-glow {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(59, 130, 246, 0.1) 50%, transparent 100%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sidebar Enhancement */
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            position: relative;
+        }
+
+        .sidebar-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg,
+                rgba(59, 130, 246, 0.05) 0%,
+                transparent 50%,
+                rgba(139, 92, 246, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        /* Premium Animations */
+        .notification-dot {
+            animation: statusPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Enhanced Button Styling */
+        .btn-premium {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%);
+            transition: left 0.6s ease;
+        }
+
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+
+        /* Advanced Loading Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #adminContent > div > * {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        #adminContent > div > *:nth-child(1) { animation-delay: 0.1s; }
+        #adminContent > div > *:nth-child(2) { animation-delay: 0.2s; }
+        #adminContent > div > *:nth-child(3) { animation-delay: 0.3s; }
+        #adminContent > div > *:nth-child(4) { animation-delay: 0.4s; }
+        #adminContent > div > *:nth-child(5) { animation-delay: 0.5s; }
+
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --glass-bg: rgba(0, 0, 0, 0.25);
+                --glass-border: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            #adminContent::before {
+                animation: none;
+            }
+
+            .stat-card-glow::before {
+                animation: none;
+            }
+        }
+
+        /* Custom Modal Styling */
+        .modal-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <!-- Sidebar -->
+    <div class="flex h-screen">
+        <!-- Desktop Sidebar -->
+        <aside id="sidebar" class="hidden lg:flex flex-col w-72 sidebar-gradient shadow-2xl">
+            <div class="p-6">
+                <!-- Logo Section -->
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="p-2 bg-primary-500 rounded-xl">
+                        <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">Admin Panel</h1>
+                        <p class="text-slate-400 text-sm">System Management</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="space-y-2">
+                    <div class="relative group">
+                        <button onclick="showSection('overview')" id="nav-overview" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary-500/20 text-primary-300 border border-primary-400/30">
+                            <i data-lucide="home" class="w-5 h-5"></i>
+                            <span class="font-medium">Overview</span>
+                            <div class="ml-auto w-2 h-2 bg-primary-400 rounded-full notification-dot"></div>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('users')" id="nav-users" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                            <span class="font-medium">User Management</span>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('weeks')" id="nav-weeks" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="calendar" class="w-5 h-5"></i>
+                            <span class="font-medium">Week Management</span>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('announcements')" id="nav-announcements" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="megaphone" class="w-5 h-5"></i>
+                            <span class="font-medium">Announcements</span>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('support')" id="nav-support" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="life-buoy" class="w-5 h-5"></i>
+                            <span class="font-medium">Support Tickets</span>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('reports')" id="nav-reports" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                            <span class="font-medium">Reports</span>
+                        </button>
+                    </div>
+
+                    <div class="relative group">
+                        <button onclick="showSection('settings')" id="nav-settings" 
+                            class="nav-item w-full text-left flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-200">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                            <span class="font-medium">System Settings</span>
+                        </button>
+                    </div>
+                </nav>
+
+                <!-- Admin Status -->
+                <div class="mt-8 p-4 bg-slate-800/50 rounded-xl">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3">Admin Status</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-400">System Health</span>
+                            <span class="flex items-center text-xs text-success-400">
+                                <div class="w-2 h-2 bg-success-400 rounded-full mr-1 animate-pulse"></div>
+                                Excellent
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-400">Active Users</span>
+                            <span class="text-xs text-slate-300" id="activeUsersCount">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info & Logout -->
+            <div class="mt-auto p-4 border-t border-slate-700">
+                <div class="flex items-center space-x-3 mb-3">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23dc2626'/%3E%3Ctext x='50' y='58' text-anchor='middle' fill='white' font-size='36' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E" 
+                        class="w-10 h-10 rounded-full" alt="Admin Avatar" />
+                    <div>
+                        <p class="text-sm font-medium text-white">{{ session['user_full_name'] or 'Admin' }}</p>
+                        <p class="text-xs text-slate-400">Administrator</p>
+                    </div>
+                </div>
+                <form method="POST" action="/logout" class="w-full">
+                    <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors btn-premium">
+                        <i data-lucide="log-out" class="w-4 h-4 mr-2 inline"></i>Logout
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="mobileMenuToggle" class="lg:hidden fixed top-4 left-4 z-50 p-2 glass-card rounded-lg">
+            <i data-lucide="menu" class="w-5 h-5 text-gray-600"></i>
+        </button>
+
+        <!-- Mobile Sidebar -->
+        <aside id="mobileSidebar" class="fixed inset-y-0 left-0 w-72 sidebar-gradient shadow-2xl z-50 lg:hidden transform -translate-x-full transition-transform duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-primary-500 rounded-xl">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold text-white">Admin Panel</h1>
+                            <p class="text-slate-400 text-xs">System Management</p>
+                        </div>
+                    </div>
+                    <button id="closeMobileSidebar" class="p-2 hover:bg-slate-700 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
+                    </button>
+                </div>
+                <!-- Mobile nav items would go here -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="glass-card shadow-sm border-b border-gray-200 mx-6 mt-6 rounded-2xl">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <!-- Left Section -->
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <h1 id="pageTitle" class="text-2xl font-bold text-gray-900">Administration Overview</h1>
+                            <p id="pageSubtitle" class="text-sm text-gray-500">Manage your bakery analytics system</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Section -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <button id="notificationBtn" class="relative p-2 hover:bg-gray-100 rounded-lg btn-premium">
+                            <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-danger-500 rounded-full notification-dot"></div>
+                        </button>
+
+                        <!-- Quick Actions -->
+                        <button id="quickActionsBtn" class="p-2 hover:bg-gray-100 rounded-lg btn-premium">
+                            <i data-lucide="zap" class="w-5 h-5 text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main id="adminContent" class="flex-1 overflow-y-auto">
+                <div class="p-6 space-y-6">
+                    <!-- Overview Section -->
+                    <div id="overview-section" class="section">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- Total Users -->
+                            <div class="glass-card p-6 stat-card-glow">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="p-3 bg-primary-100 rounded-xl">
+                                        <i data-lucide="users" class="w-6 h-6 text-primary-600"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="w-16 h-16">
+                                            <svg class="w-full h-full" viewBox="0 0 42 42">
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#e5e7eb" stroke-width="3" />
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#3b82f6" stroke-width="3" stroke-dasharray="75 25"
+                                                    stroke-dashoffset="25" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-600 mb-1">Total Users</h3>
+                                    <p id="totalUsers" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <div class="flex items-center text-success-600">
+                                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+                                            <span class="text-sm font-medium">+12%</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500 ml-2">vs last month</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Active Sessions -->
+                            <div class="glass-card p-6 stat-card-glow">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="p-3 bg-success-100 rounded-xl">
+                                        <i data-lucide="activity" class="w-6 h-6 text-success-600"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="w-16 h-16">
+                                            <svg class="w-full h-full" viewBox="0 0 42 42">
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#e5e7eb" stroke-width="3" />
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#22c55e" stroke-width="3" stroke-dasharray="60 40"
+                                                    stroke-dashoffset="25" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-600 mb-1">Active Sessions</h3>
+                                    <p id="activeSessions" class="text-3xl font-bold text-gray-900">--</p>
+                                    <div class="flex items-center mt-2">
+                                        <div class="flex items-center text-success-600">
+                                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+                                            <span class="text-sm font-medium">+8%</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500 ml-2">active now</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Support Tickets -->
+                            <div class="glass-card p-6 stat-card-glow">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="p-3 bg-warning-100 rounded-xl">
+                                        <i data-lucide="life-buoy" class="w-6 h-6 text-warning-600"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="w-16 h-16">
+                                            <svg class="w-full h-full" viewBox="0 0 42 42">
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#e5e7eb" stroke-width="3" />
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#f59e0b" stroke-width="3" stroke-dasharray="25 75"
+                                                    stroke-dashoffset="25" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-600 mb-1">Support Tickets</h3>
+                                    <p id="openTickets" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <div class="flex items
+
+-center text-warning-600">
+                                            <i data-lucide="minus" class="w-4 h-4 mr-1"></i>
+                                            <span class="text-sm font-medium">2 pending</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500 ml-2">last 24h</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- System Performance -->
+                            <div class="glass-card p-6 stat-card-glow">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="p-3 bg-success-100 rounded-xl">
+                                        <i data-lucide="server" class="w-6 h-6 text-success-600"></i>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="w-16 h-16">
+                                            <svg class="w-full h-full" viewBox="0 0 42 42">
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#e5e7eb" stroke-width="3" />
+                                                <circle cx="21" cy="21" r="15.91549430918954" fill="transparent"
+                                                    stroke="#22c55e" stroke-width="3" stroke-dasharray="88 12"
+                                                    stroke-dashoffset="25" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-600 mb-1">System Health</h3>
+                                    <p id="systemHealth" class="text-3xl font-bold text-gray-900">98%</p>
+                                    <div class="flex items-center mt-2">
+                                        <div class="flex items-center text-success-600">
+                                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+                                            <span class="text-sm font-medium">Excellent</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500 ml-2">optimal performance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                            <div id="recentActivity" class="space-y-3">
+                                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                                    <div class="flex-shrink-0">
+                                        <i data-lucide="user-plus" class="w-5 h-5 text-success-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-800">New user registered</p>
+                                        <p class="text-xs text-gray-600">A new user account has been created</p>
+                                    </div>
+                                    <div class="text-xs text-gray-500">2 hours ago</div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                                    <div class="flex-shrink-0">
+                                        <i data-lucide="database" class="w-5 h-5 text-primary-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-800">Database backup completed</p>
+                                        <p class="text-xs text-gray-600">Automatic backup finished successfully</p>
+                                    </div>
+                                    <div class="text-xs text-gray-500">4 hours ago</div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                                    <div class="flex-shrink-0">
+                                        <i data-lucide="settings" class="w-5 h-5 text-warning-600"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-800">System settings updated</p>
+                                        <p class="text-xs text-gray-600">Configuration changes applied</p>
+                                    </div>
+                                    <div class="text-xs text-gray-500">6 hours ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Management Section -->
+                    <div id="users-section" class="section hidden">
+                        <div class="glass-card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-lg font-semibold text-gray-900">User Management</h3>
+                                <button onclick="openAddUserModal()" class="btn-premium bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl transition-colors">
+                                    <i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add User
+                                </button>
+                            </div>
+
+                            <!-- Search and Filters -->
+                            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                                <div class="flex-1">
+                                    <input id="userSearchInput" type="text" placeholder="Search users..." 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                </div>
+                                <select id="userRoleFilter" class="px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                                <select id="userStatusFilter" class="px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800">
+                                    <option value="">All Status</option>
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+
+                            <!-- Users Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full border border-gray-200 rounded-xl overflow-hidden">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Login</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Users will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Week Management Section -->
+                    <div id="weeks-section" class="section hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Add New Week -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Week</h3>
+                                <form id="addWeekForm" class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                        <input id="weekStartDate" type="date" required 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                        <input id="weekEndDate" type="date" required 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Generated Week Name</label>
+                                        <input id="generatedWeekName" type="text" readonly 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-100 text-gray-800" />
+                                    </div>
+                                    <button type="submit" class="w-full btn-premium bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-xl transition-colors">
+                                        <i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add Week
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Active Weeks List -->
+                            <div class="glass-card p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Weeks</h3>
+                                <div id="activeWeeksList" class="space-y-3 max-h-96 overflow-y-auto">
+                                    <!-- Weeks will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other sections would continue here... -->
+                    <div id="announcements-section" class="section hidden">
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Announcements</h3>
+                            <p class="text-gray-600">Announcement management coming soon...</p>
+                        </div>
+                    </div>
+
+                    <div id="support-section" class="section hidden">
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Support Tickets</h3>
+                            <p class="text-gray-600">Support ticket management coming soon...</p>
+                        </div>
+                    </div>
+
+                    <div id="reports-section" class="section hidden">
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">System Reports</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <a href="/report" class="btn-premium p-4 border border-gray-300 rounded-xl hover:bg-gray-50 text-left transition-colors">
+                                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-primary-600 mb-2"></i>
+                                    <div class="font-medium text-gray-800">Analytics Report</div>
+                                    <div class="text-sm text-gray-600">View production analytics</div>
+                                </a>
+                                <button onclick="generateUserReport()" class="btn-premium p-4 border border-gray-300 rounded-xl hover:bg-gray-50 text-left transition-colors">
+                                    <i data-lucide="users" class="w-6 h-6 text-success-600 mb-2"></i>
+                                    <div class="font-medium text-gray-800">User Activity Report</div>
+                                    <div class="text-sm text-gray-600">User login statistics</div>
+                                </button>
+                                <button onclick="generateSystemReport()" class="btn-premium p-4 border border-gray-300 rounded-xl hover:bg-gray-50 text-left transition-colors">
+                                    <i data-lucide="server" class="w-6 h-6 text-warning-600 mb-2"></i>
+                                    <div class="font-medium text-gray-800">System Health Report</div>
+                                    <div class="text-sm text-gray-600">System performance metrics</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="settings-section" class="section hidden">
+                        <div class="glass-card p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6">System Settings</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- General Settings -->
+                                <div class="space-y-4">
+                                    <h4 class="font-medium text-gray-800">General Settings</h4>
+                                    <div>
+                                        <label class="block text-sm text-gray-600 mb-2">System Name</label>
+                                        <input id="systemName" type="text" value="Bakery Metrics System" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600 mb-2">Admin Email</label>
+                                        <input id="adminEmail" type="email" value="admin@bakery.com" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600 mb-2">Session Timeout (minutes)</label>
+                                        <input id="sessionTimeout" type="number" value="120" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white text-gray-800" />
+                                    </div>
+                                </div>
+                                
+                                <!-- Security Settings -->
+                                <div class="space-y-4">
+                                    <h4 class="font-medium text-gray-800">Security Settings</h4>
+                                    <div class="flex items-center space-x-3">
+                                        <input id="requireStrongPassword" type="checkbox" checked 
+                                            class="w-4 h-4 text-primary-600 border-gray-300 rounded" />
+                                        <label class="text-sm text-gray-600">Require strong passwords</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input id="enableTwoFactor" type="checkbox" 
+                                            class="w-4 h-4 text-primary-600 border-gray-300 rounded" />
+                                        <label class="text-sm text-gray-600">Enable two-factor authentication</label>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input id="enableAuditLog" type="checkbox" checked 
+                                            class="w-4 h-4 text-primary-600 border-gray-300 rounded" />
+                                        <label class="text-sm text-gray-600">Enable audit logging</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <button onclick="saveSystemSettings()" class="btn-premium bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-xl transition-colors">
+                                    <i data-lucide="save" class="w-4 h-4 mr-2 inline"></i>Save Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <footer class="glass-card mx-6 mb-6 rounded-2xl px-6 py-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            © <span id="currentYear"></span> Bakery Analytics Administration. Created by Gerald Nyah.
+                        </div>
+                        <div class="flex items-center space-x-4 mt-2 md:mt-0">
+                            <span class="text-xs text-gray-400">Version 2.0.0</span>
+                            <div class="flex items-center text-xs text-gray-400">
+                                <div class="w-2 h-2 bg-success-400 rounded-full mr-1 notification-dot"></div>
+                                Admin Status: Active
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+    <!-- Success Toast -->
+    <div id="successToast" class="fixed top-4 right-4 bg-success-500 text-white px-6 py-3 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span id="successMessage">Operation successful!</span>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="fixed top-4 right-4 bg-danger-500 text-white px-6 py-3 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+            <span id="errorMessage">Operation failed!</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Global Variables
+        let currentSection = 'overview';
+        let allUsers = [];
+        let allWeeks = [];
+
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const closeMobileSidebar = document.getElementById('closeMobileSidebar');
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileSidebar.classList.remove('-translate-x-full');
+            });
+        }
+
+        if (closeMobileSidebar) {
+            closeMobileSidebar.addEventListener('click', () => {
+                mobileSidebar.classList.add('-translate-x-full');
+            });
+        }
+
+        // Navigation Functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(`${sectionName}-section`).classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-primary-500/20', 'text-primary-300', 'border', 'border-primary-400/30');
+                item.classList.add('text-slate-300', 'hover:bg-slate-700/50', 'hover:text-white');
+            });
+            
+            document.getElementById(`nav-${sectionName}`).classList.remove('text-slate-300', 'hover:bg-slate-700/50', 'hover:text-white');
+            document.getElementById(`nav-${sectionName}`).classList.add('bg-primary-500/20', 'text-primary-300', 'border', 'border-primary-400/30');
+            
+            // Update page title
+            const titles = {
+                'overview': 'Administration Overview',
+                'users': 'User Management',
+                'weeks': 'Week Management',
+                'announcements': 'Announcements',
+                'support': 'Support Tickets',
+                'reports': 'System Reports',
+                'settings': 'System Settings'
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[sectionName];
+            currentSection = sectionName;
+            
+            // Load section data
+            loadSectionData(sectionName);
+        }
+
+        // Load section-specific data
+        async function loadSectionData(sectionName) {
+            switch(sectionName) {
+                case 'overview':
+                    await loadOverviewData();
+                    break;
+                case 'users':
+                    await loadUsers();
+                    break;
+                case 'weeks':
+                    await loadWeeks();
+                    break;
+            }
+        }
+
+        // Overview Data Loading
+        async function loadOverviewData() {
+            try {
+                // Load users count
+                const usersRes = await fetch('/api/users');
+                const usersData = await usersRes.json();
+                document.getElementById('totalUsers').textContent = usersData.users?.length || 0;
+                document.getElementById('activeUsersCount').textContent = usersData.users?.length || 0;
+                
+                // Simulate active sessions (would be from actual session data)
+                document.getElementById('activeSessions').textContent = Math.floor(Math.random() * 10) + 1;
+                
+            } catch (error) {
+                console.error('Error loading overview data:', error);
+                document.getElementById('totalUsers').textContent = '--';
+                document.getElementById('activeSessions').textContent = '--';
+            }
+        }
+
+        // User Management Functions
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users');
+                const data = await res.json();
+                allUsers = data.users || [];
+                renderUsersTable(allUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showError('Failed to load users');
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img class="h-8 w-8 rounded-full" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234f46e5'/%3E%3Ctext x='50' y='58' text-anchor='middle' fill='white' font-size='36' font-family='Arial'%3E${user.first.charAt(0).toUpperCase()}%3C/text%3E%3C/svg%3E" alt="">
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">${user.first} ${user.last}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}">${user.role}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.is_active ? 'bg-success-100 text-success-800' : 'bg-danger-100 text-danger-800'}">${user.is_active ? 'Active' : 'Inactive'}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.last_login}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewUser('${user.id}')" class="text-primary-600 hover:text-primary-900 mr-3">View</button>
+                        <button onclick="deleteUser('${user.id}')" class="text-danger-600 hover:text-danger-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter users
+        document.getElementById('userSearchInput')?.addEventListener('input', filterUsers);
+        document.getElementById('userRoleFilter')?.addEventListener('change', filterUsers);
+        document.getElementById('userStatusFilter')?.addEventListener('change', filterUsers);
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('userRoleFilter').value;
+            const statusFilter = document.getElementById('userStatusFilter').value;
+            
+            const filtered = allUsers.filter(user => {
+                const matchesSearch = user.email.toLowerCase().includes(searchTerm) || 
+                                    user.first.toLowerCase().includes(searchTerm) || 
+                                    user.last.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                const matchesStatus = !statusFilter || user.is_active.toString() === statusFilter;
+                
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+            
+            renderUsersTable(filtered);
+        }
+
+        // User Modal Functions
+        function openAddUserModal() {
+            document.getElementById('addUserModal').classList.remove('hidden');
+            document.getElementById('addUserModal').classList.add('flex');
+            document.getElementById('addUserForm').reset();
+        }
+
+        function closeAddUserModal() {
+            document.getElementById('addUserModal').classList.add('hidden');
+            document.getElementById('addUserModal').classList.remove('flex');
+        }
+
+        document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                email: document.getElementById('newUserEmail').value,
+                first_name: document.getElementById('newUserFirstName').value,
+                last_name: document.getElementById('newUserLastName').value,
+                role: document.getElementById('newUserRole').value
+            };
+            
+            try {
+                const res = await fetch('/api/register-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    showSuccess('User added successfully!');
+                    closeAddUserModal();
+                    await loadUsers();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error adding user:', error);
+                showError('Failed to add user');
+
+}
+        });
+
+        // Delete User Function
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            
+            try {
+                const res = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    showSuccess('User deleted successfully!');
+                    await loadUsers();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showError('Failed to delete user');
+            }
+        }
+
+        // View User Function
+        function viewUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (user) {
+                alert(`User Details:\nName: ${user.first} ${user.last}\nEmail: ${user.email}\nRole: ${user.role}\nStatus: ${user.is_active ? 'Active' : 'Inactive'}`);
+            }
+        }
+
+        // Week Management Functions
+        async function loadWeeks() {
+            try {
+                const res = await fetch('/api/weeks');
+                const data = await res.json();
+                
+                if (data.success) {
+                    allWeeks = data.weeks || [];
+                    renderActiveWeeks(allWeeks);
+                } else {
+                    showError(data.message || 'Failed to load weeks');
+                }
+            } catch (error) {
+                console.error('Error loading weeks:', error);
+                showError('Failed to load weeks');
+            }
+        }
+
+        function renderActiveWeeks(weeks) {
+            const container = document.getElementById('activeWeeksList');
+            container.innerHTML = '';
+            
+            if (weeks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">No weeks configured</p>';
+                return;
+            }
+            
+            weeks.forEach(week => {
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors';
+                weekDiv.innerHTML = `
+                    <div>
+                        <div class="font-medium text-gray-800">${week.week_name}</div>
+                        <div class="text-sm text-gray-600">${week.start_date} to ${week.end_date}</div>
+                        <div class="text-xs text-gray-500">Created: ${week.created_at}</div>
+                    </div>
+                    <button onclick="deleteWeek('${week.id}')" class="text-danger-600 hover:text-danger-800 p-1 hover:bg-danger-50 rounded transition-colors" title="Delete Week">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                container.appendChild(weekDiv);
+            });
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+        }
+
+        // Week form functionality
+        document.getElementById('weekStartDate')?.addEventListener('change', updateWeekName);
+        document.getElementById('weekEndDate')?.addEventListener('change', updateWeekName);
+
+        function updateWeekName() {
+            const startDate = document.getElementById('weekStartDate').value;
+            const endDate = document.getElementById('weekEndDate').value;
+            
+            if (startDate && endDate) {
+                // Parse dates manually to avoid timezone issues
+                // Input format is YYYY-MM-DD
+                const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+                const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+                
+                // Create Date objects in local timezone (month is 0-based)
+                const start = new Date(startYear, startMonth - 1, startDay);
+                const end = new Date(endYear, endMonth - 1, endDay);
+                
+                // Format for display: "Aug 04, 2025 - Aug 08, 2025"
+                const options = { month: 'short', day: '2-digit', year: 'numeric' };
+                const startFormatted = start.toLocaleDateString('en-US', options);
+                const endFormatted = end.toLocaleDateString('en-US', options);
+                const weekName = `${startFormatted} - ${endFormatted}`;
+                
+                document.getElementById('generatedWeekName').value = weekName;
+            }
+        }
+
+        document.getElementById('addWeekForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get dates from input (YYYY-MM-DD format)
+            const startDateInput = document.getElementById('weekStartDate').value;
+            const endDateInput = document.getElementById('weekEndDate').value;
+            
+            // Parse dates manually to avoid timezone issues
+            const [startYear, startMonth, startDay] = startDateInput.split('-').map(Number);
+            const [endYear, endMonth, endDay] = endDateInput.split('-').map(Number);
+            
+            // Create Date objects in local timezone
+            const startDate = new Date(startYear, startMonth - 1, startDay);
+            const endDate = new Date(endYear, endMonth - 1, endDay);
+            
+            // Format dates as MM-DD-YYYY for backend
+            const startFormatted = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}-${startDate.getDate().toString().padStart(2, '0')}-${startDate.getFullYear()}`;
+            const endFormatted = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}-${endDate.getDate().toString().padStart(2, '0')}-${endDate.getFullYear()}`;
+            
+            const formData = {
+                start_date: startFormatted,
+                end_date: endFormatted,
+                week_name: document.getElementById('generatedWeekName').value
+            };
+            
+            try {
+                const res = await fetch('/api/weeks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showSuccess('Week added successfully!');
+                    document.getElementById('addWeekForm').reset();
+                    document.getElementById('generatedWeekName').value = '';
+                    await loadWeeks();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error adding week:', error);
+                showError('Failed to add week');
+            }
+        });
+
+        async function deleteWeek(weekId) {
+            if (!confirm('Are you sure you want to delete this week?')) return;
+            
+            try {
+                const res = await fetch(`/api/weeks/${weekId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showSuccess('Week deleted successfully!');
+                    await loadWeeks();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error deleting week:', error);
+                showError('Failed to delete week');
+            }
+        }
+
+        // Report Generation Functions
+        async function generateUserReport() {
+            showSuccess('Generating user report...');
+            // Implementation would go here
+        }
+
+        async function generateSystemReport() {
+            showSuccess('Generating system report...');
+            // Implementation would go here
+        }
+
+        // Settings Functions
+        async function saveSystemSettings() {
+            const settings = {
+                system_name: document.getElementById('systemName').value,
+                admin_email: document.getElementById('adminEmail').value,
+                session_timeout: parseInt(document.getElementById('sessionTimeout').value),
+                require_strong_password: document.getElementById('requireStrongPassword').checked,
+                enable_two_factor: document.getElementById('enableTwoFactor').checked,
+                enable_audit_log: document.getElementById('enableAuditLog').checked
+            };
+            
+            try {
+                // This would normally save to a backend API
+                console.log('Saving settings:', settings);
+                showSuccess('Settings saved successfully!');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showError('Failed to save settings');
+            }
+        }
+
+        // Toast Functions
+        function showSuccess(message) {
+            const toast = document.getElementById('successToast');
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        function showError(message) {
+            const toast = document.getElementById('errorToast');
+            const messageEl = document.getElementById('errorMessage');
+            messageEl.textContent = message;
+            
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('overview');
+        });
+
+        // Handle logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

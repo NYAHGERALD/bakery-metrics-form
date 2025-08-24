@@ -1,944 +1,1930 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bakery Metrics Report</title>
+  <title>Bakery Table Analytics Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- jsPDF & AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <style>
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.5s ease-in-out both;
-    }
-
-    .green {
-      color: #22c55e;
-      font-weight: 600;
-    }
-
-    .red {
-      color: #ef4444;
-      font-weight: 600;
-    }
-  </style>
-
-  <style>
-    @keyframes pulse-glow-green {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0px rgba(34, 197, 94, 0.5);
-      }
-
-      50% {
-        box-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
-      }
-    }
-
-    @keyframes pulse-glow-red {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0px rgba(239, 68, 68, 0.4);
-      }
-
-      50% {
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
-      }
-    }
-
-    .glow-green {
-      animation: pulse-glow-green 2s infinite ease-in-out;
-      border-radius: 0.75rem;
-    }
-
-    .glow-red {
-      animation: pulse-glow-red 2s infinite ease-in-out;
-      border-radius: 0.75rem;
-    }
-  </style>
-
-
-
-  <style>
-    @keyframes fadeInUp {
-      0% {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .animate-fade-in {
-      animation: fadeInUp 0.6s ease-out both;
-    }
-
-    .group:hover .oee-msg,
-    .group:hover .waste-msg {
-      animation-play-state: paused !important;
-    }
-  </style>
-
 </head>
 
-<body class="bg-[#0f172a] text-white min-h-screen font-sans">
-
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
   {% extends "dashboard.html" %}
-
   {% block content %}
-
-
-
-
-
-
-  <div id="contentOverlay"
-    class="fixed top-0 left-0 w-full h-screen z-50 bg-gray-950 bg-opacity-95 flex items-center justify-center px-4 py-8 sm:py-20 hidden">
-
-    <!-- Loading Content -->
-    <div class="text-center space-y-4">
-      <div
-        class="w-14 h-14 sm:w-16 sm:h-16 border-4 border-t-[#00e600] border-gray-700 rounded-full animate-spin mx-auto">
-      </div>
-      <div class="text-[#00e600] text-lg sm:text-xl font-bold animate-fadeIn">Almost There...</div>
-      <div class="text-sm text-gray-400 animate-fadeIn">Loading table values...</div>
+  
+  <!-- Loading Overlay -->
+  <div id="contentOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-8 text-center max-w-sm mx-4">
+      <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Loading Analytics</h3>
+      <p class="text-gray-600">Processing performance data...</p>
     </div>
   </div>
 
+  <div class="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    
+    <!-- Header Section -->
+    <div id="analyticsHeader" class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div class="flex-1">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+              <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl lg:text-4xl font-black bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+                📊 Table Analytics Dashboard
+              </h1>
+              <p class="text-lg font-semibold text-gray-700">Comprehensive data-driven performance insights</p>
+            </div>
+          </div>
 
+          <!-- Status Indicators -->
+          <div id="quickInsights" class="flex flex-wrap gap-3">
+            <div class="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span class="text-sm font-semibold text-emerald-700">Live Data</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+              <span class="text-sm font-semibold text-blue-700" id="reportPeriod">Current Week</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+              <i data-lucide="clock" class="w-4 h-4 text-gray-600"></i>
+              <span class="text-sm font-semibold text-gray-700" id="lastUpdate">Updated: Just now</span>
+            </div>
+          </div>
+        </div>
 
-
-
-  <div class="text-center mb-6 px-4">
-    <h1 class="text-3xl font-bold text-blue-400 uppercase drop-shadow">Bakery Metrics Report</h1>
-  </div>
-
-
-  <div class="max-w-4xl mx-auto bg-blue-800 text-blue-100 p-4 rounded shadow fade-in text-sm mb-6">
-    This report provides a daily and weekly summary of key Bakery production metrics — including OEE, Pounds, and Waste
-    — for each shift and line.
-  </div>
-
-  <div class="max-w-6xl mx-auto px-4 mb-6">
-    <div class="bg-[#1e293b] p-6 rounded-xl shadow grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label class="block mb-1 font-medium">Select Week</label>
-        <select id="week" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
-          {% for week in week_names %}
-          <option value="{{ week }}" {% if week==default_week %}selected{% endif %}>{{ week }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-medium">Select Day</label>
-        <select id="day" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
-          <option>Monday</option>
-          <option>Tuesday</option>
-          <option>Wednesday</option>
-          <option>Thursday</option>
-          <option>Friday</option>
-        </select>
-      </div>
-      <div>
-        <label class="block mb-1 font-medium">Select Shift</label>
-        <select id="shift" class="w-full bg-gray-800 text-white border border-gray-600 px-3 py-2 rounded">
-          <option>First Shift</option>
-          <option>Second Shift</option>
-          <option>Both Shift</option>
-        </select>
+        <!-- Export Actions -->
+        <div id="exportActions" class="flex flex-wrap gap-3">
+          <button onclick="downloadMetricsTable()"
+            class="inline-flex items-center px-5 py-3 bg-white border border-gray-300 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md group">
+            <i data-lucide="file-text" class="w-4 h-4 mr-2 text-red-600 group-hover:scale-110 transition-transform"></i>
+            <span class="text-sm font-semibold text-gray-700">PDF Export</span>
+          </button>
+          <button onclick="downloadMetricsExcel()"
+            class="inline-flex items-center px-5 py-3 bg-white border border-gray-300 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow-md group">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2 text-green-600 group-hover:scale-110 transition-transform"></i>
+            <span class="text-sm font-semibold text-gray-700">Excel Export</span>
+          </button>
+          <button onclick="refreshAllData()"
+            class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+            <span class="text-sm font-semibold">Refresh Data</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="max-w-7xl mx-auto px-4 fade-in" id="metricsTableWrapper">
-    <div class="bg-[#1e293b] p-4 rounded-xl overflow-x-auto">
-      <div class="min-w-[700px]">
-        <table class="w-full table-auto border text-center text-lg">
-          <thead class="bg-blue-600 text-white">
+    <!-- Congratulation Message -->
+    <div id="congratulationMessage"
+      class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-3xl shadow-xl p-6 hidden animate-pulse">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <div class="p-4 bg-emerald-500 rounded-2xl shadow-lg">
+            <i data-lucide="trophy" class="w-10 h-10 text-white"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-black text-emerald-800">🎉 Outstanding Performance!</h3>
+            <p class="text-lg font-bold text-emerald-700">All BOTH SHIFTS metrics are meeting or exceeding targets!</p>
+            <p class="text-sm text-emerald-600 mt-1">Every performance indicator for BOTH SHIFTS looks great. Exceptional work team!</p>
+          </div>
+        </div>
+        <button id="closeCongratulationMessage"
+          class="p-3 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 rounded-xl transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Enhanced Metrics Table -->
+    <div id="metricsTableSection" class="bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+      <!-- Table Header -->
+      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 lg:p-8">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div>
+            <h2 class="text-3xl font-black text-white mb-2">📊 Performance Metrics Dashboard</h2>
+            <p class="text-xl font-bold text-blue-100">Comprehensive shift-by-shift performance analysis</p>
+            <p class="text-sm text-blue-200 mt-2">Real-time data with automated status indicators and variance calculations</p>
+          </div>
+          
+          <!-- Controls -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <!-- Filters -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-semibold text-blue-100">Week:</label>
+                <select id="week"
+                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm">
+                  {% for week in week_names %}
+                  <option value="{{ week }}" {% if week==default_week %}selected{% endif %} class="text-gray-900 bg-white">{{ week }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-semibold text-blue-100">Day:</label>
+                <select id="day"
+                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm">
+                  <option value="Monday" class="text-gray-900 bg-white">Monday</option>
+                  <option value="Tuesday" class="text-gray-900 bg-white">Tuesday</option>
+                  <option value="Wednesday" class="text-gray-900 bg-white">Wednesday</option>
+                  <option value="Thursday" class="text-gray-900 bg-white">Thursday</option>
+                  <option value="Friday" class="text-gray-900 bg-white">Friday</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+              <select id="recordSelector"
+                class="px-3 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white focus:ring-2 focus:ring-white/50 backdrop-blur-sm">
+                <option value="latest">Latest Record</option>
+              </select>
+              <button id="tableViewToggle"
+                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm">
+                <i data-lucide="eye" class="w-4 h-4 inline mr-1"></i>
+                Compact
+              </button>
+              <button id="refreshTable"
+                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm">
+                <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i>
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Content -->
+      <div id="metricsTableWrapper" class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b-2 border-gray-200">
             <tr>
-              <th class="px-4 py-6 text-base">KPIs</th>
-              <th class="py-6 text-base">LINE</th>
-              <th class="py-6 text-base">TARGET</th>
-              <th class="py-6 text-base">METRIC</th>
-              <th class="py-6 text-base">WEEK AVG</th>
-              <th class="py-6 text-base">UNIT</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">KPI METRIC</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">TARGET</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-blue-800 uppercase tracking-wider bg-blue-50">FIRST SHIFT</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-indigo-800 uppercase tracking-wider bg-indigo-50">SECOND SHIFT</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-purple-800 uppercase tracking-wider bg-purple-50">BOTH SHIFTS</th>
+              <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">STATUS</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-600">
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">OEE</td>
-              <td>DIE CUT 1</td>
-              <td>70%</td>
-              <td id="oee1">-</td>
-              <td id="oee1Avg">-</td>
-              <td>%</td>
+          <tbody class="bg-white divide-y divide-gray-100">
+            <!-- OEE Section -->
+            <tr class="hover:bg-blue-50/50 transition-all duration-200">
+              <td rowspan="3" class="px-8 py-6 border-r border-gray-200 align-top">
+                <div class="flex items-center gap-4">
+                  <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md">
+                    <i data-lucide="gauge" class="w-6 h-6 text-white"></i>
+                  </div>
+                  <div>
+                    <div class="text-lg font-black text-gray-900">OEE</div>
+                    <div class="text-sm font-semibold text-gray-600">Overall Equipment Effectiveness</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
+                <div class="text-sm text-gray-600">≥ 70%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="oeeDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="oeeDieCut1SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="oeeDieCut1Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="oeeDieCut1Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td>
-              <td>70%</td>
-              <td id="oee2">-</td>
-              <td id="oee2Avg">-</td>
-              <td>%</td>
+            <tr class="hover:bg-blue-50/50 transition-all duration-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
+                <div class="text-sm text-gray-600">≥ 70%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="oeeDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="oeeDieCut2SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="oeeDieCut2Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="oeeDieCut2Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td>
-              <td>70%</td>
-              <td id="oeeTotal">-</td>
-              <td id="oeeTotalAvg">-</td>
-              <td>%</td>
+            <tr class="hover:bg-blue-50/50 transition-all duration-200 border-b-4 border-gray-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-black text-gray-900">Total</div>
+                <div class="text-sm text-gray-600">≥ 70%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="oeeTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="oeeTotalSecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="oeeTotalBoth" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="oeeTotalStatus" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
 
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">POUNDS</td>
-              <td>DIE CUT 1</td>
-              <td>Schedule</td>
-              <td id="pounds1">-</td>
-              <td id="pounds1Avg">-</td>
-              <td>LB</td>
+            <!-- VOLUME Section -->
+            <tr class="hover:bg-emerald-50/50 transition-all duration-200">
+              <td rowspan="3" class="px-8 py-6 border-r border-gray-200 align-top">
+                <div class="flex items-center gap-4">
+                  <div class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-md">
+                    <i data-lucide="package" class="w-6 h-6 text-white"></i>
+                  </div>
+                  <div>
+                    <div class="text-lg font-black text-gray-900">VOLUME</div>
+                    <div class="text-sm font-semibold text-gray-600">Production Output (lbs)</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
+                <div class="text-sm text-gray-600">≥ 6,000 lbs</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="volumeDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="volumeDieCut1SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="volumeDieCut1Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="volumeDieCut1Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td>
-              <td>Schedule</td>
-              <td id="pounds2">-</td>
-              <td id="pounds2Avg">-</td>
-              <td>LB</td>
+            <tr class="hover:bg-emerald-50/50 transition-all duration-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
+                <div class="text-sm text-gray-600">≥ 6,000 lbs</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="volumeDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="volumeDieCut2SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="volumeDieCut2Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="volumeDieCut2Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td>
-              <td>Schedule</td>
-              <td id="poundsTotal">-</td>
-              <td id="poundsTotalAvg">-</td>
-              <td>LB</td>
+            <tr class="hover:bg-emerald-50/50 transition-all duration-200 border-b-4 border-gray-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-black text-gray-900">Total</div>
+                <div class="text-sm text-gray-600">≥ 12,000 lbs</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="volumeTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="volumeTotalSecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="volumeTotalBoth" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="volumeTotalStatus" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
 
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td rowspan="3" class="py-8 font-medium">WASTE</td>
-              <td>DIE CUT 1</td>
-              <td>-</td>
-              <td id="waste1">-</td>
-              <td id="waste1Avg">-</td>
-              <td>LB</td>
+            <!-- WASTE Section -->
+            <tr class="hover:bg-red-50/50 transition-all duration-200">
+              <td rowspan="3" class="px-8 py-6 border-r border-gray-200 align-top">
+                <div class="flex items-center gap-4">
+                  <div class="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-md">
+                    <i data-lucide="trash-2" class="w-6 h-6 text-white"></i>
+                  </div>
+                  <div>
+                    <div class="text-lg font-black text-gray-900">WASTE</div>
+                    <div class="text-sm font-semibold text-gray-600">Material Waste Percentage</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
+                <div class="text-sm text-gray-600">≤ 3.75%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="wasteDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="wasteDieCut1SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="wasteDieCut1Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="wasteDieCut1Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>DIE CUT 2</td>
-              <td>-</td>
-              <td id="waste2">-</td>
-              <td id="waste2Avg">-</td>
-              <td>LB</td>
+            <tr class="hover:bg-red-50/50 transition-all duration-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
+                <div class="text-sm text-gray-600">≤ 3.75%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="wasteDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="wasteDieCut2SecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="wasteDieCut2Both" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="wasteDieCut2Status" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
-            <tr
-              class="hover:bg-gradient-to-r from-blue-700 to-blue-600 transition duration-300 ease-in-out cursor-pointer">
-              <td>TOTAL</td>
-              <td>3.75%</td>
-              <td id="wasteTotal">-</td>
-              <td id="wasteTotalAvg">-</td>
-              <td>%</td>
+            <tr class="hover:bg-red-50/50 transition-all duration-200">
+              <td class="px-6 py-3">
+                <div class="text-sm font-black text-gray-900">Total</div>
+                <div class="text-sm text-gray-600">≤ 3.75%</div>
+              </td>
+              <td class="px-6 py-3 bg-blue-50/30">
+                <span id="wasteTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-indigo-50/30">
+                <span id="wasteTotalSecondShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3 bg-purple-50/30">
+                <span id="wasteTotalBoth" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
+              </td>
+              <td class="px-6 py-3">
+                <span id="wasteTotalStatus" class="inline-flex items-center px-3 py-2 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-600">-</span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="text-center mt-4">
-      <button onclick="downloadMetricsTable()" type="button"
-        class="px-6 py-2 bg-yellow-500 text-black font-semibold rounded shadow hover:bg-yellow-600">
-        📥 Download Metrics Table as PDF
-      </button>
-      <button onclick="downloadMetricsExcel()" type="button"
-        class="px-6 py-2 mt-2 bg-green-500 text-black font-semibold rounded shadow hover:bg-green-600">
-        📊 Download Metrics Table as Excel
-      </button>
+    <!-- Performance Summary Cards -->
+    <div id="performanceOverview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- OEE Card -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div class="flex items-start justify-between mb-6">
+          <div class="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+            <i data-lucide="gauge" class="w-8 h-8 text-white"></i>
+          </div>
+          <span id="oeeStatusCard" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">On Target</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-600 mb-3">Overall Equipment Effectiveness</h3>
+          <div class="flex items-baseline gap-2">
+            <span id="oeeCurrentValue" class="text-3xl font-black text-gray-900">75.8</span>
+            <span class="text-lg font-semibold text-gray-600">%</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <span id="oeeChange" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700">
+              <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i>
+              +2.5%
+            </span>
+            <span class="text-xs text-gray-500">vs target (70%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waste Card -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div class="flex items-start justify-between mb-6">
+          <div class="p-4 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-lg">
+            <i data-lucide="trash-2" class="w-8 h-8 text-white"></i>
+          </div>
+          <span id="wasteStatusCard" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-700">Below Target</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-600 mb-3">Waste Percentage</h3>
+          <div class="flex items-baseline gap-2">
+            <span id="wasteCurrentValue" class="text-3xl font-black text-gray-900">2.3</span>
+            <span class="text-lg font-semibold text-gray-600">%</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <span id="wasteChange" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700">
+              <i data-lucide="trending-down" class="w-3 h-3 mr-1"></i>
+              -1.2%
+            </span>
+            <span class="text-xs text-gray-500">vs target (3.75%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Production Card -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div class="flex items-start justify-between mb-6">
+          <div class="p-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg">
+            <i data-lucide="package" class="w-8 h-8 text-white"></i>
+          </div>
+          <span id="productionStatusCard" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">Normal</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-600 mb-3">Production Volume</h3>
+          <div class="flex items-baseline gap-2">
+            <span id="productionCurrentValue" class="text-3xl font-black text-gray-900">12,450</span>
+            <span class="text-lg font-semibold text-gray-600">lbs</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <span id="productionChange" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700">
+              <i data-lucide="activity" class="w-3 h-3 mr-1"></i>
+              +325 lbs
+            </span>
+            <span class="text-xs text-gray-500">daily output</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Efficiency Card -->
+      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+        <div class="flex items-start justify-between mb-6">
+          <div class="p-4 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-lg">
+            <i data-lucide="zap" class="w-8 h-8 text-white"></i>
+          </div>
+          <span id="efficiencyStatusCard" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">Good</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-600 mb-3">Efficiency Score</h3>
+          <div class="flex items-baseline gap-2">
+            <span id="efficiencyCurrentValue" class="text-3xl font-black text-gray-900">8.5</span>
+            <span class="text-lg font-semibold text-gray-600">/10</span>
+          </div>
+          <div class="flex items-center gap-3 mt-4">
+            <span id="efficiencyChange" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-600">
+              <i data-lucide="minus" class="w-3 h-3 mr-1"></i>
+              Stable
+            </span>
+            <span class="text-xs text-gray-500">performance index</span>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- AI-Powered Analysis Section -->
+    <div id="performanceAnalysis" class="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+        <div>
+          <h3 class="text-2xl lg:text-3xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            🤖 AI-Powered Data Analysis & Insights
+          </h3>
+          <p class="text-lg text-gray-600 mt-2">Smart recommendations based on current performance data</p>
+        </div>
+        <button id="generateInsights"
+          class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+          <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+          <span class="font-semibold">Generate New Insights</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Key Insights -->
+        <div id="keyInsights">
+          <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <i data-lucide="lightbulb" class="w-6 h-6 text-amber-500"></i>
+            Key Performance Insights
+          </h4>
+          <div id="insightsList" class="space-y-4">
+            <div class="bg-gray-50 rounded-2xl p-6 text-center animate-pulse">
+              <i data-lucide="loader" class="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin"></i>
+              <p class="text-sm text-gray-500">Loading performance insights...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div id="recommendations">
+          <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <i data-lucide="target" class="w-6 h-6 text-blue-500"></i>
+            Actionable Recommendations
+          </h4>
+          <div id="recommendationsList" class="space-y-4">
+            <div class="bg-gray-50 rounded-2xl p-6 text-center animate-pulse">
+              <i data-lucide="loader" class="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin"></i>
+              <p class="text-sm text-gray-500">Loading recommendations...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Items -->
+        <div id="actionItems">
+          <div class="flex items-center justify-between mb-6">
+            <h4 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+              <i data-lucide="check-square" class="w-6 h-6 text-emerald-500"></i>
+              Priority Action Items
+            </h4>
+            <button id="clearTasksBtn"
+                    class="hidden px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 rounded-lg transition-colors"
+                    onclick="clearAllCompletedTasks()"
+                    title="Clear all task completions">
+              <i data-lucide="refresh-ccw" class="w-3 h-3 inline mr-1"></i>
+              Reset Tasks
+            </button>
+          </div>
+          <div id="actionsList" class="space-y-4">
+            <div class="bg-gray-50 rounded-2xl p-6 text-center animate-pulse">
+              <i data-lucide="loader" class="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin"></i>
+              <p class="text-sm text-gray-500">Loading action items...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="reportFooter" class="bg-gradient-to-r from-gray-50 to-white rounded-2xl shadow-lg border border-gray-200 p-6">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h4 class="text-lg font-bold text-gray-900 mb-2">📄 Report Information</h4>
+          <div class="flex flex-wrap gap-6 text-sm text-gray-600">
+            <span>Generated: <span id="reportTimestamp" class="font-semibold text-gray-800">-</span></span>
+            <span>Data Source: Bakery Management System v2.1</span>
+            <span>Next Update: <span id="nextUpdate" class="font-semibold text-gray-800">in 30 minutes</span></span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+          <span class="text-lg font-bold text-emerald-700">System Healthy</span>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <style>
+    /* Custom value color classes for metrics */
+    .value-excellent { @apply bg-emerald-100 text-emerald-800; }
+    .value-good { @apply bg-yellow-100 text-yellow-800; }
+    .value-warning { @apply bg-orange-100 text-orange-800; }
+    .value-critical { @apply bg-red-100 text-red-800; }
+    .value-neutral { @apply bg-gray-100 text-gray-600; }
 
-  <div class="max-w-6xl mx-auto px-4 mt-12">
+    /* Status badge colors */
+    .status-on-target, .status-target-met { @apply bg-emerald-100 text-emerald-800; }
+    .status-below-target { @apply bg-yellow-100 text-yellow-800; }
+    .status-above-target { @apply bg-red-100 text-red-800; }
 
-    <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">OEE (%) shows how effectively our lines are running. A higher OEE means less
-        downtime and better productivity. Monitoring this helps improve bakery efficiency and reduce waste.</p>
-    </div>
+    /* Special case for production above target (should be green) */
+    #productionStatusCard.status-above-target { @apply bg-emerald-100 text-emerald-800; }
 
-
-
-    <div id="oeeFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
-      <div id="oeeFeedbackBox"
-        class="bg-blue-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
-        <p id="oeeMessage" class="text-lg flex items-center gap-2">
-          <span>📈</span><span class="oee-msg">Evaluating performance...</span>
-        </p>
-      </div>
-    </div>
-
-    <div id="chartOEEWrapper" class="mb-8">
-      <h5 class="text-center mb-2 font-semibold">OEE (%)</h5>
-      <div class="bg-[#1e293b] rounded-xl p-4 aspect-[2/1] glow-container ">
-        <canvas id="chartOEE"></canvas>
-      </div>
-    </div>
-
-
-    <div class="bg-green-700 text-white rounded-md px-4 py-3 mb-4 shadow-md text-sm animate-fade-in">
-      <p class="font-semibold mb-1">Waste (%) helps us track how much raw material is being lost. Keeping our waste
-        below target ensures cost control. Monitoring this metric is key to bakery profitability.</p>
-    </div>
-
-    <div id="wasteFeedback" class="max-w-6xl mx-auto px-4 mb-4 group transition-all duration-300">
-      <div id="wasteFeedbackBox"
-        class="bg-red-800 text-white px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] animate-fade-in transition-all duration-500 ease-in-out">
-        <p id="wasteMessage" class="text-lg flex items-center gap-2">
-          <span>🗑️</span><span class="waste-msg">Evaluating waste...</span>
-        </p>
-      </div>
-    </div>
-
-    <div id="chartWasteWrapper" class="mb-8">
-      <h5 class="text-center mb-2 font-semibold">Waste (%)</h5>
-      <div class="bg-[#1e293b] rounded-xl p-4 aspect-[2/1] glow-container ">
-        <canvas id="chartWaste"></canvas>
-      </div>
-    </div>
-
-    <div class="text-center mt-6">
-      <button onclick="downloadChartsAsPDF()"
-        class="relative px-8 py-3 overflow-hidden font-semibold rounded-lg bg-gray-800 text-gray-50 hover:bg-gray-900 group">
-        <span
-          class="absolute top-0 right-0 px-5 py-1 text-xs tracking-wider text-center uppercase origin-bottom-left transform rotate-45 -translate-y-full translate-x-1/3 bg-violet-600">
-          New
-        </span>
-        <span class="relative flex items-center gap-2">
-          <span>Download Charts as PDF</span>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none"
-            class="w-4 h-4 transition-transform duration-300 ease-out group-hover:translate-y-1">
-            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2"
-              stroke-linejoin="round" stroke-linecap="round"></path>
-          </svg>
-        </span>
-      </button>
-    </div>
-
-  </div>
-  <button class="floating-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
-    <i class="fas fa-arrow-up"></i>
-  </button>
+    /* Animate fade effects */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+    .animate-fade-out { animation: fadeOut 0.3s ease-out; }
+    
+    /* Task completion styling */
+    .task-completed {
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+    
+    .task-completed .task-title {
+      text-decoration: line-through;
+      color: #6b7280;
+    }
+    
+    .task-completed .task-description {
+      color: #9ca3af;
+    }
+    
+    .task-progress-bar {
+      height: 4px;
+      background-color: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .task-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #059669, #10b981);
+      transition: width 0.5s ease;
+      border-radius: 2px;
+    }
+  </style>
 
   <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
 
-    const set = (id, value, threshold = null, reverse = false) => {
-      const cell = document.getElementById(id);
-      const cleanValue = typeof value === 'string' ? value.trim().replace(/,/g, '') : value;
-      const numeric = Number(cleanValue);
+    // Set timestamps
+    document.getElementById('reportTimestamp').textContent = new Date().toLocaleString();
+    document.getElementById('lastUpdate').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
 
-      // Reset content and remove previous classes
-      cell.textContent = cleanValue;
-      cell.classList.remove('red', 'green', 'bg-warning');
+    // Initialize all components - TABLE-FOCUSED ANALYTICS
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('📊 DEBUG: DOM loaded, initializing table-focused analytics...');
 
-      // If not a number, show warning and skip formatting
-      if (isNaN(numeric)) {
-        console.warn(`Non-numeric value in cell #${id}:`, value);
-        cell.classList.add('bg-warning');
-        return;
-      }
+      initializeFilters();
+      loadMetricsData();
+      loadAvailableRecords();
+      initializeEventListeners();
+      startRealTimeUpdates();
+      
+      // Load dashboard metrics with real data
+      fetchDashboardMetrics();
+      
+      // Load AI insights with real data immediately and show fallback if needed
+      setTimeout(() => {
+        console.log('🤖 DEBUG: Initializing AI insights after page load...');
+        
+        // Always show fallback insights first to prevent empty state
+        const fallbackData = getFallbackInsights();
+        updateDynamicInsights(fallbackData);
+        console.log('🤖 DEBUG: Displayed fallback insights immediately');
+        
+        // Then try to load real insights from API
+        generateAIInsights();
+      }, 1000); // Reduced delay for better user experience
+      
+      // Initialize task management after insights load
+      setTimeout(() => {
+        initializeTaskManagement();
+      }, 1500);
+    });
 
-      const fail = threshold !== null ? (reverse ? numeric > threshold : numeric < threshold) : false;
-      cell.classList.add(fail ? 'red' : 'green');
-    };
+    // Initialize filters - simplified version
+    function initializeFilters() {
+      // Independent filter changes - no Apply button needed
+      document.getElementById('week').addEventListener('change', fetchReportWithFilters);
+      document.getElementById('day').addEventListener('change', fetchReportWithFilters);
+    }
 
+    // Fetch report with current filter values (independent filtering)
+    async function fetchReportWithFilters() {
+      const week = document.getElementById('week').value;
+      const day = document.getElementById('day').value;
 
+      // Update both table and dashboard metrics immediately as filters change
+      await Promise.all([
+        fetchReportData(week, day, 'both'),
+        fetchDashboardMetrics()
+      ]);
+    }
 
+    // Initialize event listeners
+    function initializeEventListeners() {
+      // Table view toggle
+      document.getElementById('tableViewToggle').addEventListener('click', toggleTableView);
+
+      // Record selector
+      document.getElementById('recordSelector').addEventListener('change', (e) => {
+        const selectedRecordId = e.target.value;
+        loadRecordData(selectedRecordId);
+        showNotification('Record data updated', 'success');
+      });
+
+      // Refresh table
+      document.getElementById('refreshTable').addEventListener('click', async () => {
+        await Promise.all([
+          loadMetricsData(),
+          loadAvailableRecords(),
+          fetchDashboardMetrics()
+        ]);
+        showNotification('Data refreshed successfully', 'success');
+      });
+
+      // Generate insights - Enhanced with click confirmation
+      document.getElementById('generateInsights').addEventListener('click', function() {
+        console.log('🤖 DEBUG: Generate New Insights button clicked!');
+        showNotification('🔄 Generating new insights...', 'info');
+        generateAIInsights();
+      });
+
+      // Congratulation message close button
+      document.getElementById('closeCongratulationMessage').addEventListener('click', () => {
+        document.getElementById('congratulationMessage').classList.add('hidden');
+      });
+    }
+
+    // Fetch and update report data
     async function fetchReport() {
       const week = document.getElementById('week').value;
       const day = document.getElementById('day').value;
-      const shift = document.getElementById('shift').value;
 
-      const res = await fetch(`/api/report?week=${week}&day=${day}&shift=${shift}`);
-      const data = await res.json();
-
-      // ✅ OEE - METRIC
-      set('oee1', data.oee1, 70);
-      set('oee2', data.oee2, 70);
-      set('oeeTotal', data.oeeTotal, 70);
-
-      // ✅ POUNDS
-      set('pounds1', data.pounds1);
-      set('pounds2', data.pounds2);
-      set('poundsTotal', data.poundsTotal);
-
-      // ✅ WASTE - METRIC (only TOTAL)
-      set('waste1', data.waste1);
-      set('waste2', data.waste2);
-      set('wasteTotal', data.wasteTotal, 3.75, true);
-
-      // ✅ WEEK AVERAGE - OEE
-      set('oee1Avg', data.oee1Avg, 70);
-      set('oee2Avg', data.oee2Avg, 70);
-      set('oeeTotalAvg', data.oeeTotalAvg, 70);
-
-      // ✅ WEEK AVERAGE - POUNDS
-      set('pounds1Avg', data.pounds1Avg);
-      set('pounds2Avg', data.pounds2Avg);
-      set('poundsTotalAvg', data.poundsTotalAvg);
-
-      // ✅ WEEK AVERAGE - WASTE (only TOTAL)
-      set('waste1Avg', data.waste1Avg);
-      set('waste2Avg', data.waste2Avg);
-      set('wasteTotalAvg', data.wasteTotalAvg, 3.75, true);
-
+      await fetchReportData(week, day, 'both');
     }
 
-
-
-
-
-
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      const overlay = document.getElementById("contentOverlay");
-      overlay.classList.remove('hidden');  // Show overlay
+    // Fetch report data with parameters (unified function for independent filtering)
+    async function fetchReportData(week, day, shift = 'both') {
+      const overlay = document.getElementById('contentOverlay');
+      overlay.classList.remove('hidden');
 
       try {
-        await fetchReport(); // Wait for all charts to load
-      } catch (error) {
-        console.error('Failed to load charts:', error);
-      }
+        console.log('📊 DEBUG: Fetching filtered data with params:', { week, day, shift });
+        
+        // Build query parameters for backend filtering
+        const params = new URLSearchParams();
+        if (week && week !== 'latest') {
+          params.append('week', week);
+        }
+        if (day && day !== 'All') {
+          params.append('day', day);
+        }
+        // Always use both shifts since no shift filter
+        
+        // Try backend filtering first
+        const queryString = params.toString();
+        const apiUrl = queryString ? `/api/both-shifts-records?${queryString}` : '/api/both-shifts-records';
+        
+        console.log('📊 DEBUG: API URL:', apiUrl);
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        let allRecords = await response.json();
+        console.log('📊 DEBUG: Records received from API:', allRecords.length);
 
-      overlay.classList.add('hidden');  // Hide overlay
-    });
+        if (allRecords.error) {
+          throw new Error(allRecords.error);
+        }
 
+        // If we got no results from backend filtering, this is correct for days with no data
+        if (allRecords.length === 0 && queryString) {
+          console.log('📊 DEBUG: No results from backend filter - this is correct for days with no data');
+          // Don't fall back to unfiltered data - if backend returns 0 records, that's the correct answer
+        }
 
+        // Use the most recent record, or create empty structure if no data
+        let recordToDisplay;
+        if (allRecords.length > 0) {
+          recordToDisplay = allRecords[0];
+          console.log('📊 DEBUG: Using record:', recordToDisplay.id, 'submitted:', recordToDisplay.submission_date);
+        } else {
+          // No data found - create empty record structure but show message
+          recordToDisplay = {};
+          console.log('📊 DEBUG: No matching records found for filters');
+          showNotification('No data found for selected filters', 'warning');
+        }
 
+        // Update the table and insights with the record
+        updateMetricsTableFromRecord(recordToDisplay);
+        updateInsights(recordToDisplay);
+        
+        // Note: Dashboard metrics are now updated separately via fetchDashboardMetrics()
+        // This provides real calculated data instead of using individual record data
 
+        // Check if all metrics are green and show congratulation message
+        checkAndShowCongratulationMessage(recordToDisplay);
 
+        // Update status indicators
+        const periodText = week && week !== 'latest' ? week : 'Current Week';
+        const dayText = day === 'All' ? 'All Days' : day;
+        document.getElementById('reportPeriod').textContent = `${periodText} - ${dayText}`;
+        document.getElementById('lastUpdate').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
 
-
-
-
-
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      await fetchReport();
-      document.getElementById('week').addEventListener('change', fetchReport);
-      document.getElementById('day').addEventListener('change', fetchReport);
-      document.getElementById('shift').addEventListener('change', fetchReport);
-    });
-
-
-    /*
-    async function downloadChartsAsPDF() {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const chartIDs = ['chartOEEWrapper', 'chartPoundsWrapper', 'chartWasteWrapper'];
-
-      for (let i = 0; i < chartIDs.length; i++) {
-        const canvas = await html2canvas(document.getElementById(chartIDs[i]));
-        const imgData = canvas.toDataURL('image/png');
-        const width = pdf.internal.pageSize.getWidth() - 40;
-        const height = (canvas.height * width) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 20, 40, width, height);
-        if (i < chartIDs.length - 1) pdf.addPage();
-      }
-
-      pdf.save('Bakery_Weekly_Metrics.pdf');
-    }
-    */
-
-
-  </script>
-
-
-  <!-- Glowing plugin place before the render chart functions because they depend on it -->
-  <script>
-    const glowingBarPlugin = {
-      id: 'glowBars',
-      afterDatasetDraw(chart, args, options) {
-        const { ctx, chartArea: { top, bottom }, data } = chart;
-        const dataset = args.meta.dataset;
-        const target = options.target || 70;
-        const glowColor = options.glowColor || 'rgba(34, 197, 94, 0.6)';
-
-        ctx.save();
-
-        args.meta.data.forEach((bar, i) => {
-          const value = data.datasets[args.index].data[i];
-          const meetsCriteria = value >= target;
-
-          if (meetsCriteria && bar) {
-            const { x, y, width, height } = bar.getProps(['x', 'y', 'width', 'height'], true);
-
-            ctx.shadowColor = glowColor;
-            ctx.shadowBlur = 20;
-            ctx.strokeStyle = glowColor;
-            ctx.lineWidth = 2;
-
-            ctx.beginPath();
-            ctx.rect(x - width / 2, y, width, bottom - y);
-            ctx.stroke();
-          }
+        // DEBUG: Log data validation for feedback message
+        console.log('🔧 DEBUG Feedback Logic:', {
+          recordsCount: allRecords.length,
+          recordToDisplay: recordToDisplay,
+          hasData: Object.keys(recordToDisplay).length > 0,
+          hasActualMetrics: recordToDisplay.total_oee || recordToDisplay.total_waste_percent || recordToDisplay.total_production,
+          periodText: periodText,
+          dayText: dayText
         });
 
-        ctx.restore();
-      }
-    };
+        // Check if we have actual metric data, not just an empty record
+        const hasActualData = recordToDisplay.total_oee > 0 ||
+                             recordToDisplay.total_waste_percent > 0 ||
+                             recordToDisplay.total_production > 0;
 
-    Chart.register(glowingBarPlugin);
-  </script>
-
-
-  <script>
-    let chartOEE, chartWaste;
-
-    // Build chart with floating values, target line, and performance line
-    function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor }) {
-      const values = data.map(Number);
-      const colors = values.map(v => {
-        if (ctxId === 'chartWaste') {
-          return v <= target ? '#22c55e' : '#ef4444';  // reversed for Waste
+        if (allRecords.length > 0 && Object.keys(recordToDisplay).length > 0 && hasActualData) {
+          showNotification(`Data loaded for ${periodText}${dayText !== 'All Days' ? ` (${dayText})` : ''}`, 'success');
+        } else {
+          showNotification(`No data available for ${periodText}${dayText !== 'All Days' ? ` (${dayText})` : ''}`, 'warning');
         }
-        return v >= target ? '#22c55e' : '#ef4444';    // normal for OEE
-      });
 
-
-      const ctx = document.getElementById(ctxId).getContext('2d');
-      if (ctxId === 'chartOEE' && chartOEE) chartOEE.destroy();
-      if (ctxId === 'chartWaste' && chartWaste) chartWaste.destroy();
-
-      const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-          datasets: [
-            {
-              type: 'bar',
-              label: title,
-              data: values,
-              backgroundColor: colors,
-              borderRadius: 6,
-            },
-            {
-              type: 'line',
-              label: 'Performance Trend',
-              data: values,
-              borderColor: lineColor,
-              borderWidth: 2,
-              tension: 0.3,
-              pointRadius: 4,
-              pointBackgroundColor: 'white',
-            },
-            {
-              type: 'line',
-              label: 'Target',
-              data: Array(5).fill(target),
-              borderColor: '#3b82f6',
-              borderDash: [5, 5],
-              borderWidth: 2,
-              pointRadius: 0,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            glowBars: {
-              target: 70,
-              glowColor: 'rgba(34, 197, 94, 0.8)'
-            },
-            legend: { labels: { color: 'white' } },
-            datalabels: {
-              anchor: 'end',
-              align: 'top',
-              color: (ctx) => ctx.datasetIndex === 0 ? 'white' : 'transparent',
-              font: { weight: 'bold' },
-              formatter: value => typeof value === 'number' ? value.toFixed(2) : ''
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: 'white' },
-              grid: { color: '#334155' }
-            },
-            y: {
-              beginAtZero: true,
-              suggestedMax: ctxId === 'chartOEE' ? 120 : undefined, // only apply to OEE chart
-              title: {
-                display: true,
-                text: yLabel,
-                color: 'white'
-              },
-              ticks: {
-                color: 'white',
-                callback: function (value) {
-                  return value + (yLabel.includes('%') ? '%' : '');
-                }
-              },
-              grid: { color: '#334155' }
-            }
-
-          }
-        },
-        plugins: [ChartDataLabels]
-      });
-
-      if (ctxId === 'chartOEE') chartOEE = chart;
-      if (ctxId === 'chartWaste') chartWaste = chart;
+      } catch (error) {
+        console.error('📊 ERROR: Failed to fetch report data:', error);
+        showNotification(`Failed to load report data: ${error.message}`, 'error');
+        
+        // Load with empty/default data on error but keep table structure visible
+        updateMetricCards({});
+        updateMetricsTableFromRecord({});
+      } finally {
+        overlay.classList.add('hidden');
+      }
     }
 
+    // Filter records based on selected criteria
+    function filterRecords(records, week, day) {
+      console.log('📊 DEBUG: Filtering with criteria:', { week, day });
+      console.log('📊 DEBUG: Total records to filter:', records.length);
+      
+      if (!records || records.length === 0) {
+        return [];
+      }
 
-    // Fetch values from your server-side endpoint based on selected week
-    async function updateDynamicCharts() {
-      const week = document.getElementById('week').value;
-      const response = await fetch(`/api/weekly-metrics?week=${week}`);
-      const result = await response.json();
+      let filtered = [...records];
 
-      renderMetricChart({
-        ctxId: 'chartOEE',
-        title: 'OEE (%)',
-        data: result.oee, // Expecting array of 5 values
-        target: 70,
-        yLabel: 'OEE (%)',
-        bgColor: '#1e293b',
-        barColor: '#60a5fa',
-        lineColor: '#facc15'
+      // Filter by week - always apply filter if a specific week is selected
+      if (week && week !== 'latest') {
+        console.log('📊 DEBUG: Filtering by week:', week);
+        filtered = filtered.filter(record => {
+          // Try multiple possible field names and formats for week matching
+          const weekMatches =
+            record.week_ending === week ||
+            record.week === week ||
+            record.week_name === week ||
+            (record.submission_date && record.submission_date.includes(week)) ||
+            (record.created_at && record.created_at.includes(week));
+          
+          console.log('📊 DEBUG: Record week data:', {
+            id: record.id,
+            week_ending: record.week_ending,
+            week: record.week,
+            week_name: record.week_name,
+            submission_date: record.submission_date,
+            matches: weekMatches
+          });
+          
+          return weekMatches;
+        });
+        console.log('📊 DEBUG: After week filter:', filtered.length);
+      }
+
+      // Filter by day if not "All"
+      if (day && day !== 'All') {
+        console.log('📊 DEBUG: Filtering by day:', day);
+        filtered = filtered.filter(record => {
+          if (record.submission_date) {
+            const recordDate = new Date(record.submission_date);
+            const dayName = recordDate.toLocaleDateString('en-US', { weekday: 'long' });
+            const dayMatches = dayName === day;
+            
+            console.log('📊 DEBUG: Day filter check:', {
+              id: record.id,
+              submission_date: record.submission_date,
+              dayName: dayName,
+              targetDay: day,
+              matches: dayMatches
+            });
+            
+            return dayMatches;
+          }
+          return true; // Keep record if no date info
+        });
+        console.log('📊 DEBUG: After day filter:', filtered.length);
+      }
+
+      // Sort by most recent first
+      filtered.sort((a, b) => {
+        const dateA = new Date(a.submission_date || a.created_at || 0);
+        const dateB = new Date(b.submission_date || b.created_at || 0);
+        return dateB - dateA;
       });
 
-      renderMetricChart({
-        ctxId: 'chartWaste',
-        title: 'Waste (%)',
-        data: result.waste, // Expecting array of 5 values
-        target: 3.75,
-        yLabel: 'Waste (%)',
-        bgColor: '#1e293b',
-        barColor: '#f87171',
-        lineColor: '#facc15'
+      console.log('📊 DEBUG: Final filtered results:', filtered.length);
+      return filtered;
+    }
+
+    // Check if all metrics are green and show congratulation message
+    function checkAndShowCongratulationMessage(data) {
+      const congratulationMsg = document.getElementById('congratulationMessage');
+
+      // Check if ALL BOTH SHIFTS values meet their targets (all rows should be green)
+      const oee1Target = (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70);
+      const oee2Target = (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70);
+      const oeeTotalTarget = (data.total_oee && data.total_oee >= 70);
+      
+      const volume1Target = (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000);
+      const volume2Target = (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000);
+      const volumeTotalTarget = (data.total_production && data.total_production >= 12000);
+      
+      const waste1Target = (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75);
+      const waste2Target = (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75);
+      const wasteTotalTarget = (data.total_waste_percent && data.total_waste_percent <= 3.75);
+
+      // Array of all target checks for easier verification
+      const allTargets = [
+        oee1Target, oee2Target, oeeTotalTarget,
+        volume1Target, volume2Target, volumeTotalTarget,
+        waste1Target, waste2Target, wasteTotalTarget
+      ];
+
+      // Show congratulation message ONLY if ALL metrics in BOTH SHIFTS column meet targets (all green)
+      const allTargetsMet = allTargets.every(target => target === true);
+
+      console.log('📊 DEBUG: Congratulation check - All targets met:', allTargetsMet, {
+        oee1: oee1Target, oee2: oee2Target, oeeTotal: oeeTotalTarget,
+        volume1: volume1Target, volume2: volume2Target, volumeTotal: volumeTotalTarget,
+        waste1: waste1Target, waste2: waste2Target, wasteTotal: wasteTotalTarget
       });
 
-      const applyGlowEffect = (chartId, average, target, reverse = false) => {
-        const wrapper = document.getElementById(chartId).parentElement.parentElement;
-        wrapper.classList.remove('glow-green', 'glow-red');
+      if (allTargetsMet) {
+        congratulationMsg.classList.remove('hidden');
 
-        const avg = parseFloat(average); // just in case
-        const pass = reverse ? avg <= target : avg >= target;
+        // Auto-hide after 10 seconds if not manually closed
+        setTimeout(() => {
+          if (!congratulationMsg.classList.contains('hidden')) {
+            congratulationMsg.classList.add('hidden');
+          }
+        }, 10000);
+      } else {
+        congratulationMsg.classList.add('hidden');
+      }
+    }
 
-        wrapper.classList.add(pass ? 'glow-green' : 'glow-red');
+    // Fetch dashboard metrics from new API endpoint
+    async function fetchDashboardMetrics() {
+      try {
+        // Get current filter values
+        const week = document.getElementById('week').value;
+        const day = document.getElementById('day').value;
+        
+        console.log('📊 DEBUG: Fetching dashboard metrics with filters:', { week, day });
+        
+        // Build query parameters for dashboard metrics API
+        const params = new URLSearchParams();
+        if (week && week !== 'latest') {
+          params.append('week', week);
+        }
+        if (day && day !== 'All') {
+          params.append('day', day);
+        }
+        
+        const queryString = params.toString();
+        const apiUrl = queryString ? `/api/report-dashboard-metrics?${queryString}` : '/api/report-dashboard-metrics';
+        
+        console.log('📊 DEBUG: Dashboard metrics API URL:', apiUrl);
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('📊 DEBUG: Dashboard metrics API response:', result);
+        
+        if (result.success && result.data) {
+          updateMetricCards(result.data);
+          console.log('📊 DEBUG: Dashboard metrics updated successfully');
+        } else {
+          console.warn('📊 WARNING: Dashboard metrics API returned no data');
+          updateMetricCards({});
+        }
+        
+      } catch (error) {
+        console.error('📊 ERROR: Failed to fetch dashboard metrics:', error);
+        showNotification('Failed to load dashboard metrics', 'warning');
+        
+        // Update with empty data on error
+        updateMetricCards({});
+      }
+    }
+
+    // Update metric cards with real data from API
+    function updateMetricCards(data) {
+      console.log('📊 DEBUG: Updating metric cards with data:', data);
+      
+      // OEE Card
+      const oeeValue = parseFloat(data.oeeCurrentValue) || 0;
+      document.getElementById('oeeCurrentValue').textContent = oeeValue.toFixed(1);
+      updateStatusBadge('oeeStatusCard', data.oeeStatus || (oeeValue >= 70 ? 'Target Met' : 'Below Target'), oeeValue >= 70);
+
+      // Update OEE trend indicator and vs target text
+      const oeeChangeElement = document.getElementById('oeeChange');
+      if (oeeChangeElement) {
+        const oeeChangeText = data.oeeChange || '+0.0%';
+        oeeChangeElement.innerHTML = `<i data-lucide="trending-${oeeChangeText.startsWith('+') ? 'up' : oeeChangeText.startsWith('-') ? 'down' : 'minus'}" class="w-3 h-3 mr-1"></i>${oeeChangeText}`;
+        oeeChangeElement.className = `inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${oeeChangeText.startsWith('+') ? 'bg-emerald-100 text-emerald-700' : oeeChangeText.startsWith('-') ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`;
+      }
+      
+      // Update vs target text for OEE
+      const oeeVsTarget = oeeChangeElement?.nextElementSibling;
+      if (oeeVsTarget) {
+        oeeVsTarget.textContent = data.oeeVsTarget || 'vs target (70%)';
+      }
+
+      // Waste Card
+      const wasteValue = parseFloat(data.wasteCurrentValue) || 0;
+      document.getElementById('wasteCurrentValue').textContent = wasteValue.toFixed(2);
+      updateStatusBadge('wasteStatusCard', data.wasteStatus || (wasteValue <= 3.75 ? 'Below Target' : 'Above Target'), wasteValue <= 3.75);
+
+      // Update waste trend indicator and vs target text
+      const wasteChangeElement = document.getElementById('wasteChange');
+      if (wasteChangeElement) {
+        const wasteChangeText = data.wasteChange || '+0.0%';
+        wasteChangeElement.innerHTML = `<i data-lucide="trending-${wasteChangeText.startsWith('+') ? 'up' : wasteChangeText.startsWith('-') ? 'down' : 'minus'}" class="w-3 h-3 mr-1"></i>${wasteChangeText}`;
+        wasteChangeElement.className = `inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${wasteChangeText.startsWith('+') ? 'bg-red-100 text-red-700' : wasteChangeText.startsWith('-') ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`;
+      }
+      
+      // Update vs target text for waste
+      const wasteVsTarget = wasteChangeElement?.nextElementSibling;
+      if (wasteVsTarget) {
+        wasteVsTarget.textContent = data.wasteVsTarget || 'vs target (3.75%)';
+      }
+
+      // Production Card
+      const productionValue = parseFloat(data.productionCurrentValue) || 0;
+      document.getElementById('productionCurrentValue').textContent = productionValue.toLocaleString();
+      const productionStatus = data.productionStatus || (productionValue >= 12000 ? 'Above Target' : 'Below Target');
+      updateStatusBadge('productionStatusCard', productionStatus, productionValue >= 12000);
+
+      // Update production trend indicator and daily output text
+      const productionChangeElement = document.getElementById('productionChange');
+      if (productionChangeElement) {
+        const productionChangeText = data.productionChange || '+0 lbs';
+        productionChangeElement.innerHTML = `<i data-lucide="activity" class="w-3 h-3 mr-1"></i>${productionChangeText}`;
+        productionChangeElement.className = `inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold ${productionChangeText.includes('+') ? 'bg-emerald-100 text-emerald-700' : productionChangeText.includes('-') ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`;
+      }
+      
+      // Update daily output text for production
+      const productionDailyOutput = productionChangeElement?.nextElementSibling;
+      if (productionDailyOutput) {
+        productionDailyOutput.textContent = data.productionDailyOutput || 'daily output';
+      }
+
+      // Efficiency Score Card
+      const efficiency = parseFloat(data.efficiencyCurrentValue) || 0;
+      document.getElementById('efficiencyCurrentValue').textContent = efficiency.toFixed(1);
+      updateStatusBadge('efficiencyStatusCard', data.efficiencyStatus || (efficiency >= 7 ? 'Good' : 'Fair'), efficiency >= 7);
+
+      // Update efficiency trend indicator and performance index text
+      const efficiencyChangeElement = document.getElementById('efficiencyChange');
+      if (efficiencyChangeElement) {
+        const efficiencyChangeText = data.efficiencyChange || 'Stable';
+        efficiencyChangeElement.innerHTML = `<i data-lucide="minus" class="w-3 h-3 mr-1"></i>${efficiencyChangeText}`;
+        efficiencyChangeElement.className = `inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-600`;
+      }
+      
+      // Update performance index text for efficiency
+      const efficiencyPerformanceIndex = efficiencyChangeElement?.nextElementSibling;
+      if (efficiencyPerformanceIndex) {
+        efficiencyPerformanceIndex.textContent = data.efficiencyPerformanceIndex || 'performance index';
+      }
+      
+      // Recreate Lucide icons for the updated trend indicators
+      lucide.createIcons();
+      
+      console.log('📊 DEBUG: Metric cards updated with real data');
+    }
+
+    // Update status badge with dynamic color formatting based on metric type
+    function updateStatusBadge(elementId, text, isGood, metricType = 'general') {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      // Format text to uppercase for consistency with image
+      element.textContent = text.toUpperCase();
+
+      // Clear existing classes and set base classes
+      element.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase';
+
+      // NEW DYNAMIC COLOR LOGIC based on performance state
+      let colorClass;
+      if (isGood) {
+        colorClass = 'bg-green-100 text-green-800'; // GREEN for good performance
+      } else {
+        colorClass = 'bg-red-100 text-red-800'; // RED for poor performance
+      }
+
+      element.classList.add(...colorClass.split(' '));
+      console.log(`📊 DEBUG: Status ${elementId} updated: "${text.toUpperCase()}" (${metricType}: ${isGood ? 'GREEN' : 'RED'})`);
+    }
+
+    // Load available records for filtering
+    async function loadAvailableRecords() {
+      try {
+        const response = await fetch('/api/both-shifts-records');
+        if (!response.ok) {
+          console.error('Failed to fetch records');
+          return;
+        }
+
+        const records = await response.json();
+        const selector = document.getElementById('recordSelector');
+
+        // Clear existing options except "Latest Record"
+        selector.innerHTML = '<option value="latest">Latest Record</option>';
+
+        // Add options for each record
+        records.forEach(record => {
+          const option = document.createElement('option');
+          option.value = record.id;
+
+          // Format the option text with date and basic info
+          const date = new Date(record.submission_date).toLocaleDateString();
+          const oee = record.total_oee ? `${record.total_oee.toFixed(1)}%` : 'N/A';
+          option.textContent = `${date} - OEE: ${oee}`;
+
+          selector.appendChild(option);
+        });
+
+      } catch (error) {
+        console.error('Error loading available records:', error);
+      }
+    }
+
+    // Load data for a specific record
+    async function loadRecordData(recordId) {
+      if (recordId === 'latest') {
+        // Load latest record (default behavior)
+        loadMetricsData();
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/both-shifts-record/${recordId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch record data');
+        }
+
+        const data = await response.json();
+        updateMetricsTableFromRecord(data);
+        updateMetricCards(data);
+
+      } catch (error) {
+        console.error('Error loading record data:', error);
+        showNotification('Failed to load selected record', 'error');
+      }
+    }
+
+    // Update metrics table with new shift-based structure
+    function updateMetricsTable(data) {
+      updateMetricsTableFromRecord(data);
+    }
+
+    // Update metrics table from a specific record
+    function updateMetricsTableFromRecord(data) {
+      console.log('📊 DEBUG: Updating table with new structure, data:', data);
+
+      // OEE Section - Die Cut 1
+      updateShiftValue('oeeDieCut1FirstShift', data.first_shift_die_cut1_oee, '%', 70, false);
+      updateShiftValue('oeeDieCut1SecondShift', data.second_shift_die_cut1_oee, '%', 70, false);
+      updateShiftValue('oeeDieCut1Both', data.both_shift_die_cut1_oee, '%', 70, false);
+      updateStatusBadge('oeeDieCut1Status', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70), 'oee');
+
+      // OEE Section - Die Cut 2
+      updateShiftValue('oeeDieCut2FirstShift', data.first_shift_die_cut2_oee, '%', 70, false);
+      updateShiftValue('oeeDieCut2SecondShift', data.second_shift_die_cut2_oee, '%', 70, false);
+      updateShiftValue('oeeDieCut2Both', data.both_shift_die_cut2_oee, '%', 70, false);
+      updateStatusBadge('oeeDieCut2Status', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70), 'oee');
+
+      // OEE Section - Total (use average values)
+      updateShiftValue('oeeTotalFirstShift', data.first_shift_oee, '%', 70, false);
+      updateShiftValue('oeeTotalSecondShift', data.second_shift_oee, '%', 70, false);
+      updateShiftValue('oeeTotalBoth', data.total_oee, '%', 70, false);
+      updateStatusBadge('oeeTotalStatus', (data.total_oee && data.total_oee >= 70) ? 'Target Met' : 'Below Target', (data.total_oee && data.total_oee >= 70), 'oee');
+
+      // VOLUME Section - Die Cut 1
+      updateShiftValue('volumeDieCut1FirstShift', data.first_shift_die_cut1_lbs, ' lbs', 3000, false, true);
+      updateShiftValue('volumeDieCut1SecondShift', data.second_shift_die_cut1_lbs, ' lbs', 3000, false, true);
+      updateShiftValue('volumeDieCut1Both', data.both_shift_die_cut1_lbs, ' lbs', 6000, false, true);
+      updateStatusBadge('volumeDieCut1Status', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000) ? 'On Target' : 'Below Target', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000));
+
+      // VOLUME Section - Die Cut 2
+      updateShiftValue('volumeDieCut2FirstShift', data.first_shift_die_cut2_lbs, ' lbs', 3000, false, true);
+      updateShiftValue('volumeDieCut2SecondShift', data.second_shift_die_cut2_lbs, ' lbs', 3000, false, true);
+      updateShiftValue('volumeDieCut2Both', data.both_shift_die_cut2_lbs, ' lbs', 6000, false, true);
+      updateStatusBadge('volumeDieCut2Status', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000) ? 'On Target' : 'Below Target', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000));
+
+      // VOLUME Section - Total
+      updateShiftValue('volumeTotalFirstShift', data.first_shift_production, ' lbs', 6000, false, true);
+      updateShiftValue('volumeTotalSecondShift', data.second_shift_production, ' lbs', 6000, false, true);
+      updateShiftValue('volumeTotalBoth', data.total_production, ' lbs', 12000, false, true);
+      updateStatusBadge('volumeTotalStatus', (data.total_production && data.total_production >= 12000) ? 'On Target' : 'Below Target', (data.total_production && data.total_production >= 12000));
+
+      // WASTE Section - Die Cut 1
+      updateShiftValue('wasteDieCut1FirstShift', data.first_shift_die_cut1_waste_pct, '%', 3.75, true);
+      updateShiftValue('wasteDieCut1SecondShift', data.second_shift_die_cut1_waste_pct, '%', 3.75, true);
+      updateShiftValue('wasteDieCut1Both', data.both_shift_die_cut1_waste_pct, '%', 3.75, true);
+      updateStatusBadge('wasteDieCut1Status', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75), 'waste');
+
+      // WASTE Section - Die Cut 2
+      updateShiftValue('wasteDieCut2FirstShift', data.first_shift_die_cut2_waste_pct, '%', 3.75, true);
+      updateShiftValue('wasteDieCut2SecondShift', data.second_shift_die_cut2_waste_pct, '%', 3.75, true);
+      updateShiftValue('wasteDieCut2Both', data.both_shift_die_cut2_waste_pct, '%', 3.75, true);
+      updateStatusBadge('wasteDieCut2Status', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75), 'waste');
+
+      // WASTE Section - Total (use average values)
+      updateShiftValue('wasteTotalFirstShift', data.first_shift_waste_percent, '%', 3.75, true);
+      updateShiftValue('wasteTotalSecondShift', data.second_shift_waste_percent, '%', 3.75, true);
+      updateShiftValue('wasteTotalBoth', data.total_waste_percent, '%', 3.75, true);
+      updateStatusBadge('wasteTotalStatus', (data.total_waste_percent && data.total_waste_percent <= 3.75) ? 'Below Target' : 'Above Target', (data.total_waste_percent && data.total_waste_percent <= 3.75), 'waste');
+
+      console.log('📊 DEBUG: Table update completed with individual die cut data mapping');
+    }
+
+    // Update shift-specific values with dynamic color formatting based on targets
+    function updateShiftValue(elementId, value, suffix, target, isReverse = false, isInteger = false) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        console.warn(`📊 WARNING: Element ${elementId} not found in DOM`);
+        return;
+      }
+
+      console.log(`📊 DEBUG: Updating ${elementId} with value: ${value}${suffix}`);
+
+      // Format value or show dash if no data
+      const formattedValue = formatValue(value, suffix, isInteger);
+      element.textContent = formattedValue;
+
+      // Remove existing color classes
+      element.className = 'inline-flex items-center px-3 py-2 rounded-full text-sm font-bold';
+
+      if (value === undefined || value === null || value === 0 || value === '-') {
+        element.classList.add('value-neutral');
+        element.textContent = '-';
+        return;
+      }
+
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        element.classList.add('value-neutral');
+        element.textContent = '-';
+        return;
+      }
+
+      // NEW DYNAMIC COLOR LOGIC based on specific targets
+      let colorClass;
+      let textColor;
+      
+      if (isReverse) {
+        // For WASTE metrics: GREEN <= 3.75%, RED > 3.75%
+        if (numValue <= target) {
+          colorClass = 'bg-green-100 text-green-800'; // GREEN for at/below target
+          textColor = 'green';
+        } else {
+          colorClass = 'bg-red-100 text-red-800'; // RED for above target
+          textColor = 'red';
+        }
+      } else {
+        // For OEE metrics: GREEN >= 70%, RED < 70%
+        if (numValue >= target) {
+          colorClass = 'bg-green-100 text-green-800'; // GREEN for meets/exceeds target
+          textColor = 'green';
+        } else {
+          colorClass = 'bg-red-100 text-red-800'; // RED for below target
+          textColor = 'red';
+        }
+      }
+
+      element.className = `inline-flex items-center px-3 py-2 rounded-full text-sm font-bold ${colorClass}`;
+      console.log(`📊 DEBUG: ${elementId} updated with dynamic color: ${textColor} (value: ${numValue}, target: ${target})`);
+    }
+
+    // Format values for display
+    function formatValue(value, suffix, isInteger = false) {
+      if (value === undefined || value === null || value === 0 || value === '-') return '-';
+      const num = parseFloat(value);
+      if (isNaN(num)) return '-';
+
+      if (isInteger) {
+        return Math.round(num).toLocaleString() + suffix;
+      }
+      return num.toFixed(1) + suffix;
+    }
+
+    // Load metrics data (now uses filtering system)
+    async function loadMetricsData() {
+      console.log('📊 DEBUG: loadMetricsData() called');
+      
+      try {
+        // Get current filter values
+        const week = document.getElementById('week').value || 'latest';
+        const day = document.getElementById('day').value || 'All';
+        
+        console.log('📊 DEBUG: Loading with filters:', { week, day });
+        
+        // Use the filtering system to load data (always both shifts)
+        await fetchReportData(week, day, 'both');
+        
+      } catch (error) {
+        console.error('📊 ERROR: loadMetricsData failed:', error);
+        showNotification('Failed to load initial data', 'error');
+        
+        // Ensure empty table is shown on error
+        updateMetricsTableFromRecord({});
+        updateMetricCards({});
+      }
+    }
+
+    // Generate AI insights using real database data with enhanced error handling
+    async function generateAIInsights() {
+      const btn = document.getElementById('generateInsights');
+      const icon = btn?.querySelector('i');
+
+      // Show loading state in button
+      if (btn) {
+        btn.disabled = true;
+        if (icon) icon.classList.add('animate-spin');
+      }
+      
+      console.log('🤖 DEBUG: Starting AI insights generation...');
+      
+      try {
+        // Get current filter values for context-aware insights
+        const week = document.getElementById('week')?.value || 'latest';
+        const day = document.getElementById('day')?.value || 'All';
+        
+        console.log('🤖 DEBUG: Generating AI insights with filters:', { week, day });
+        
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (week && week !== 'latest') {
+          params.append('week', week);
+        }
+        if (day && day !== 'All') {
+          params.append('day', day);
+        }
+        
+        const queryString = params.toString();
+        const apiUrl = queryString ? `/api/ai-insights?${queryString}` : '/api/ai-insights';
+        
+        console.log('🤖 DEBUG: AI insights API URL:', apiUrl);
+        
+        // Add timeout to prevent indefinite loading
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        
+        const response = await fetch(apiUrl, {
+          signal: controller.signal,
+          credentials: 'same-origin', // Ensure cookies/session are sent
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('🤖 DEBUG: Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          if (response.status === 302 || response.status === 401) {
+            throw new Error('Authentication required - please refresh the page and log in again');
+          }
+          throw new Error(`Server error ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('🤖 DEBUG: AI insights API response:', result);
+        
+        if (result.success && result.data) {
+          console.log('🤖 DEBUG: Updating insights with real data from database');
+          updateDynamicInsights(result.data);
+          //showNotification('✨ insights generated successfully', 'success');
+        } else {
+          throw new Error(result.error || result.message || 'No insights data returned from server');
+        }
+        
+      } catch (error) {
+        console.error('🤖 ERROR: Failed to generate insights:', error);
+        
+        // Handle different error types
+        let errorMessage = 'Unable to generate insights';
+        if (error.name === 'AbortError') {
+          errorMessage = 'Request timed out - trying with fallback data';
+        } else if (error.message.includes('Authentication')) {
+          errorMessage = 'Please refresh the page to re-authenticate';
+        } else {
+          errorMessage = error.message || 'Unknown error occurred';
+        }
+        
+        console.log('🤖 DEBUG: Showing fallback insights due to error:', errorMessage);
+        
+        // Always show fallback insights on error
+        const fallbackData = getFallbackInsights();
+        updateDynamicInsights(fallbackData);
+        showNotification(`Using fallback insights: ${errorMessage}`, 'warning');
+        
+      } finally {
+        // Always restore button state
+        if (btn) {
+          btn.disabled = false;
+          if (icon) icon.classList.remove('animate-spin');
+        }
+        console.log('🤖 DEBUG: insights generation completed');
+      }
+    }
+
+    // Update all insight sections with dynamic data from API
+    function updateDynamicInsights(insightsData) {
+      console.log('🤖 DEBUG: Updating dynamic insights with data:', insightsData);
+      
+      if (!insightsData) {
+        console.error('🤖 ERROR: No insights data provided');
+        return;
+      }
+      
+      // Update Key Performance Insights
+      updateKeyInsights(insightsData.key_insights || []);
+      
+      // Update Actionable Recommendations
+      updateRecommendations(insightsData.recommendations || []);
+      
+      // Update Priority Action Items
+      updateActionItems(insightsData.action_items || []);
+      
+      // Recreate Lucide icons for dynamic content
+      lucide.createIcons();
+    }
+
+    // Update Key Performance Insights section
+    function updateKeyInsights(insights) {
+      const container = document.getElementById('insightsList');
+      
+      if (!container) return;
+      
+      if (!insights || insights.length === 0) {
+        container.innerHTML = `
+          <div class="bg-gray-50 rounded-2xl p-6 text-center">
+            <i data-lucide="info" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+            <p class="text-sm text-gray-500">No performance insights available</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const insightColors = {
+        'success': 'emerald',
+        'warning': 'amber',
+        'info': 'blue',
+        'error': 'red'
+      };
+      
+      const insightIcons = {
+        'success': 'trending-up',
+        'warning': 'alert-triangle',
+        'info': 'info',
+        'error': 'alert-circle'
+      };
+      
+      container.innerHTML = insights.map(insight => `
+        <div class="bg-white rounded-2xl p-4 border-l-4 border-${insightColors[insight.type] || 'blue'}-500 shadow-sm hover:shadow-md transition-all duration-200">
+          <div class="flex items-start gap-3">
+            <i data-lucide="${insight.icon || insightIcons[insight.type] || 'info'}" class="w-5 h-5 text-${insightColors[insight.type] || 'blue'}-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">${insight.title}</p>
+              <p class="text-xs text-gray-600 mt-1">${insight.description}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Update Actionable Recommendations section
+    function updateRecommendations(recommendations) {
+      const container = document.getElementById('recommendationsList');
+      
+      if (!container) return;
+      
+      if (!recommendations || recommendations.length === 0) {
+        container.innerHTML = `
+          <div class="bg-gray-50 rounded-2xl p-6 text-center">
+            <i data-lucide="wrench" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+            <p class="text-sm text-gray-500">No recommendations available</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const recommendationColors = {
+        'high': 'red',
+        'medium': 'orange',
+        'low': 'blue'
+      };
+      
+      const recommendationIcons = {
+        'high': 'alert-circle',
+        'medium': 'wrench',
+        'low': 'lightbulb'
+      };
+      
+      container.innerHTML = recommendations.map(rec => `
+        <div class="bg-white rounded-2xl p-4 border-l-4 border-${recommendationColors[rec.type] || 'orange'}-500 shadow-sm hover:shadow-md transition-all duration-200">
+          <div class="flex items-start gap-3">
+            <i data-lucide="${recommendationIcons[rec.type] || 'wrench'}" class="w-5 h-5 text-${recommendationColors[rec.type] || 'orange'}-600 mt-0.5"></i>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">${rec.title}</p>
+              <p class="text-xs text-gray-600 mt-1">${rec.description}</p>
+              ${rec.action ? `<button class="text-xs text-blue-600 hover:text-blue-700 font-medium mt-2 hover:underline">${rec.action} →</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Update Priority Action Items section with functional checkboxes
+    function updateActionItems(actionItems) {
+      const container = document.getElementById('actionsList');
+      
+      if (!container) return;
+      
+      if (!actionItems || actionItems.length === 0) {
+        container.innerHTML = `
+          <div class="bg-gray-50 rounded-2xl p-6 text-center">
+            <i data-lucide="check-square" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+            <p class="text-sm text-gray-500">No action items available</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const priorityColors = {
+        'high': 'red',
+        'medium': 'yellow',
+        'low': 'emerald'
+      };
+      
+      // Load saved completion states
+      const completedTasks = getCompletedTasks();
+      
+      container.innerHTML = actionItems.map(action => {
+        const isCompleted = completedTasks.includes(action.id || action.title);
+        return `
+          <div class="action-item bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 ${isCompleted ? 'task-completed' : ''}"
+               data-task-id="${action.id || action.title}">
+            <div class="flex items-start gap-4">
+              <input type="checkbox"
+                     id="action_${action.id || action.title.replace(/\s+/g, '_')}"
+                     class="task-checkbox mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                     data-task-id="${action.id || action.title}"
+                     ${isCompleted ? 'checked' : ''}>
+              <label for="action_${action.id || action.title.replace(/\s+/g, '_')}" class="flex-1 cursor-pointer">
+                <p class="task-title text-sm font-semibold text-gray-900">${action.title}</p>
+                <p class="task-description text-xs text-gray-600 mt-1">${action.description}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-xs px-2 py-0.5 bg-${priorityColors[action.priority?.toLowerCase()] || 'gray'}-100 text-${priorityColors[action.priority?.toLowerCase()] || 'gray'}-700 rounded-full font-medium">
+                    ${action.priority} Priority
+                  </span>
+                  <span class="text-xs text-gray-500">Due: ${action.due}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Add progress bar
+      updateTaskProgress();
+      
+      // Attach event handlers to new checkboxes
+      attachTaskEventHandlers();
+    }
+    
+    // Task Management Functions
+    function getCompletedTasks() {
+      const saved = localStorage.getItem('bakery_completed_tasks');
+      return saved ? JSON.parse(saved) : [];
+    }
+    
+    function saveCompletedTasks(completedTasks) {
+      localStorage.setItem('bakery_completed_tasks', JSON.stringify(completedTasks));
+    }
+    
+    function toggleTaskCompletion(taskId, isCompleted) {
+      let completedTasks = getCompletedTasks();
+      
+      if (isCompleted && !completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+        console.log('✅ DEBUG: Task completed:', taskId);
+      } else if (!isCompleted) {
+        completedTasks = completedTasks.filter(id => id !== taskId);
+        console.log('❌ DEBUG: Task uncompleted:', taskId);
+      }
+      
+      saveCompletedTasks(completedTasks);
+      updateTaskProgress();
+      
+      // Visual feedback
+      const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+      if (taskElement) {
+        if (isCompleted) {
+          taskElement.classList.add('task-completed');
+          showNotification('✅ Task marked as completed!', 'success');
+        } else {
+          taskElement.classList.remove('task-completed');
+          showNotification('📝 Task marked as incomplete', 'info');
+        }
+      }
+    }
+    
+    function updateTaskProgress() {
+      const actionsList = document.getElementById('actionsList');
+      if (!actionsList) return;
+      
+      const allTasks = actionsList.querySelectorAll('.task-checkbox');
+      const completedCount = actionsList.querySelectorAll('.task-checkbox:checked').length;
+      const totalTasks = allTasks.length;
+      
+      if (totalTasks === 0) return;
+      
+      const progressPercentage = Math.round((completedCount / totalTasks) * 100);
+      
+      // Find or create progress bar container
+      let progressContainer = document.getElementById('taskProgressContainer');
+      if (!progressContainer) {
+        progressContainer = document.createElement('div');
+        progressContainer.id = 'taskProgressContainer';
+        progressContainer.className = 'mb-4';
+        progressContainer.innerHTML = `
+          <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <span class="font-medium">Task Completion Progress</span>
+            <span id="taskProgressText">${completedCount}/${totalTasks} completed (${progressPercentage}%)</span>
+          </div>
+          <div class="task-progress-bar">
+            <div id="taskProgressFill" class="task-progress-fill" style="width: ${progressPercentage}%"></div>
+          </div>
+        `;
+        
+        // Insert before action items
+        const actionsHeader = document.querySelector('#actionItems h4');
+        if (actionsHeader && actionsHeader.nextElementSibling) {
+          actionsHeader.nextElementSibling.insertBefore(progressContainer, actionsHeader.nextElementSibling.firstChild);
+        }
+      } else {
+        // Update existing progress
+        document.getElementById('taskProgressText').textContent = `${completedCount}/${totalTasks} completed (${progressPercentage}%)`;
+        document.getElementById('taskProgressFill').style.width = `${progressPercentage}%`;
+      }
+      
+      // Show celebration for 100% completion
+      if (progressPercentage === 100 && completedCount > 0) {
+        setTimeout(() => {
+          showNotification('🎉 All action items completed! Great job!', 'success');
+        }, 500);
+      }
+      
+      // Show/hide clear button based on completed tasks
+      const clearBtn = document.getElementById('clearTasksBtn');
+      if (clearBtn) {
+        if (completedCount > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      }
+      
+      console.log(`📊 DEBUG: Task progress updated: ${completedCount}/${totalTasks} (${progressPercentage}%)`);
+    }
+    
+    function attachTaskEventHandlers() {
+      const checkboxes = document.querySelectorAll('.task-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const taskId = this.dataset.taskId;
+          const isCompleted = this.checked;
+          
+          console.log('📋 DEBUG: Checkbox changed:', { taskId, isCompleted });
+          toggleTaskCompletion(taskId, isCompleted);
+        });
+      });
+    }
+    
+    // Clear completed tasks function (utility)
+    function clearAllCompletedTasks() {
+      if (!confirm('Are you sure you want to reset all task completions? This action cannot be undone.')) {
+        return;
+      }
+      
+      localStorage.removeItem('bakery_completed_tasks');
+      
+      // Uncheck all checkboxes and remove completed styling
+      document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+        const taskElement = checkbox.closest('.action-item');
+        if (taskElement) {
+          taskElement.classList.remove('task-completed');
+        }
+      });
+      
+      updateTaskProgress();
+      showNotification('🗑️ All task completions cleared', 'info');
+    }
+    
+    // Initialize task management system
+    function initializeTaskManagement() {
+      console.log('📋 DEBUG: Initializing task management system...');
+      
+      // Show clear button if there are any completed tasks
+      const completedTasks = getCompletedTasks();
+      const clearBtn = document.getElementById('clearTasksBtn');
+      if (clearBtn && completedTasks.length > 0) {
+        clearBtn.classList.remove('hidden');
+      }
+      
+      // Attach handlers to any existing checkboxes
+      attachTaskEventHandlers();
+      
+      console.log('📋 DEBUG: Task management initialized with', completedTasks.length, 'completed tasks');
+    }
+
+    // Fallback insights when API fails
+    function getFallbackInsights() {
+      // Get current metric values for context-aware fallback insights
+      const oeeValue = parseFloat(document.getElementById('oeeCurrentValue')?.textContent || '0');
+      const wasteValue = parseFloat(document.getElementById('wasteCurrentValue')?.textContent || '0');
+      const productionValue = parseInt(document.getElementById('productionCurrentValue')?.textContent?.replace(/,/g, '') || '0');
+      
+      const keyInsights = [];
+      const recommendations = [];
+      const actionItems = [];
+      
+      // Generate basic insights based on visible metrics
+      if (oeeValue >= 70) {
+        keyInsights.push({
+          type: 'success',
+          title: 'OEE Performance Strong',
+          description: `Current OEE of ${oeeValue.toFixed(1)}% meets target. Equipment effectiveness is performing well.`
+        });
+      } else {
+        keyInsights.push({
+          type: 'warning',
+          title: 'OEE Below Target',
+          description: `Current OEE of ${oeeValue.toFixed(1)}% is below target (≥70%). Equipment effectiveness needs attention.`
+        });
+        recommendations.push({
+          type: 'high',
+          title: 'Address OEE Performance',
+          description: 'Immediate attention required to improve equipment effectiveness',
+          action: 'Start OEE Analysis'
+        });
+      }
+      
+      if (wasteValue <= 3.75) {
+        keyInsights.push({
+          type: 'success',
+          title: 'Waste Control Excellent',
+          description: `Waste percentage of ${wasteValue.toFixed(2)}% is at target. Material efficiency is optimized.`
+        });
+      } else {
+        keyInsights.push({
+          type: 'warning',
+          title: 'Waste Above Target',
+          description: `Waste percentage of ${wasteValue.toFixed(2)}% exceeds target (≤3.75%). Material efficiency requires improvement.`
+        });
+      }
+      
+      actionItems.push({
+        id: 'system_check',
+        title: 'Verify System Connectivity',
+        description: 'Ensure all monitoring systems are functioning correctly',
+        priority: 'Medium',
+        due: 'Today'
+      });
+      
+      return {
+        key_insights: keyInsights,
+        recommendations: recommendations,
+        action_items: actionItems
+      };
+    }
+
+    // Update insights based on current data (legacy compatibility)
+    function updateInsights(data) {
+      generateAIInsights();
+    }
+
+    // Toggle table view
+    function toggleTableView() {
+      const table = document.getElementById('metricsTableWrapper');
+      const btn = document.getElementById('tableViewToggle');
+
+      table.classList.toggle('max-h-96');
+      table.classList.toggle('overflow-y-auto');
+
+      const isCompact = table.classList.contains('max-h-96');
+      btn.innerHTML = `<i data-lucide="eye${isCompact ? '-off' : ''}" class="w-4 h-4 inline mr-1"></i>${isCompact ? 'Full' : 'Compact'}`;
+      lucide.createIcons();
+    }
+
+    // Start real-time updates
+    function startRealTimeUpdates() {
+      setInterval(() => {
+        document.getElementById('lastUpdate').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+      }, 30000); // Update every 30 seconds
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-xl max-w-sm animate-fade-in`;
+
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-red-600 text-white',
+        warning: 'bg-amber-500 text-white',
+        info: 'bg-blue-600 text-white'
       };
 
-      // After rendering both charts:
-      applyGlowEffect('chartOEE', result.oeeAvg, 70);       // OEE - Cell I36
-      applyGlowEffect('chartWaste', result.wasteAvg, 3.75, true); // Waste - Cell I42
+      const icons = {
+        success: 'check-circle',
+        error: 'alert-circle',
+        warning: 'alert-triangle',
+        info: 'info'
+      };
 
+      notification.className += ` ${colors[type]}`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i data-lucide="${icons[type]}" class="w-5 h-5"></i>
+          <span class="text-sm font-medium">${message}</span>
+        </div>
+      `;
 
-      updateFeedbackMessages(result.oeeAvg, result.wasteAvg);
+      document.body.appendChild(notification);
+      lucide.createIcons();
 
+      setTimeout(() => {
+        notification.classList.add('animate-fade-out');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
     }
 
-    // Trigger on page load and when week changes
-    document.addEventListener('DOMContentLoaded', () => {
-      updateDynamicCharts();
-      document.getElementById('week').addEventListener('change', updateDynamicCharts);
-    });
-  </script>
-
-
-  <script>
+    // Export functions
     async function downloadMetricsTable() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'pt',
-        format: 'a4'
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+      doc.setFontSize(18);
+      doc.text("Bakery Table Analytics Report", doc.internal.pageSize.getWidth() / 2, 40, { align: "center" });
+
+      doc.setFontSize(12);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
+
+      // Add table content
+      const headers = [["KPI", "First Shift", "Second Shift", "Total", "Target", "Variance", "Status"]];
+      const rows = [];
+
+      document.querySelectorAll("#metricsTableWrapper tbody tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length > 0) {
+          rows.push(Array.from(cells).map(cell => cell.textContent.trim()));
+        }
       });
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 80,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [59, 130, 246] }
+      });
 
-      // Title
-      const title = "Bakery Metrics Table";
-      doc.setFontSize(16);
-      doc.setTextColor(40);
-      doc.text(title, pageWidth / 2, 40, { align: "center" });
-
-      // Timestamp
-      const now = new Date();
-      const timestamp = `Generated on ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`;
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(timestamp, pageWidth - 40, 60, { align: "right" });
-
-      // Footer
-      const footerText = "© Bakery Metrics App — Created by Gerald Nyah";
-      doc.setFontSize(9);
-      doc.setTextColor(120);
-      doc.text(footerText, pageWidth / 2, pageHeight - 20, { align: "center" });
-
-      // Load logo image
-      const logoImg = new Image();
-      logoImg.src = "/static/DON MIGUEL.png"; // Adjust path as needed
-
-      logoImg.onload = () => {
-        doc.addImage(logoImg, 'PNG', 40, 20, 60, 40);
-
-        // Build table data
-        const head = [["KPIs", "LINE", "TARGET", "METRIC", "WEEK AVG", "UNIT"]];
-        const body = [];
-        const rows = document.querySelectorAll("#metricsTableWrapper table tbody tr");
-
-        rows.forEach((tr) => {
-          const cells = tr.querySelectorAll("td");
-          const row = [];
-
-          if (cells.length === 6) {
-            row.push(...Array.from(cells).map(td => td.innerText.trim()));
-          } else if (cells.length === 5) {
-            row.push("", ...Array.from(cells).map(td => td.innerText.trim()));
-          }
-          body.push(row);
-        });
-
-        // Draw table
-        doc.autoTable({
-          head: head,
-          body: body,
-          startY: 80,
-          styles: {
-            fontSize: 10,
-            cellPadding: 5,
-          },
-          headStyles: {
-            fillColor: [0, 102, 204],
-            textColor: 255,
-            fontStyle: 'bold'
-          },
-          alternateRowStyles: {
-            fillColor: [245, 245, 245]
-          },
-          margin: { top: 80, bottom: 40 },
-          tableWidth: 'auto'
-        });
-
-        doc.save("Bakery_Metrics_Table.pdf");
-      };
+      doc.save(`table_analytics_report_${new Date().toISOString().split('T')[0]}.pdf`);
+      showNotification('PDF exported successfully', 'success');
     }
-  </script>
 
-  <script>
-    function downloadMetricsExcel() {
-      const table = document.querySelector("#metricsTableWrapper table");
-
-      // Extract the table into sheet format
-      const ws = XLSX.utils.table_to_sheet(table, { raw: true });
-
-      // Insert logo/title row at the top
-      XLSX.utils.sheet_add_aoa(ws, [
-        ["DON MIGUEL FOODS"],
-        ["Bakery Metrics Report"]
-      ], { origin: "A1" });
-
-      // Shift down the table so headers start from row 4
-      for (let R = ws['!ref'].split(':')[1].match(/\d+/)[0]; R >= 1; --R) {
-        for (let C = 0; C < 6; C++) {
-          const cell = XLSX.utils.encode_cell({ r: parseInt(R), c: C });
-          const newCell = XLSX.utils.encode_cell({ r: parseInt(R) + 2, c: C });
-          if (ws[cell]) {
-            ws[newCell] = ws[cell];
-            delete ws[cell];
-          }
-        }
-      }
-
-      // Bold and color headers
-      const headers = ["A3", "B3", "C3", "D3", "E3", "F3"];
-      headers.forEach(cell => {
-        if (ws[cell]) {
-          ws[cell].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "1E3A8A" } },
-            alignment: { horizontal: "center", vertical: "center" }
-          };
-        }
-      });
-
-      // Merge title cells
-      ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }
-      ];
-
-      // Style logo/title rows
-      ["A1", "A2"].forEach(cell => {
-        if (ws[cell]) {
-          ws[cell].s = {
-            font: { bold: true, sz: 14 },
-            alignment: { horizontal: "center" }
-          };
-        }
-      });
-
-      // Column widths
-      ws['!cols'] = [
-        { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 8 }
-      ];
-
-      // Create and export workbook
+    async function downloadMetricsExcel() {
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Bakery Metrics");
-      XLSX.writeFile(wb, "Bakery_Metrics_Report.xlsx");
+      const ws_data = [];
+
+      // Add headers
+      ws_data.push(["KPI", "First Shift", "Second Shift", "Total", "Target", "Variance", "Status"]);
+
+      // Add data rows
+      document.querySelectorAll("#metricsTableWrapper tbody tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length > 0) {
+          ws_data.push(Array.from(cells).map(cell => cell.textContent.trim()));
+        }
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      XLSX.utils.book_append_sheet(wb, ws, "Analytics Report");
+      XLSX.writeFile(wb, `table_analytics_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+      showNotification('Excel exported successfully', 'success');
+    }
+
+    async function refreshAllData() {
+      showNotification('Refreshing all data...', 'info');
+      await Promise.all([
+        loadMetricsData(),
+        loadAvailableRecords(),
+        fetchDashboardMetrics(),
+        generateAIInsights()
+      ]);
+      showNotification('Data refreshed successfully', 'success');
     }
   </script>
 
-  <script>
-    const oeeMessages = {
-      good: [
-        "🎯 Great job team! Our OEE is above target!",
-        "🏆 Consistent efficiency this week! team, let's keep up",
-        "💪 Wow! Our equipment running strong!",
-        "📈 Bakery efficiency is on point!",
-        "✅ OEE trend shows excellent consistency."
-      ],
-      bad: [
-        "⚠️ OEE below 70% — Please review equipment performance.",
-        "🛠️ Please investigate major stops or speed losses.",
-        "📉 Consider scheduling preventive maintenance.",
-        "🚧 Let's Focus on root causes of downtime.",
-        "🔍 Look into line balancing or operator re-training."
-      ]
-    };
-
-    const wasteMessages = {
-      good: [
-        "🌿 Excellent! our Waste is under control.",
-        "🎉 Low waste — keep up the great work! team",
-        "✅ Wow! great reduction in material loss.",
-        "💚 Our sustainability target achieved!",
-        "🏆 Consistent control over waste, great work team."
-      ],
-      bad: [
-        "⚠️ Our waste is now above 3.75% — Please check the lines.",
-        "🔧 Please it's time to investigate scrap sources.",
-        "📊 Let's also monitor weight trends to avoid dumping underweight Tortillas.",
-        "🧪 Review any contamination issues that leads to waste.",
-        "🚨 I think it's time to consider Gemba walk or operator retraining."
-      ]
-    };
-
-    let oeeIndex = 0;
-    let wasteIndex = 0;
-    let oeeTimer, wasteTimer;
-
-    function cycleFeedback(type, isGood, elementId, messages, spanClass) {
-      const span = document.querySelector(`#${elementId} .${spanClass}`);
-      const msgList = messages[isGood ? 'good' : 'bad'];
-
-      function updateMsg() {
-        span.textContent = msgList[(type === 'oee' ? oeeIndex++ : wasteIndex++) % msgList.length];
-      }
-
-      updateMsg();
-      if (type === 'oee') {
-        clearInterval(oeeTimer);
-        oeeTimer = setInterval(updateMsg, 3000);
-      } else {
-        clearInterval(wasteTimer);
-        wasteTimer = setInterval(updateMsg, 3000);
-      }
-    }
-
-    // ➕ Call this after fetching averages
-    function updateFeedbackMessages(oeeAvg, wasteAvg) {
-      const oeeGood = oeeAvg >= 70;
-      const wasteGood = wasteAvg <= 3.75;
-
-      const oeeBox = document.getElementById("oeeFeedbackBox");
-      const wasteBox = document.getElementById("wasteFeedbackBox");
-
-      // Update background colors based on performance
-      oeeBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${oeeGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
-        }`;
-
-      wasteBox.className = `px-4 py-3 rounded-xl shadow-lg ring-2 ring-offset-2 ring-offset-[#0f172a] transition-all duration-500 ease-in-out ${wasteGood ? 'bg-blue-800 ring-blue-400 text-white' : 'bg-red-800 ring-red-400 text-white'
-        }`;
-
-      cycleFeedback('oee', oeeGood, 'oeeFeedback', oeeMessages, 'oee-msg');
-      cycleFeedback('waste', wasteGood, 'wasteFeedback', wasteMessages, 'waste-msg');
-    }
-
-  </script>
-
-  <script>
-    async function downloadChartsAsPDF() {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const chart1 = document.getElementById('chartOEEWrapper');
-      const chart2 = document.getElementById('chartWasteWrapper');
-
-      const timestamp = new Date().toLocaleString();
-
-      const renderToCanvas = async (element) =>
-        await html2canvas(element, { backgroundColor: '#1e293b', scale: 2 });
-
-      const canvas1 = await renderToCanvas(chart1);
-      const img1 = canvas1.toDataURL('image/png');
-      pdf.addImage(img1, 'PNG', 20, 20, 550, 220);
-
-      const canvas2 = await renderToCanvas(chart2);
-      const img2 = canvas2.toDataURL('image/png');
-      pdf.addImage(img2, 'PNG', 20, 260, 550, 220);
-
-      // Footer + Timestamp
-      pdf.setFontSize(10);
-      pdf.text(`Generated on: ${timestamp}`, 20, 500);
-      const logo = new Image();
-      logo.src = '/static/DON MIGUEL.png'; // or use full URL if outside /static
-      logo.onload = function () {
-        pdf.addImage(logo, 'PNG', 450, 490, 100, 30);
-        pdf.save(`Bakery_Charts_${new Date().toISOString().slice(0, 10)}.pdf`);
-      };
-    }
-  </script>
-
-
-
-  <footer class="text-center py-3 bg-light text-muted mt-5 shadow-sm">
-    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
-  </footer>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-  {% endblock %}
 </body>
+{% endblock %}
 
 </html>

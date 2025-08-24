@@ -2,5 +2,12 @@ services:
   - type: web
     name: bakery-metrics-app
     env: python
-    buildCommand: ""
-    startCommand: python app.py
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.3
+      - key: DB_SSLMODE
+        value: require
+      - key: FLASK_ENV
+        value: production

@@ -1,146 +1,2396 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Bakery Daily Metrics Submission</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .form-step {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .fade-in {
-      animation: fadeIn 1s ease-in-out both;
+
+    .form-step.hidden {
+      display: none;
     }
-    .banner-img {
-      width: 300px;
-      max-width: 90%;
-      height: auto;
-      margin-bottom: 10px;
+
+    .metric-input:focus {
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .progress-bar {
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .input-group:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      background-size: 200% 200%;
+    }
+
+    .btn-gradient:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .progress-step-glow {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Enhanced Mobile Styles */
+    @media (max-width: 768px) {
+      .mobile-optimized {
+        padding: 1rem;
+      }
+
+      .mobile-card {
+        margin-bottom: 1.5rem;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+      }
+
+      .mobile-input {
+        min-height: 48px;
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        border-radius: 12px;
+      }
+
+      .mobile-button {
+        min-height: 52px;
+        font-size: 1.1rem;
+        border-radius: 14px;
+      }
+
+      .mobile-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .mobile-text-lg {
+        font-size: 1.5rem;
+        line-height: 2rem;
+      }
+
+      .mobile-text-base {
+        font-size: 1rem;
+        line-height: 1.5rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .mobile-container {
+        padding: 0.75rem;
+      }
+
+      .mobile-spacing {
+        margin-bottom: 2rem;
+      }
+
+      .progress-mobile {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .progress-step-mobile {
+        justify-content: center;
+        min-height: 3rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mobile-extra-small {
+        padding: 0.5rem;
+      }
+
+      .mobile-text-sm {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-  {% extends "dashboard.html" %}
 
+<body class="bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+  {% extends "dashboard.html" %}
   {% block content %}
-  
-  <!-- Form Card -->
-  <div class="max-w-6xl mx-auto px-4 fade-in">
-    <div class="bg-gray-800 text-gray-100 shadow-md p-6 rounded-2xl">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-        <h3 class="text-xl font-bold">Bakery Daily Metrics Submission</h3>
+
+  <!-- Main Content Container -->
+  <div class="space-y-8 animate-fade-in mobile-optimized relative">
+
+    <!-- Enhanced Header Section -->
+    <div id="formHeader" class="bg-white rounded-3xl shadow-xl border border-gray-200 p-8 mobile-card">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div class="space-y-4">
+          <div class="flex items-center space-x-4">
+            <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+              <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+              <h1
+                class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mobile-text-lg">
+                Submit Daily Metrics
+              </h1>
+              <p class="text-gray-600 text-lg mobile-text-base mt-2">
+                Enter your bakery's daily performance metrics for tracking and analysis
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Progress Indicator -->
+        <div id="progressIndicator" class="flex items-center space-x-4 progress-mobile">
+          <div class="flex items-center space-x-3">
+            <div id="step1Indicator"
+              class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl flex items-center justify-center text-lg font-bold shadow-lg progress-step-glow progress-step-mobile">
+              1</div>
+            <span id="step1Text" class="text-sm font-semibold text-blue-600 mobile-text-sm">Basic Info</span>
+          </div>
+          <div class="w-12 h-1 bg-gray-300 rounded-full"></div>
+          <div class="flex items-center space-x-3">
+            <div id="step2Indicator"
+              class="w-12 h-12 bg-gray-300 text-gray-600 rounded-2xl flex items-center justify-center text-lg font-bold shadow-md progress-step-mobile">
+              2</div>
+            <span id="step2Text" class="text-sm font-semibold text-gray-600 mobile-text-sm">Metrics</span>
+          </div>
+          <div class="w-12 h-1 bg-gray-300 rounded-full"></div>
+          <div class="flex items-center space-x-3">
+            <div id="step3Indicator"
+              class="w-12 h-12 bg-gray-300 text-gray-600 rounded-2xl flex items-center justify-center text-lg font-bold shadow-md progress-step-mobile">
+              3</div>
+            <span id="step3Text" class="text-sm font-semibold text-gray-600 mobile-text-sm">Review</span>
+          </div>
+        </div>
       </div>
 
-      <p class="text-sm text-gray-300 mb-4">Please fill out all required fields before submitting.</p>
+      <!-- Enhanced Progress Bar -->
+      <div class="mt-8">
+        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div id="progressBar"
+            class="progress-bar bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full shadow-inner"
+            style="width: 33%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500 mt-2">
+          <span>Start</span>
+          <span>Complete</span>
+        </div>
+      </div>
+    </div>
 
-      <form id="bakeryForm" action="/submit" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Enhanced Form Container -->
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden mobile-card">
+      <form id="bakeryForm" action="/submit" method="POST" class="space-y-0" novalidate>
 
-        <!-- Week -->
-        <div>
-          <label class="block font-medium mb-1">Current Week <span class="text-red-500">*</span></label>
-          <select name="week" class="w-full px-3 py-2 rounded bg-gray-700 text-white border border-gray-600" required>
-            <option value="{{ latest_week }}">{{ latest_week }}</option>
-          </select>
+        <!-- Role-based Access Warning for User Role -->
+        {% if user_role == 'user' %}
+        <div id="userRoleWarning" class="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-6 m-6 rounded-lg shadow-md">
+          <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+              <i data-lucide="alert-triangle" class="w-8 h-8 text-red-500"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-red-800 mb-2">
+                ⚠️ Access Restricted
+              </h3>
+              <p class="text-red-700 leading-relaxed mb-3">
+                You do not have the necessary privileges to submit bakery metrics data. 
+                Only supervisors and administrators are authorized to submit operational metrics.
+              </p>
+              <div class="bg-red-100 rounded-lg p-3 border border-red-200">
+                <p class="text-sm text-red-800 font-medium">
+                  📞 Need to submit data? Please contact your supervisor or administrator for assistance.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Step 1: Enhanced Basic Information -->
+        <div id="step1" class="form-step p-8 mobile-card">
+          <div class="mb-8 mobile-spacing">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="p-2 bg-blue-100 rounded-xl">
+                <i data-lucide="info" class="w-6 h-6 text-blue-600"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mobile-text-lg">Basic Information</h2>
+            </div>
+            <p class="text-gray-600 text-lg mobile-text-base">Select the week and day for your metrics submission</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mobile-grid">
+            <!-- Enhanced Week Selection -->
+            <div class="input-group group">
+              <label class="block text-sm font-bold text-gray-700 mb-3">
+                <i data-lucide="calendar" class="w-5 h-5 inline mr-2 text-blue-600"></i>
+                Current Week <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <select name="week_name" id="weekSelect"
+                  class="w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 bg-white appearance-none font-medium text-gray-700 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                  required>
+                  <option value="{{ latest_week }}">{{ latest_week }}</option>
+                </select>
+                <i data-lucide="chevron-down"
+                  class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Enhanced Day Selection -->
+            <div class="input-group group">
+              <label class="block text-sm font-bold text-gray-700 mb-3">
+                <i data-lucide="calendar-days" class="w-5 h-5 inline mr-2 text-blue-600"></i>
+                Day <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <select name="day_of_week" id="daySelect"
+                  class="w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 bg-white appearance-none font-medium text-gray-700 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                  required>
+                  <option value="">Select a day</option>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                  <option value="Friday">Friday</option>
+                </select>
+                <i data-lucide="chevron-down"
+                  class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Enhanced Submitted By -->
+            <div class="input-group group">
+              <label class="block text-sm font-bold text-gray-700 mb-3">
+                <i data-lucide="user" class="w-5 h-5 inline mr-2 text-blue-600"></i>
+                Submitted By <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="submitted_by" id="submittedBy"
+                class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 bg-gray-50 font-medium text-gray-700 shadow-sm transition-all duration-300 mobile-input"
+                required pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed"
+                value="{{ user_full_name }}" readonly>
+            </div>
+          </div>
+
+          <!-- Enhanced Quick Stats Cards -->
+          <div id="quickStats" class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 mobile-grid">
+            <div
+              class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div class="flex items-center space-x-4">
+                <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                  <i data-lucide="target" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-700 mb-1">OEE Target</h3>
+                  <p class="text-2xl font-bold text-blue-600">≥ 70%</p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div class="flex items-center space-x-4">
+                <div class="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
+                  <i data-lucide="trending-down" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-700 mb-1">Waste Target</h3>
+                  <p class="text-2xl font-bold text-green-600">≤ 3.75%</p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-6 border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div class="flex items-center space-x-4">
+                <div class="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl shadow-lg">
+                  <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-700 mb-1">Deadline</h3>
+                  <p class="text-2xl font-bold text-orange-600">End of Day</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Day -->
-        <div>
-          <label class="block font-medium mb-1">Day <span class="text-red-500">*</span></label>
-          <select name="day" class="w-full px-3 py-2 rounded bg-gray-700 text-white border border-gray-600" required>
-            <option value="Monday">Monday</option>
-            <option value="Tuesday">Tuesday</option>
-            <option value="Wednesday">Wednesday</option>
-            <option value="Thursday">Thursday</option>
-            <option value="Friday">Friday</option>
-          </select>
+        <!-- Add this after the quickStats div and before the closing of step1 -->
+        {% if user_role in ['admin', 'supervisor'] %}
+        <div class="mt-8">
+          <button type="button" id="importDataBtn"
+            class="w-full md:w-auto px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 mobile-button">
+            <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+            Import from Google Sheets
+          </button>
+        </div>
+        {% endif %}
+
+        <!-- Import Modal -->
+        <div id="importModal" class="fixed inset-0 z-50 hidden">
+          <!-- Backdrop -->
+          <div class="absolute inset-0 backdrop-blur-sm bg-black/20"></div>
+
+          <!-- Modal container -->
+          <div class="relative h-full flex items-center justify-center p-4">
+            <div
+              class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-4xl max-h-[90vh] flex flex-col mx-auto">
+              <!-- Modal Header -->
+              <div
+                class="bg-gradient-to-r from-purple-500/90 to-purple-600/90 px-6 py-4 text-white border-b border-white/20 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-white/20 rounded-lg">
+                      <i data-lucide="download" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <h2 class="text-xl font-bold">Import from Google Sheets</h2>
+                      <p class="text-purple-100 text-sm">Select sheet and day to import metrics data</p>
+                    </div>
+                  </div>
+                  <button id="closeImportModal"
+                    class="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-all duration-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Modal Content -->
+              <div class="flex-1 overflow-y-auto p-6">
+                <!-- Step 1: Select Sheet -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5 inline mr-2 text-purple-600"></i>
+                    Select Google Sheet <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <select id="sheetSelect"
+                      class="w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 bg-white appearance-none font-medium text-gray-700 shadow-sm transition-all duration-300">
+                      <option value="">Loading sheets...</option>
+                    </select>
+                    <i data-lucide="chevron-down"
+                      class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none"></i>
+                  </div>
+                </div>
+
+                <!-- Step 2: Select Day -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">
+                    <i data-lucide="calendar-days" class="w-5 h-5 inline mr-2 text-purple-600"></i>
+                    Select Day <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <select id="dayImportSelect"
+                      class="w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 bg-white appearance-none font-medium text-gray-700 shadow-sm transition-all duration-300"
+                      disabled>
+                      <option value="">Select a sheet first</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                    </select>
+                    <i data-lucide="chevron-down"
+                      class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none"></i>
+                  </div>
+                </div>
+
+                <!-- Step 3: Submitted By -->
+                <div class="mb-6">
+                  <label class="block text-sm font-bold text-gray-700 mb-3">
+                    <i data-lucide="user" class="w-5 h-5 inline mr-2 text-purple-600"></i>
+                    Submitted By <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="importSubmittedBy"
+                    class="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 bg-gray-50 font-medium text-gray-700 shadow-sm transition-all duration-300"
+                    value="{{ user_full_name }}" readonly>
+                </div>
+
+                <!-- Step 4: Preview Data -->
+                <div id="importPreview" class="hidden">
+                  <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="eye" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    Data Preview
+                  </h3>
+
+                  <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                    <table class="w-full">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Shift</th>
+                          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Metric</th>
+                          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Die-Cut 1</th>
+                          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Die-Cut 2</th>
+                        </tr>
+                      </thead>
+                      <tbody id="previewTableBody" class="divide-y divide-gray-100">
+                        <!-- Data will be populated here -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="importLoading" class="hidden text-center py-8">
+                  <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-4"></div>
+                  <p class="text-gray-600">Loading sheet data...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="importError" class="hidden text-center py-8">
+                  <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="alert-circle" class="w-8 h-8 text-red-500"></i>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h3>
+                  <p id="importErrorMessage" class="text-gray-600 mb-4">An error occurred while loading the sheet data.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Modal Footer -->
+              <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-200 flex-shrink-0">
+                <button id="cancelImportBtn"
+                  class="w-full sm:w-auto px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200">
+                  Cancel
+                </button>
+                <button id="confirmImportBtn"
+                  class="w-full sm:w-auto px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled>
+                  <i data-lucide="download" class="w-4 h-4 mr-2 inline"></i>
+                  Import Data
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Metric Fields -->
-        {% for label, name in [
-            ("OEE – Die Cut 1 (1st Shift)", "oee_–_die_cut_1_(1st_shift)"),
-            ("OEE – Die Cut 2 (1st Shift)", "oee_–_die_cut_2_(1st_shift)"),
-            ("Pounds – Die Cut 1 (1st Shift)", "pounds_–_die_cut_1_(1st_shift)"),
-            ("Pounds – Die Cut 2 (1st Shift)", "pounds_–_die_cut_2_(1st_shift)"),
-            ("Waste – Die Cut 1 (1st Shift)", "waste_–_die_cut_1_(1st_shift)"),
-            ("Waste – Die Cut 2 (1st Shift)", "waste_–_die_cut_2_(1st_shift)"),
-            ("OEE – Die Cut 1 (2nd Shift)", "oee_–_die_cut_1_(2nd_shift)"),
-            ("OEE – Die Cut 2 (2nd Shift)", "oee_–_die_cut_2_(2nd_shift)"),
-            ("Pounds – Die Cut 1 (2nd Shift)", "pounds_–_die_cut_1_(2nd_shift)"),
-            ("Pounds – Die Cut 2 (2nd Shift)", "pounds_–_die_cut_2_(2nd_shift)"),
-            ("Waste – Die Cut 1 (2nd Shift)", "waste_–_die_cut_1_(2nd_shift)"),
-            ("Waste – Die Cut 2 (2nd Shift)", "waste_–_die_cut_2_(2nd_shift)")
-        ] %}
-        <div>
-          <label class="block font-medium mb-1">{{ label }} <span class="text-red-500">*</span></label>
-          <input type="number" name="{{ name }}"
-                 class="w-full px-3 py-2 rounded bg-gray-700 text-white border border-gray-600"
-                 required min="0" step="any">
-        </div>
-        {% endfor %}
+        <!-- Step 2: Enhanced Metrics Input -->
+        <div id="step2" class="form-step hidden p-8 mobile-card">
+          <div class="mb-8 mobile-spacing">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="p-2 bg-blue-100 rounded-xl">
+                <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-600"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mobile-text-lg">Performance Metrics</h2>
+            </div>
+            <p class="text-gray-600 text-lg mobile-text-base">Enter the daily metrics for both shifts and die cut
+              operations</p>
+          </div>
 
-        <!-- Submitted By -->
-        <div>
-          <label class="block font-medium mb-1">Submitted By <span class="text-red-500">*</span></label>
-          <input type="text" name="submitted_by"
-                 class="w-full px-3 py-2 rounded bg-gray-700 text-white border border-gray-600"
-                 required pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed">
+          <!-- Enhanced First Shift Section -->
+          <div class="mb-12 mobile-spacing">
+            <div
+              class="flex items-center space-x-4 mb-8 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border-l-4 border-blue-500">
+              <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                <i data-lucide="sun" class="w-6 h-6 text-white"></i>
+              </div>
+              <h3 class="text-xl font-bold text-gray-800 mobile-text-lg">First Shift Metrics</h3>
+            </div>
+
+            <div class="space-y-10">
+              <!-- OEE Metrics -->
+              <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-2xl p-6 border border-indigo-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="gauge" class="w-5 h-5 mr-3 text-indigo-600"></i>
+                  Overall Equipment Effectiveness (OEE)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (%) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut1_oee_pct" id="oee1FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" max="100" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">%</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (%) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut2_oee_pct" id="oee2FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" max="100" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Production Volume -->
+              <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="package" class="w-5 h-5 mr-3 text-green-600"></i>
+                  Production Volume (Pounds)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (lbs) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut1_pounds" id="pounds1FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">lbs</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (lbs) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut2_pounds" id="pounds2FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">lbs</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Waste Metrics -->
+              <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-2xl p-6 border border-red-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="trash-2" class="w-5 h-5 mr-3 text-red-600"></i>
+                  Waste (Pounds)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (LB) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut1_waste_lbs" id="waste1FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">LB</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (LB) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="first_die_cut2_waste_lbs" id="waste2FirstShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">LB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enhanced Second Shift Section -->
+          <div class="mb-8 mobile-spacing">
+            <div
+              class="flex items-center space-x-4 mb-8 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl border-l-4 border-orange-500">
+              <div class="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl shadow-lg">
+                <i data-lucide="moon" class="w-6 h-6 text-white"></i>
+              </div>
+              <h3 class="text-xl font-bold text-gray-800 mobile-text-lg">Second Shift Metrics</h3>
+            </div>
+
+            <div class="space-y-10">
+              <!-- OEE Metrics -->
+              <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-2xl p-6 border border-indigo-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="gauge" class="w-5 h-5 mr-3 text-indigo-600"></i>
+                  Overall Equipment Effectiveness (OEE)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (%) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut1_oee_pct" id="oee1SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" max="100" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">%</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (%) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut2_oee_pct" id="oee2SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" max="100" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Production Volume -->
+              <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="package" class="w-5 h-5 mr-3 text-green-600"></i>
+                  Production Volume (Pounds)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (lbs) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut1_pounds" id="pounds1SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">lbs</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (lbs) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut2_pounds" id="pounds2SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">lbs</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Waste Metrics -->
+              <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-2xl p-6 border border-red-200">
+                <h4 class="text-lg font-bold text-gray-700 mb-6 flex items-center">
+                  <i data-lucide="trash-2" class="w-5 h-5 mr-3 text-red-600"></i>
+                  Waste (Pounds)
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mobile-grid">
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 1 (LB) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut1_waste_lbs" id="waste1SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">LB</span>
+                    </div>
+                  </div>
+                  <div class="input-group group">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                      Die Cut 2 (LB) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" name="second_die_cut2_waste_lbs" id="waste2SecondShift"
+                        class="metric-input w-full px-6 py-4 rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 font-medium text-gray-700 placeholder-gray-400 shadow-sm transition-all duration-300 group-hover:border-blue-400 mobile-input"
+                        required min="0" step="0.1" placeholder="0.0">
+                      <span
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">LB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enhanced Real-time Validation Alerts -->
+          <div id="validationAlerts" class="space-y-4"></div>
         </div>
 
+        <!-- Step 3: Enhanced Review and Submit -->
+        <div id="step3" class="form-step hidden p-8 mobile-card">
+          <div class="mb-8 mobile-spacing">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="p-2 bg-green-100 rounded-xl">
+                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mobile-text-lg">Review & Submit</h2>
+            </div>
+            <p class="text-gray-600 text-lg mobile-text-base">Please review your entries before submitting</p>
+          </div>
+
+          <!-- Enhanced Summary Cards -->
+          <div id="reviewSummary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 mobile-grid">
+            <!-- Dynamic summary will be populated by JavaScript -->
+          </div>
+
+          <!-- Enhanced Confirmation Checkbox -->
+          <div class="bg-gray-50 rounded-2xl p-6 mb-8 border-2 border-gray-200">
+            <label class="flex items-start space-x-4 cursor-pointer">
+              <input type="checkbox" id="confirmationCheck"
+                class="mt-1 w-6 h-6 text-blue-600 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:ring-4 bg-white shadow-sm">
+              <div>
+                <span class="text-lg font-bold text-gray-900 mobile-text-base">I confirm that all entered data is
+                  accurate</span>
+                <p class="text-sm text-gray-600 mt-2 mobile-text-sm">By checking this box, I certify that the metrics
+                  entered above are correct and complete to the best of my knowledge.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Hidden timestamp field -->
         <input type="hidden" name="local_timestamp" id="local_timestamp">
 
-        <!-- Submit Buttons -->
-        <div class="md:col-span-2 flex flex-col md:flex-row gap-3 mt-4">
-          <button type="submit" id="submitBtn"
-                  class="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition">
-            ✅ Submit
+        <!-- Enhanced Navigation Buttons -->
+        <div
+          class="bg-gray-100 px-8 py-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+          <button type="button" id="prevBtn"
+            class="hidden w-full sm:w-auto px-8 py-4 bg-gray-600 hover:bg-gray-700 text-white rounded-2xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 mobile-button">
+            <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+            Previous
           </button>
-          <button type="reset"
-                  class="w-full py-2 bg-gray-500 hover:bg-gray-600 text-white rounded font-semibold transition">
-            🧹 Clear
-          </button>
+
+          <div class="flex space-x-4 w-full sm:w-auto">
+            <button type="button" id="nextBtn"
+              class="flex-1 sm:flex-none px-8 py-4 btn-gradient text-white rounded-2xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg mobile-button">
+              Next
+              <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+            </button>
+
+            <button type="submit" id="submitBtn"
+              class="hidden flex-1 sm:flex-none px-8 py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 mobile-button">
+              <i data-lucide="check" class="w-5 h-5 mr-2"></i>
+              Submit Metrics
+            </button>
+
+            <button type="reset" id="resetBtn"
+              class="flex-1 sm:flex-none px-8 py-4 bg-gray-500 hover:bg-gray-600 text-white rounded-2xl font-bold transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 mobile-button">
+              <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i>
+              Reset
+            </button>
+          </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="w-full col-span-2 mt-4 hidden" id="submitProgress">
-          <div class="h-2 bg-blue-500 animate-pulse rounded"></div>
+        <!-- Enhanced Progress Bar for Submission -->
+        <div class="w-full hidden" id="submitProgress">
+          <div class="bg-blue-100 rounded-full h-4 overflow-hidden shadow-inner">
+            <div
+              class="h-full bg-gradient-to-r from-blue-500 to-blue-600 animate-pulse rounded-full transition-all duration-1000"
+              style="width: 0%"></div>
+          </div>
+          <p class="text-center text-lg text-gray-600 mt-3 font-medium">Submitting your data...</p>
         </div>
       </form>
     </div>
+
+    <!-- Enhanced Additional Features -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mobile-grid">
+
+      <!-- Enhanced Tips & Guidelines -->
+      <div id="tipsCard" class="bg-white rounded-3xl shadow-xl border border-gray-200 p-8 mobile-card">
+        <div class="flex items-center space-x-4 mb-6">
+          <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+            <i data-lucide="lightbulb" class="w-6 h-6 text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mobile-text-lg">Tips & Guidelines</h3>
+        </div>
+
+        <div class="space-y-6">
+          <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-2xl border border-green-200">
+            <div
+              class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-md">
+              <i data-lucide="check" class="w-4 h-4 text-white"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 mb-1">OEE Best Practice</h4>
+              <p class="text-sm text-gray-700">Target OEE should be ≥70%. Values above 85% are considered excellent.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start space-x-4 p-4 bg-orange-50 rounded-2xl border border-orange-200">
+            <div
+              class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-md">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-white"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 mb-1">Waste Control</h4>
+              <p class="text-sm text-gray-700">Keep waste percentage below 3.75%. Higher values may indicate process
+                issues.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-2xl border border-blue-200">
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-md">
+              <i data-lucide="clock" class="w-4 h-4 text-white"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-gray-900 mb-1">Submission Timing</h4>
+              <p class="text-sm text-gray-700">Submit metrics by end of day for accurate reporting and analysis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enhanced Recent Submissions -->
+      <div id="recentSubmissions" class="bg-white rounded-3xl shadow-xl border border-gray-200 p-8 mobile-card">
+        <div class="flex items-center space-x-4 mb-6">
+          <div class="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg">
+            <i data-lucide="history" class="w-6 h-6 text-white"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mobile-text-lg">Recent Submissions</h3>
+        </div>
+
+        <div id="submissionsContainer" class="space-y-4">
+          <!-- Loading state -->
+          <div id="submissionsLoading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="text-sm text-gray-600 mt-2">Loading submissions...</p>
+          </div>
+
+          <!-- Empty state -->
+          <div id="submissionsEmpty" class="hidden text-center py-8">
+            <i data-lucide="file-text" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+            <p class="text-sm text-gray-600">No recent submissions found</p>
+            <p class="text-xs text-gray-500 mt-1">Your submissions will appear here after you submit metrics</p>
+          </div>
+
+          <!-- Submissions will be populated by JavaScript -->
+        </div>
+
+        <div class="text-center pt-4">
+          <button id="viewAllSubmissions"
+            class="text-sm text-blue-600 hover:text-blue-700 font-bold transition-colors duration-300 underline decoration-2 underline-offset-4 hover:decoration-blue-700">
+            View All Submissions
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="text-center py-4 mt-10 text-sm text-gray-400">
-    &copy; <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
-  </footer>
+  <!-- All Submissions Modal - Fixed positioning for proper display -->
+  <div id="allSubmissionsModal" class="fixed inset-0 z-50 hidden">
+    <!-- Glassy backdrop with blur -->
+    <div class="absolute inset-0 backdrop-blur-sm bg-black/20 rounded-none"></div>
+
+    <!-- Modal container -->
+    <div class="relative h-full flex items-center justify-center p-4">
+      <div
+        class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-6xl max-h-[90vh] overflow-hidden mx-auto">
+        <!-- Modal Header -->
+        <div
+          class="bg-gradient-to-r from-blue-500/90 to-blue-600/90 backdrop-blur-sm px-6 py-4 text-white border-b border-white/20">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <i data-lucide="database" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold">All Submissions</h2>
+                <p class="text-blue-100 text-sm">Complete history of bakery metrics submissions</p>
+              </div>
+            </div>
+            <button id="closeModal"
+              class="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-all duration-200 backdrop-blur-sm">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="overflow-y-auto max-h-[calc(90vh-80px)] bg-white">
+          <!-- Loading State -->
+          <div id="submissionsLoadingMsg" class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Submissions</h3>
+            <p class="text-gray-600">Please wait while we fetch the latest data...</p>
+          </div>
+
+          <!-- Error State -->
+          <div id="submissionsErrorMsg" class="hidden flex flex-col items-center justify-center py-12 text-center">
+            <!-- Error content will be inserted here -->
+          </div>
+
+          <!-- No Data State -->
+          <div id="noSubmissionsMsg" class="hidden flex flex-col items-center justify-center py-12 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <i data-lucide="inbox" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Submissions Found</h3>
+            <p class="text-gray-600 max-w-md">
+              There are no submissions to display at the moment. Start by creating your first bakery metrics submission.
+            </p>
+          </div>
+
+          <!-- Table Container with fixed height for 10 rows -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="overflow-y-auto" style="max-height: 600px;"> <!-- Height for header + exactly 10 rows -->
+              <table id="submissionsTable" class="w-full table-fixed" style="display: none;">
+                <thead class="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th
+                      class="w-1/3 px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                      Week</th>
+                    <th
+                      class="w-1/6 px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                      Day</th>
+                    <th
+                      class="w-1/3 px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                      Submitted By</th>
+                    <th
+                      class="w-1/6 px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b">
+                      Status</th>
+                  </tr>
+                </thead>
+                <tbody id="submissionsTableBody" class="divide-y divide-gray-100 bg-white">
+                  <!-- Table rows will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Set current year and timestamp
     document.getElementById("local_timestamp").value = new Date().toLocaleString();
-  </script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const form = document.querySelector('#bakeryForm');
-      const submitBtn = document.getElementById('submitBtn');
-      const progressBar = document.getElementById('submitProgress');
+    // Multi-step form functionality
+    let currentStep = 1;
+    const totalSteps = 3;
 
-      form.addEventListener('submit', function () {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<span class="animate-spin mr-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>Submitting...`;
-        progressBar.classList.remove("hidden");
+    function updateProgressIndicator() {
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = (currentStep / totalSteps) * 100;
+      progressBar.style.width = progressPercent + '%';
+
+      // Update step indicators with enhanced styling
+      for (let i = 1; i <= totalSteps; i++) {
+        const stepIndicator = document.getElementById(`step${i}Indicator`);
+        const stepText = document.getElementById(`step${i}Text`);
+
+        if (i <= currentStep) {
+          // Active/completed step styling with gradient and glow
+          stepIndicator.className = 'w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl flex items-center justify-center text-lg font-bold shadow-lg progress-step-glow progress-step-mobile';
+          stepText.className = 'text-sm font-semibold text-blue-600 mobile-text-sm';
+        } else {
+          // Inactive step styling
+          stepIndicator.className = 'w-12 h-12 bg-gray-300 text-gray-600 rounded-2xl flex items-center justify-center text-lg font-bold shadow-md progress-step-mobile';
+          stepText.className = 'text-sm font-semibold text-gray-600 mobile-text-sm';
+        }
+      }
+    }
+
+    function showStep(step) {
+      // Hide all steps
+      document.querySelectorAll('.form-step').forEach(stepEl => {
+        stepEl.classList.add('hidden');
       });
+
+      // Show current step with animation
+      const currentStepEl = document.getElementById(`step${step}`);
+      currentStepEl.classList.remove('hidden');
+      currentStepEl.classList.add('animate-slide-up');
+
+      // Update navigation buttons
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (step === 1) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+
+      if (step === totalSteps) {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+      }
+
+      updateProgressIndicator();
+    }
+
+    // Navigation event listeners with null checks
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (validateCurrentStep()) {
+          if (currentStep < totalSteps) {
+            currentStep++;
+            if (currentStep === 3) {
+              populateReviewSummary();
+            }
+            showStep(currentStep);
+          }
+        }
+      });
+    } else {
+      console.error('nextBtn element not found');
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 1) {
+          currentStep--;
+          showStep(currentStep);
+        }
+      });
+    } else {
+      console.error('prevBtn element not found');
+    }
+
+    // Enhanced form validation
+    function validateCurrentStep() {
+      const currentStepEl = document.getElementById(`step${currentStep}`);
+      const requiredInputs = currentStepEl.querySelectorAll('input[required], select[required]');
+      let isValid = true;
+      let firstInvalidField = null;
+
+      requiredInputs.forEach(input => {
+        // Reset previous validation styles
+        input.classList.remove('border-red-500', 'bg-red-50');
+
+        // Check if field is empty
+        if (!input.value || input.value.trim() === '') {
+          input.classList.add('border-red-500', 'bg-red-50');
+          if (!firstInvalidField) {
+            firstInvalidField = input;
+          }
+          isValid = false;
+        }
+
+        // Additional validation for number inputs
+        if (input.type === 'number' && input.value) {
+          const value = parseFloat(input.value);
+          const min = parseFloat(input.min);
+          const max = parseFloat(input.max);
+
+          if (isNaN(value)) {
+            input.classList.add('border-red-500', 'bg-red-50');
+            if (!firstInvalidField) {
+              firstInvalidField = input;
+            }
+            isValid = false;
+          } else if (min !== undefined && value < min) {
+            input.classList.add('border-red-500', 'bg-red-50');
+            showNotification(`${input.name.replace(/_/g, ' ')} must be at least ${min}`, 'error');
+            if (!firstInvalidField) {
+              firstInvalidField = input;
+            }
+            isValid = false;
+          } else if (max !== undefined && value > max) {
+            input.classList.add('border-red-500', 'bg-red-50');
+            showNotification(`${input.name.replace(/_/g, ' ')} cannot exceed ${max}`, 'error');
+            if (!firstInvalidField) {
+              firstInvalidField = input;
+            }
+            isValid = false;
+          }
+        }
+      });
+
+      if (!isValid) {
+        if (firstInvalidField) {
+          firstInvalidField.focus();
+          firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        showNotification('Please fill in all required fields correctly', 'error');
+      }
+
+      return isValid;
+    }
+
+    // Enhanced real-time validation for metrics
+    function validateMetricInput(input) {
+      const value = parseFloat(input.value);
+      const fieldName = input.name;
+      const alertContainer = document.getElementById('validationAlerts');
+
+      // Remove existing alerts for this field
+      const existingAlert = document.getElementById(`alert-${input.id}`);
+      if (existingAlert) {
+        existingAlert.remove();
+      }
+
+      let alertMessage = '';
+      let alertType = '';
+
+      if (fieldName.includes('oee') && value > 0) {
+        if (value > 100) {
+          alertMessage = 'OEE cannot exceed 100%';
+          alertType = 'error';
+        } else if (value < 70) {
+          alertMessage = 'OEE below target (70%)';
+          alertType = 'warning';
+        } else if (value >= 85) {
+          alertMessage = 'Excellent OEE performance!';
+          alertType = 'success';
+        }
+      }
+
+      if (fieldName.includes('waste') && value > 0) {
+        alertMessage = 'Waste recorded in pounds - will be converted to percentage automatically';
+        alertType = 'info';
+      }
+
+      if (alertMessage) {
+        const alertEl = createAlert(alertMessage, alertType, input.id);
+        alertContainer.appendChild(alertEl);
+      }
+    }
+
+    function createAlert(message, type, fieldId) {
+      const alertDiv = document.createElement('div');
+      alertDiv.id = `alert-${fieldId}`;
+      alertDiv.className = `p-4 rounded-2xl flex items-center space-x-3 shadow-lg border-2`;
+
+      let bgColor, textColor, borderColor, icon;
+      switch (type) {
+        case 'success':
+          bgColor = 'bg-green-50';
+          textColor = 'text-green-800';
+          borderColor = 'border-green-200';
+          icon = 'check-circle';
+          break;
+        case 'warning':
+          bgColor = 'bg-orange-50';
+          textColor = 'text-orange-800';
+          borderColor = 'border-orange-200';
+          icon = 'alert-triangle';
+          break;
+        case 'error':
+          bgColor = 'bg-red-50';
+          textColor = 'text-red-800';
+          borderColor = 'border-red-200';
+          icon = 'alert-circle';
+          break;
+        default:
+          bgColor = 'bg-blue-50';
+          textColor = 'text-blue-800';
+          borderColor = 'border-blue-200';
+          icon = 'info';
+      }
+
+      alertDiv.className += ` ${bgColor} ${borderColor}`;
+      alertDiv.innerHTML = `
+        <i data-lucide="${icon}" class="w-5 h-5 ${textColor}"></i>
+        <span class="text-sm font-medium ${textColor}">${message}</span>
+      `;
+
+      lucide.createIcons();
+      return alertDiv;
+    }
+
+    // Add real-time validation to metric inputs
+    document.querySelectorAll('.metric-input').forEach(input => {
+      input.addEventListener('blur', () => validateMetricInput(input));
+      input.addEventListener('input', () => {
+        // Remove error styling on input
+        input.classList.remove('border-red-500', 'bg-red-50');
+      });
+    });
+
+    // Enhanced populate review summary
+    function populateReviewSummary() {
+      const summary = document.getElementById('reviewSummary');
+      const formData = new FormData(document.getElementById('bakeryForm'));
+
+      // Clear existing summary
+      summary.innerHTML = '';
+
+      // Basic info summary
+      const basicInfoCard = createSummaryCard('Basic Information', [
+        { label: 'Week', value: formData.get('week_name') },
+        { label: 'Day', value: formData.get('day_of_week') },
+        { label: 'Submitted By', value: formData.get('submitted_by') }
+      ], 'calendar', 'blue');
+
+      // First shift summary
+      const firstShiftData = [
+        { label: 'OEE Die Cut 1', value: formData.get('first_die_cut1_oee_pct') + '%' },
+        { label: 'OEE Die Cut 2', value: formData.get('first_die_cut2_oee_pct') + '%' },
+        { label: 'Pounds Die Cut 1', value: formData.get('first_die_cut1_pounds') + ' lbs' },
+        { label: 'Pounds Die Cut 2', value: formData.get('first_die_cut2_pounds') + ' lbs' },
+        { label: 'Waste Die Cut 1', value: formData.get('first_die_cut1_waste_lbs') + ' lbs' },
+        { label: 'Waste Die Cut 2', value: formData.get('first_die_cut2_waste_lbs') + ' lbs' }
+      ];
+      const firstShiftCard = createSummaryCard('First Shift', firstShiftData, 'sun', 'green');
+
+      // Second shift summary
+      const secondShiftData = [
+        { label: 'OEE Die Cut 1', value: formData.get('second_die_cut1_oee_pct') + '%' },
+        { label: 'OEE Die Cut 2', value: formData.get('second_die_cut2_oee_pct') + '%' },
+        { label: 'Pounds Die Cut 1', value: formData.get('second_die_cut1_pounds') + ' lbs' },
+        { label: 'Pounds Die Cut 2', value: formData.get('second_die_cut2_pounds') + ' lbs' },
+        { label: 'Waste Die Cut 1', value: formData.get('second_die_cut1_waste_lbs') + ' lbs' },
+        { label: 'Waste Die Cut 2', value: formData.get('second_die_cut2_waste_lbs') + ' lbs' }
+      ];
+      const secondShiftCard = createSummaryCard('Second Shift', secondShiftData, 'moon', 'orange');
+
+      summary.appendChild(basicInfoCard);
+      summary.appendChild(firstShiftCard);
+      summary.appendChild(secondShiftCard);
+
+      lucide.createIcons();
+    }
+
+    function createSummaryCard(title, data, icon, colorTheme) {
+      const card = document.createElement('div');
+
+      let gradientBg, iconBg, borderColor;
+      switch (colorTheme) {
+        case 'blue':
+          gradientBg = 'bg-blue-50';
+          iconBg = 'bg-blue-500';
+          borderColor = 'border-blue-200';
+          break;
+        case 'green':
+          gradientBg = 'bg-green-50';
+          iconBg = 'bg-green-500';
+          borderColor = 'border-green-200';
+          break;
+        case 'orange':
+          gradientBg = 'bg-orange-50';
+          iconBg = 'bg-orange-500';
+          borderColor = 'border-orange-200';
+          break;
+        default:
+          gradientBg = 'bg-gray-50';
+          iconBg = 'bg-gray-500';
+          borderColor = 'border-gray-200';
+      }
+
+      card.className = `${gradientBg} rounded-2xl p-6 border-2 ${borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`;
+
+      let dataRows = '';
+      data.forEach(item => {
+        if (item.value && item.value !== 'null%' && item.value !== 'null lbs') {
+          dataRows += `
+            <div class="flex justify-between items-center py-1">
+              <span class="text-sm text-gray-600 font-medium">${item.label}</span>
+              <span class="text-sm font-bold text-gray-900">${item.value}</span>
+            </div>
+          `;
+        }
+      });
+
+      card.innerHTML = `
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="p-2 ${iconBg} rounded-xl shadow-lg">
+            <i data-lucide="${icon}" class="w-5 h-5 text-white"></i>
+          </div>
+          <h4 class="text-lg font-bold text-gray-900">${title}</h4>
+        </div>
+        <div class="space-y-2">
+          ${dataRows}
+        </div>
+      `;
+
+      return card;
+    }
+
+    // Function to check for existing records
+    async function checkExistingRecord(weekName, dayOfWeek) {
+      if (!weekName || !dayOfWeek) return false;
+
+      try {
+        const response = await fetch(`/api/check-existing-record?week=${encodeURIComponent(weekName)}&day=${encodeURIComponent(dayOfWeek)}`);
+        const data = await response.json();
+        return data.exists || false;
+      } catch (error) {
+        console.error('Error checking existing record:', error);
+        return false;
+      }
+    }
+
+    // Function to validate form before submission
+    async function validateFormBeforeSubmission() {
+      const weekName = document.getElementById('weekSelect').value;
+      const dayOfWeek = document.getElementById('daySelect').value;
+
+      if (!weekName || !dayOfWeek) {
+        showNotification('Please select both week and day before submitting', 'error');
+        return false;
+      }
+
+      const recordExists = await checkExistingRecord(weekName, dayOfWeek);
+      if (recordExists) {
+        showNotification(`A record already exists for ${dayOfWeek} in week ${weekName}. Submission blocked.`, 'error');
+        return false;
+      }
+
+      return true;
+    }
+
+    // Enhanced form submission handling with null check
+    const bakeryForm = document.getElementById('bakeryForm');
+    if (bakeryForm) {
+      bakeryForm.addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent default submission
+
+        // Role-based access control - prevent users with 'user' role from submitting
+        {% if user_role == 'user' %}
+        showNotification('🚫 Access Denied: You do not have permission to submit bakery metrics data. Please contact your supervisor for assistance.', 'error');
+        return;
+        {% endif %}
+
+        // Check for existing records first
+        const canSubmit = await validateFormBeforeSubmission();
+        if (!canSubmit) {
+          return;
+        }
+
+        // Validate all steps before submission
+        let allStepsValid = true;
+        for (let step = 1; step <= totalSteps; step++) {
+          const stepEl = document.getElementById(`step${step}`);
+          const requiredInputs = stepEl.querySelectorAll('input[required], select[required]');
+
+          requiredInputs.forEach(input => {
+            if (!input.value || input.value.trim() === '') {
+              allStepsValid = false;
+            }
+          });
+        }
+
+        if (!allStepsValid) {
+          showNotification('Please complete all required fields in all steps', 'error');
+          currentStep = 1;
+          showStep(1);
+          return;
+        }
+
+        const confirmationCheck = document.getElementById('confirmationCheck');
+        if (!confirmationCheck.checked) {
+          showNotification('Please confirm that your data is accurate before submitting', 'error');
+          return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const progressDiv = document.getElementById('submitProgress');
+        const form = document.getElementById('bakeryForm');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <div class="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+          Submitting...
+        `;
+
+        progressDiv.classList.remove('hidden');
+
+        // Simulate progress with enhanced animation
+        let progress = 0;
+        const progressBar = progressDiv.querySelector('.bg-gradient-to-r');
+        const interval = setInterval(() => {
+          progress += 10;
+          progressBar.style.width = progress + '%';
+          if (progress >= 90) {
+            clearInterval(interval);
+          }
+        }, 200);
+
+        // Submit form data using fetch
+        const formData = new FormData(form);
+
+        fetch('/submit', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+
+            if (response.ok) {
+              return response.json();
+            } else if (response.status === 409) {
+              // Handle duplicate record error
+              return response.json().then(data => {
+                throw new Error(data.message || 'A record already exists for this day and week');
+              });
+            } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+          })
+          .then(data => {
+            if (data.success) {
+              // Success - show success message and redirect
+              showNotification('Metrics submitted successfully! 🎉', 'success');
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 2000);
+            } else {
+              throw new Error(data.message || 'Submission failed');
+            }
+          })
+          .catch(error => {
+            clearInterval(interval);
+            progressDiv.classList.add('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+            <i data-lucide="check" class="w-5 h-5 mr-2"></i>
+            Submit Metrics
+          `;
+            lucide.createIcons();
+
+            console.error('Submission error:', error);
+            showNotification(error.message || 'Error submitting metrics. Please try again.', 'error');
+          });
+      });
+    } else {
+      console.error('bakeryForm element not found');
+    }
+
+    // Enhanced reset form with null check
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Are you sure you want to reset the form? All entered data will be lost.')) {
+          const bakeryForm = document.getElementById('bakeryForm');
+          const validationAlerts = document.getElementById('validationAlerts');
+          
+          if (bakeryForm) bakeryForm.reset();
+          currentStep = 1;
+          showStep(1);
+          if (validationAlerts) validationAlerts.innerHTML = '';
+          showNotification('Form has been reset', 'info');
+        }
+      });
+    } else {
+      console.error('resetBtn element not found');
+    }
+
+    // Enhanced notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-6 right-6 z-50 p-6 rounded-2xl shadow-2xl max-w-sm border-2`;
+
+      let bgColor, textColor, borderColor, icon;
+      switch (type) {
+        case 'success':
+          bgColor = 'bg-green-500';
+          textColor = 'text-white';
+          borderColor = 'border-green-300';
+          icon = 'check-circle';
+          break;
+        case 'error':
+          bgColor = 'bg-red-500';
+          textColor = 'text-white';
+          borderColor = 'border-red-300';
+          icon = 'alert-circle';
+          break;
+        case 'warning':
+          bgColor = 'bg-orange-500';
+          textColor = 'text-white';
+          borderColor = 'border-orange-300';
+          icon = 'alert-triangle';
+          break;
+        default:
+          bgColor = 'bg-blue-500';
+          textColor = 'text-white';
+          borderColor = 'border-blue-300';
+          icon = 'info';
+      }
+
+      notification.className += ` ${bgColor} ${borderColor}`;
+      notification.innerHTML = `
+        <div class="flex items-center space-x-3">
+          <i data-lucide="${icon}" class="w-6 h-6 ${textColor}"></i>
+          <span class="text-sm font-bold ${textColor}">${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 5000);
+    }
+
+    // Auto-save functionality (optional)
+    function autoSave() {
+      const formData = new FormData(document.getElementById('bakeryForm'));
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        // Exclude user-specific fields that shouldn't be cached
+        if (key !== 'submitted_by' && key !== 'local_timestamp') {
+          data[key] = value;
+        }
+      }
+      localStorage.setItem('bakeryFormDraft', JSON.stringify(data));
+    }
+
+    // Load saved draft
+    function loadDraft() {
+      const savedData = localStorage.getItem('bakeryFormDraft');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        Object.entries(data).forEach(([key, value]) => {
+          // Skip user-specific fields that should always reflect current user
+          if (key !== 'submitted_by' && key !== 'local_timestamp') {
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input) {
+              input.value = value;
+            }
+          }
+        });
+      }
+    }
+
+    // Auto-save every 30 seconds
+    setInterval(autoSave, 30000);
+
+    // Load draft on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get the current user from the server-rendered field
+      const submittedByField = document.getElementById('submittedBy');
+      
+      // Add null check for submitted by field
+      if (!submittedByField) {
+        console.warn('Submitted by field not found');
+        showStep(1);
+        return;
+      }
+      
+      const currentUser = submittedByField.value || '';
+      console.log('Current user from server:', currentUser);
+
+      // Clear localStorage cache if it contains data from a different user or if user changed
+      const savedData = localStorage.getItem('bakeryFormDraft');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          // If cached data has a different user or submitted_by field, clear the cache
+          if (data.submitted_by && data.submitted_by !== currentUser) {
+            console.log(`Clearing cached data: stored user "${data.submitted_by}" != current user "${currentUser}"`);
+            localStorage.removeItem('bakeryFormDraft');
+          }
+        } catch (e) {
+          console.log('Error parsing cached data, clearing cache:', e);
+          localStorage.removeItem('bakeryFormDraft');
+        }
+      }
+
+      // Load any remaining valid cached data
+      loadDraft();
+
+      // Force set the submitted_by field to current user (server-provided value)
+      if (submittedByField && currentUser) {
+        submittedByField.value = currentUser;
+        console.log('Forced submitted_by field to current user:', currentUser);
+      }
+
+      showStep(1);
+    });
+
+    // Role-based access control - disable form for users with 'user' role
+    document.addEventListener('DOMContentLoaded', () => {
+      {% if user_role == 'user' %}
+      // Disable all form inputs and buttons for users with 'user' role
+      const formElements = document.querySelectorAll('#bakeryForm input, #bakeryForm select, #bakeryForm textarea, #bakeryForm button');
+      formElements.forEach(element => {
+        element.disabled = true;
+        element.style.opacity = '0.6';
+        element.style.cursor = 'not-allowed';
+        
+        // Add tooltip explaining the restriction
+        element.title = 'Access restricted: Only supervisors and administrators can submit metrics data';
+      });
+
+      // Disable navigation buttons specifically
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      
+      [prevBtn, nextBtn, resetBtn].forEach(btn => {
+        if (btn) {
+          btn.disabled = true;
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'not-allowed';
+        }
+      });
+
+      // Add visual indication to form steps
+      const formSteps = document.querySelectorAll('.form-step');
+      formSteps.forEach(step => {
+        step.style.opacity = '0.7';
+        step.style.pointerEvents = 'none';
+        
+        // Add overlay to indicate disabled state
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(255, 255, 255, 0.8);
+          z-index: 10;
+          pointer-events: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          color: #dc2626;
+          font-size: 1.2rem;
+        `;
+        overlay.innerHTML = '🔒 Access Restricted';
+        
+        // Make step container relative if it's not already
+        if (getComputedStyle(step).position === 'static') {
+          step.style.position = 'relative';
+        }
+        step.appendChild(overlay);
+      });
+
+      // Update submit button appearance
+      const submitBtn = document.getElementById('submitBtn');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i data-lucide="lock" class="w-5 h-5 mr-2"></i>Access Restricted';
+        submitBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        submitBtn.classList.add('bg-red-500', 'cursor-not-allowed');
+        submitBtn.disabled = true;
+      }
+
+      // Show notification on page load
+      setTimeout(() => {
+        showNotification('⚠️ Form access restricted: Contact your supervisor to submit metrics data', 'warning');
+      }, 1000);
+
+      console.log('Form disabled for user with "user" role');
+      {% endif %}
+    });
+
+    // Real-time validation when week/day selection changes
+    async function checkRecordExistsOnChange() {
+      const weekName = document.getElementById('weekSelect').value;
+      const dayOfWeek = document.getElementById('daySelect').value;
+
+      if (!weekName || !dayOfWeek) return;
+
+      try {
+        const recordExists = await checkExistingRecord(weekName, dayOfWeek);
+        const submitBtn = document.getElementById('submitBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (recordExists) {
+          // Show warning and disable submission
+          showNotification(`⚠️ A record already exists for ${dayOfWeek} in week ${weekName}`, 'warning');
+          if (submitBtn) submitBtn.disabled = true;
+          if (nextBtn && currentStep === totalSteps) nextBtn.disabled = true;
+
+          // Add visual indicator to form
+          const formHeader = document.getElementById('formHeader');
+          if (formHeader && !formHeader.querySelector('.duplicate-warning')) {
+            const warningBanner = document.createElement('div');
+            warningBanner.className = 'duplicate-warning mt-4 p-4 bg-orange-100 border-l-4 border-orange-500 rounded-lg';
+            warningBanner.innerHTML = `
+              <div class="flex items-center">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600 mr-2"></i>
+                <span class="text-orange-800 font-medium">
+                  Record exists for ${dayOfWeek} in ${weekName}. Please select a different day or week.
+                </span>
+              </div>
+            `;
+            formHeader.appendChild(warningBanner);
+            lucide.createIcons();
+          }
+        } else {
+          // Remove warning and enable submission
+          if (submitBtn) submitBtn.disabled = false;
+          if (nextBtn) nextBtn.disabled = false;
+
+          // Remove visual indicator
+          const existingWarning = document.querySelector('.duplicate-warning');
+          if (existingWarning) {
+            existingWarning.remove();
+          }
+        }
+      } catch (error) {
+        console.error('Error checking record existence:', error);
+      }
+    }
+
+    // Add event listeners for real-time validation
+    document.addEventListener('DOMContentLoaded', () => {
+      const weekSelect = document.getElementById('weekSelect');
+      const daySelect = document.getElementById('daySelect');
+
+      // Add null checks to prevent errors
+      if (!weekSelect || !daySelect) {
+        console.error('Required form elements not found');
+        return;
+      }
+
+      // Set current day as default
+      const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      if (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(currentDay)) {
+        daySelect.value = currentDay;
+      }
+
+      // Add change event listeners
+      weekSelect.addEventListener('change', checkRecordExistsOnChange);
+      daySelect.addEventListener('change', checkRecordExistsOnChange);
+
+      // Initial check if both values are set
+      if (weekSelect.value && daySelect.value) {
+        checkRecordExistsOnChange();
+      }
+
+      // Load recent submissions
+      loadRecentSubmissions();
+    });
+
+    // Function to load recent submissions
+    async function loadRecentSubmissions() {
+      const container = document.getElementById('submissionsContainer');
+      const loading = document.getElementById('submissionsLoading');
+      const empty = document.getElementById('submissionsEmpty');
+
+      try {
+        const response = await fetch('/api/recent-submissions');
+        const data = await response.json();
+
+        loading.classList.add('hidden');
+
+        if (data.success && data.submissions && data.submissions.length > 0) {
+          // Clear container and show submissions
+          container.innerHTML = '';
+
+          data.submissions.forEach(submission => {
+            const submissionEl = createSubmissionElement(submission);
+            container.appendChild(submissionEl);
+          });
+
+          empty.classList.add('hidden');
+        } else {
+          // Show empty state
+          container.innerHTML = '';
+          empty.classList.remove('hidden');
+        }
+
+      } catch (error) {
+        console.error('Error loading recent submissions:', error);
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+      }
+    }
+
+    // Function to create a submission element
+    function createSubmissionElement(submission) {
+      const div = document.createElement('div');
+
+      // Determine colors based on status
+      const isCompleted = submission.status === 'Completed';
+      const bgColor = isCompleted ? 'bg-green-50' : 'bg-blue-50';
+      const borderColor = isCompleted ? 'border-green-200' : 'border-blue-200';
+      const dotColor = isCompleted ? 'bg-green-500' : 'bg-blue-500';
+      const badgeColor = isCompleted ? 'bg-green-500' : 'bg-blue-500';
+
+      div.className = `flex items-center justify-between p-4 ${bgColor} rounded-2xl border ${borderColor} shadow-sm hover:shadow-md transition-all duration-200`;
+
+      div.innerHTML = `
+        <div class="flex items-center space-x-4">
+          <div class="w-3 h-3 ${dotColor} rounded-full shadow-sm"></div>
+          <div>
+            <p class="text-sm font-bold text-gray-900">${submission.title}</p>
+            <p class="text-xs text-gray-600">${submission.time_ago}</p>
+          </div>
+        </div>
+        <span class="text-xs ${badgeColor} text-white px-3 py-1 rounded-full font-medium shadow-sm">
+          ${submission.status}
+        </span>
+      `;
+
+      return div;
+    }
+
+    // Modal functionality for viewing all submissions
+    document.addEventListener('DOMContentLoaded', () => {
+      const viewAllBtn = document.getElementById('viewAllSubmissions');
+      const modal = document.getElementById('allSubmissionsModal');
+      const closeModalBtn = document.getElementById('closeModal');
+
+      // Add null checks to prevent errors
+      if (!viewAllBtn || !modal) {
+        console.warn('Modal elements not found, skipping modal initialization');
+        return;
+      }
+
+      if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openAllSubmissionsModal();
+        });
+      }
+
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+          closeAllSubmissionsModal();
+        });
+      }
+
+      // Close modal when clicking outside
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeAllSubmissionsModal();
+          }
+        });
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+          closeAllSubmissionsModal();
+        }
+      });
+    });
+
+    // Function to open all submissions modal
+    function openAllSubmissionsModal() {
+      console.log('Opening modal...');
+      const modal = document.getElementById('allSubmissionsModal');
+      console.log('Modal element found:', modal);
+      if (modal) {
+        modal.classList.remove('hidden');
+        console.log('Modal classes after removing hidden:', modal.className);
+        // Prevent body scroll for full screen modal
+        document.body.style.overflow = 'hidden';
+        loadAllSubmissions();
+      } else {
+        console.error('Modal element not found!');
+      }
+    }
+
+    // Function to close all submissions modal
+    function closeAllSubmissionsModal() {
+      console.log('Closing modal...');
+      const modal = document.getElementById('allSubmissionsModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        // Restore body scroll
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Function to load all submissions for modal
+    async function loadAllSubmissions() {
+      try {
+        showSubmissionsLoading();
+        const response = await fetch('/api/all-submissions');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('All submissions data:', data);
+
+        const tableBody = document.getElementById('submissionsTableBody');
+        if (!tableBody) {
+          console.error('Submissions table body not found');
+          return;
+        }
+
+        hideSubmissionsLoading();
+
+        if (data.submissions && data.submissions.length > 0) {
+          tableBody.innerHTML = '';
+          data.submissions.forEach(submission => {
+            const row = createSubmissionTableRow(submission);
+            tableBody.appendChild(row);
+          });
+
+          // Show table and hide no-data message
+          const table = document.getElementById('submissionsTable');
+          const noDataMsg = document.getElementById('noSubmissionsMsg');
+          if (table) table.style.display = 'table';
+          if (noDataMsg) noDataMsg.style.display = 'none';
+        } else {
+          showNoSubmissions();
+        }
+
+      } catch (error) {
+        console.error('Error loading all submissions:', error);
+        hideSubmissionsLoading();
+        showSubmissionsError('Failed to load all submissions: ' + error.message);
+      }
+    }
+
+    // Helper function to show no submissions message
+    function showNoSubmissions() {
+      const tableBody = document.getElementById('submissionsTableBody');
+      const table = document.getElementById('submissionsTable');
+      const noDataMsg = document.getElementById('noSubmissionsMsg');
+
+      if (tableBody) tableBody.innerHTML = '';
+      if (table) table.style.display = 'none';
+      if (noDataMsg) {
+        noDataMsg.style.display = 'flex';
+        // Re-initialize Lucide icons
+        lucide.createIcons();
+      }
+    }
+
+    // Helper function to show submissions error
+    function showSubmissionsError(message) {
+      const tableBody = document.getElementById('submissionsTableBody');
+      const table = document.getElementById('submissionsTable');
+      const errorMsg = document.getElementById('submissionsErrorMsg');
+
+      if (tableBody) tableBody.innerHTML = '';
+      if (table) table.style.display = 'none';
+
+      if (errorMsg) {
+        errorMsg.innerHTML = `
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <i data-lucide="alert-circle" class="w-8 h-8 text-red-500"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Error Loading Submissions</h3>
+          <p class="text-gray-600 max-w-md mb-4">${message}</p>
+          <button onclick="loadAllSubmissions()" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+            Try Again
+          </button>
+        `;
+        errorMsg.style.display = 'flex';
+        lucide.createIcons();
+      }
+    }
+
+    // Helper function to show loading state
+    function showSubmissionsLoading() {
+      const tableBody = document.getElementById('submissionsTableBody');
+      const table = document.getElementById('submissionsTable');
+      const loadingMsg = document.getElementById('submissionsLoadingMsg');
+      const errorMsg = document.getElementById('submissionsErrorMsg');
+      const noDataMsg = document.getElementById('noSubmissionsMsg');
+
+      if (tableBody) tableBody.innerHTML = '';
+      if (table) table.style.display = 'none';
+      if (errorMsg) errorMsg.style.display = 'none';
+      if (noDataMsg) noDataMsg.style.display = 'none';
+      if (loadingMsg) loadingMsg.style.display = 'flex';
+    }
+
+    // Helper function to hide loading state
+    function hideSubmissionsLoading() {
+      const loadingMsg = document.getElementById('submissionsLoadingMsg');
+
+      if (loadingMsg) loadingMsg.style.display = 'none';
+    }
+
+    // Function to create table row for submission data
+    function createSubmissionTableRow(submission) {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50/50 transition-colors duration-150';
+
+      // Status badge
+      const statusClass = submission.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800';
+
+      tr.innerHTML = `
+        <td class="w-1/3 px-6 py-4 text-sm text-gray-900 font-medium truncate">${submission.week_name || 'N/A'}</td>
+        <td class="w-1/6 px-6 py-4 text-sm text-gray-900">${submission.day_of_week || 'N/A'}</td>
+        <td class="w-1/3 px-6 py-4 text-sm text-gray-900 truncate">${submission.submitted_by || 'N/A'}</td>
+        <td class="w-1/6 px-6 py-4 text-center">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+            ${submission.status || 'Completed'}
+          </span>
+        </td>
+      `;
+
+      return tr;
+    }
+
+
+
+
+
+
+    // Import functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const importBtn = document.getElementById('importDataBtn');
+      const importModal = document.getElementById('importModal');
+      const closeModalBtn = document.getElementById('closeImportModal');
+      const cancelImportBtn = document.getElementById('cancelImportBtn');
+      const sheetSelect = document.getElementById('sheetSelect');
+      const dayImportSelect = document.getElementById('dayImportSelect');
+      const confirmImportBtn = document.getElementById('confirmImportBtn');
+      const importPreview = document.getElementById('importPreview');
+      const importLoading = document.getElementById('importLoading');
+      const importError = document.getElementById('importError');
+      const previewTableBody = document.getElementById('previewTableBody');
+
+      // Add null checks to prevent errors
+      if (!importBtn || !importModal) {
+        console.warn('Import elements not found, skipping import initialization');
+        return;
+      }
+
+      let currentSheetData = null;
+
+      // Open modal
+      importBtn.addEventListener('click', () => {
+        importModal.classList.remove('hidden');
+        
+        // Populate the submitted_by field with current user
+        const submittedByField = document.getElementById('importSubmittedBy');
+        const currentUser = document.getElementById('submittedBy');
+        if (submittedByField && currentUser) {
+          submittedByField.value = currentUser.value;
+        }
+        
+        loadGoogleSheets();
+      });
+
+      // Close modal
+      const closeModal = () => {
+        importModal.classList.add('hidden');
+        resetImportModal();
+      };
+
+      closeModalBtn.addEventListener('click', closeModal);
+      cancelImportBtn.addEventListener('click', closeModal);
+
+      // Close on backdrop click
+      importModal.addEventListener('click', (e) => {
+        if (e.target === importModal) closeModal();
+      });
+
+      // Load Google Sheets
+      async function loadGoogleSheets() {
+        try {
+          sheetSelect.innerHTML = '<option value="">Loading sheets...</option>';
+
+          const response = await fetch('/api/google-sheets');
+          const data = await response.json();
+
+          if (data.success) {
+            sheetSelect.innerHTML = '<option value="">Select a sheet...</option>';
+            data.sheets.forEach(sheet => {
+              const option = document.createElement('option');
+              option.value = sheet.name;
+              option.textContent = sheet.name;
+              sheetSelect.appendChild(option);
+            });
+          } else {
+            sheetSelect.innerHTML = '<option value="">Error loading sheets</option>';
+            showImportError('Failed to load Google Sheets');
+          }
+        } catch (error) {
+          console.error('Error loading sheets:', error);
+          sheetSelect.innerHTML = '<option value="">Error loading sheets</option>';
+          showImportError('Failed to connect to Google Sheets');
+        }
+      }
+
+      // Sheet selection handler
+      sheetSelect.addEventListener('change', () => {
+        const selectedSheet = sheetSelect.value;
+        if (selectedSheet) {
+          dayImportSelect.disabled = false;
+          dayImportSelect.innerHTML = `
+        <option value="">Select a day...</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+      `;
+        } else {
+          dayImportSelect.disabled = true;
+          dayImportSelect.innerHTML = '<option value="">Select a sheet first</option>';
+          hideAllStates();
+        }
+      });
+
+      // Day selection handler
+      dayImportSelect.addEventListener('change', async () => {
+        const selectedSheet = sheetSelect.value;
+        const selectedDay = dayImportSelect.value;
+
+        if (selectedSheet && selectedDay) {
+          await loadSheetData(selectedSheet, selectedDay);
+        } else {
+          hideAllStates();
+          confirmImportBtn.disabled = true;
+        }
+      });
+
+      // Load sheet data
+      async function loadSheetData(sheetName, day) {
+        try {
+          showImportLoading();
+
+          const response = await fetch(`/api/google-sheets/${encodeURIComponent(sheetName)}/day/${day}`);
+          const data = await response.json();
+
+          if (data.success) {
+            currentSheetData = data.data;
+            displayPreview(data.data, day);
+            confirmImportBtn.disabled = false;
+          } else {
+            showImportError(data.message || 'Failed to load sheet data');
+            confirmImportBtn.disabled = true;
+          }
+        } catch (error) {
+          console.error('Error loading sheet data:', error);
+          showImportError('Failed to load sheet data');
+          confirmImportBtn.disabled = true;
+        }
+      }
+
+      // Display data preview
+      function displayPreview(data, day) {
+        // Add null check for data
+        if (!data) {
+          console.error('No data provided to displayPreview');
+          showImportError('No data available to preview');
+          return;
+        }
+
+        hideAllStates();
+        if (importPreview) {
+          importPreview.classList.remove('hidden');
+        }
+
+        if (previewTableBody) {
+          previewTableBody.innerHTML = '';
+        } else {
+          console.error('previewTableBody element not found');
+          return;
+        }
+
+        // Check if shift data exists before accessing
+        const firstShift = data.first_shift || {};
+        const secondShift = data.second_shift || {};
+
+        // First Shift rows - with null checks
+        const firstShiftRows = [
+          { metric: 'OEE', dc1: firstShift.die_cut1_oee_pct, dc2: firstShift.die_cut2_oee_pct, unit: '%' },
+          { metric: 'POUNDS', dc1: firstShift.die_cut1_pounds, dc2: firstShift.die_cut2_pounds, unit: ' lbs' },
+          { metric: 'WASTE', dc1: firstShift.die_cut1_waste_lbs, dc2: firstShift.die_cut2_waste_lbs, unit: ' lbs' }
+        ];
+
+        // Second Shift rows - with null checks
+        const secondShiftRows = [
+          { metric: 'OEE', dc1: secondShift.die_cut1_oee_pct, dc2: secondShift.die_cut2_oee_pct, unit: '%' },
+          { metric: 'POUNDS', dc1: secondShift.die_cut1_pounds, dc2: secondShift.die_cut2_pounds, unit: ' lbs' },
+          { metric: 'WASTE', dc1: secondShift.die_cut1_waste_lbs, dc2: secondShift.die_cut2_waste_lbs, unit: ' lbs' }
+        ];
+
+        // Add First Shift rows
+        firstShiftRows.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          tr.className = index === 0 ? 'bg-blue-50' : '';
+          tr.innerHTML = `
+        <td class="px-4 py-3 font-medium ${index === 0 ? 'text-blue-900' : 'text-gray-500'}">${index === 0 ? 'First Shift' : ''}</td>
+        <td class="px-4 py-3 font-medium text-gray-900">${row.metric}</td>
+        <td class="px-4 py-3 text-gray-700">${row.dc1 !== null ? row.dc1 + row.unit : 'N/A'}</td>
+        <td class="px-4 py-3 text-gray-700">${row.dc2 !== null ? row.dc2 + row.unit : 'N/A'}</td>
+      `;
+          previewTableBody.appendChild(tr);
+        });
+
+        // Add Second Shift rows
+        secondShiftRows.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          tr.className = index === 0 ? 'bg-orange-50' : '';
+          tr.innerHTML = `
+        <td class="px-4 py-3 font-medium ${index === 0 ? 'text-orange-900' : 'text-gray-500'}">${index === 0 ? 'Second Shift' : ''}</td>
+        <td class="px-4 py-3 font-medium text-gray-900">${row.metric}</td>
+        <td class="px-4 py-3 text-gray-700">${row.dc1 !== null ? row.dc1 + row.unit : 'N/A'}</td>
+        <td class="px-4 py-3 text-gray-700">${row.dc2 !== null ? row.dc2 + row.unit : 'N/A'}</td>
+      `;
+          previewTableBody.appendChild(tr);
+        });
+      }
+
+      // Import confirmation
+      confirmImportBtn.addEventListener('click', async () => {
+        if (!currentSheetData) return;
+
+        try {
+          confirmImportBtn.disabled = true;
+          confirmImportBtn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline"></div>Importing...';
+
+          const selectedSheet = sheetSelect.value;
+          const selectedDay = dayImportSelect.value;
+
+          const response = await fetch('/api/import-sheet-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              sheet_name: selectedSheet,
+              day_of_week: selectedDay,
+              data: currentSheetData
+            })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            showNotification('Data imported successfully! 🎉', 'success');
+            closeModal();
+
+            // Auto-populate form with imported data - add null check
+            if (currentSheetData) {
+              populateFormWithImportedData(currentSheetData, selectedDay);
+            } else {
+              console.warn('No currentSheetData available for form population');
+            }
+          } else {
+            showNotification(result.message || 'Import failed', 'error');
+          }
+        } catch (error) {
+          console.error('Import error:', error);
+          showNotification('Error importing data', 'error');
+        } finally {
+          confirmImportBtn.disabled = false;
+          confirmImportBtn.innerHTML = '<i data-lucide="download" class="w-4 h-4 mr-2 inline"></i>Import Data';
+          lucide.createIcons();
+        }
+      });
+
+      // Helper functions
+      function showImportLoading() {
+        hideAllStates();
+        importLoading.classList.remove('hidden');
+      }
+
+      function showImportError(message) {
+        hideAllStates();
+        document.getElementById('importErrorMessage').textContent = message;
+        importError.classList.remove('hidden');
+      }
+
+      function hideAllStates() {
+        importPreview.classList.add('hidden');
+        importLoading.classList.add('hidden');
+        importError.classList.add('hidden');
+      }
+
+      function resetImportModal() {
+        sheetSelect.innerHTML = '<option value="">Select a sheet...</option>';
+        dayImportSelect.innerHTML = '<option value="">Select a sheet first</option>';
+        dayImportSelect.disabled = true;
+        confirmImportBtn.disabled = true;
+        currentSheetData = null;
+        hideAllStates();
+      }
+
+      // Populate form with imported data
+      function populateFormWithImportedData(data, day) {
+        // Add comprehensive null checks
+        if (!data) {
+          console.error('No data provided to populateFormWithImportedData');
+          showNotification('Error: No data to populate form', 'error');
+          return;
+        }
+
+        // Set week and day
+        const daySelect = document.getElementById('daySelect');
+        if (daySelect) {
+          daySelect.value = day;
+        }
+
+        // Check if first_shift data exists
+        if (data.first_shift) {
+          // First shift - with element checks
+          if (data.first_shift.die_cut1_oee_pct !== null && data.first_shift.die_cut1_oee_pct !== undefined) {
+            const element = document.getElementById('oee1FirstShift');
+            if (element) element.value = data.first_shift.die_cut1_oee_pct;
+          }
+          if (data.first_shift.die_cut2_oee_pct !== null && data.first_shift.die_cut2_oee_pct !== undefined) {
+            const element = document.getElementById('oee2FirstShift');
+            if (element) element.value = data.first_shift.die_cut2_oee_pct;
+          }
+          if (data.first_shift.die_cut1_pounds !== null && data.first_shift.die_cut1_pounds !== undefined) {
+            const element = document.getElementById('pounds1FirstShift');
+            if (element) element.value = data.first_shift.die_cut1_pounds;
+          }
+          if (data.first_shift.die_cut2_pounds !== null && data.first_shift.die_cut2_pounds !== undefined) {
+            const element = document.getElementById('pounds2FirstShift');
+            if (element) element.value = data.first_shift.die_cut2_pounds;
+          }
+          if (data.first_shift.die_cut1_waste_lbs !== null && data.first_shift.die_cut1_waste_lbs !== undefined) {
+            const element = document.getElementById('waste1FirstShift');
+            if (element) element.value = data.first_shift.die_cut1_waste_lbs;
+          }
+          if (data.first_shift.die_cut2_waste_lbs !== null && data.first_shift.die_cut2_waste_lbs !== undefined) {
+            const element = document.getElementById('waste2FirstShift');
+            if (element) element.value = data.first_shift.die_cut2_waste_lbs;
+          }
+        } else {
+          console.warn('No first_shift data available');
+        }
+
+        // Check if second_shift data exists
+        if (data.second_shift) {
+          // Second shift - with element checks
+          if (data.second_shift.die_cut1_oee_pct !== null && data.second_shift.die_cut1_oee_pct !== undefined) {
+            const element = document.getElementById('oee1SecondShift');
+            if (element) element.value = data.second_shift.die_cut1_oee_pct;
+          }
+          if (data.second_shift.die_cut2_oee_pct !== null && data.second_shift.die_cut2_oee_pct !== undefined) {
+            const element = document.getElementById('oee2SecondShift');
+            if (element) element.value = data.second_shift.die_cut2_oee_pct;
+          }
+          if (data.second_shift.die_cut1_pounds !== null && data.second_shift.die_cut1_pounds !== undefined) {
+            const element = document.getElementById('pounds1SecondShift');
+            if (element) element.value = data.second_shift.die_cut1_pounds;
+          }
+          if (data.second_shift.die_cut2_pounds !== null && data.second_shift.die_cut2_pounds !== undefined) {
+            const element = document.getElementById('pounds2SecondShift');
+            if (element) element.value = data.second_shift.die_cut2_pounds;
+          }
+          if (data.second_shift.die_cut1_waste_lbs !== null && data.second_shift.die_cut1_waste_lbs !== undefined) {
+            const element = document.getElementById('waste1SecondShift');
+            if (element) element.value = data.second_shift.die_cut1_waste_lbs;
+          }
+          if (data.second_shift.die_cut2_waste_lbs !== null && data.second_shift.die_cut2_waste_lbs !== undefined) {
+            const element = document.getElementById('waste2SecondShift');
+            if (element) element.value = data.second_shift.die_cut2_waste_lbs;
+          }
+        } else {
+          console.warn('No second_shift data available');
+        }
+
+        showNotification('Form populated with imported data', 'info');
+      }
     });
   </script>
 
   {% endblock %}
 </body>
+
 </html>
-
-  
-

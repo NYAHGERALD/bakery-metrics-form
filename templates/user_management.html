@@ -1,0 +1,898 @@
+
+<!-- Content Area -->
+<div class="p-4 lg:p-6 pt-20 lg:pt-6 w-full">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card hover-lift p-6 rounded-2xl fade-in">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                    <p id="totalUsers" class="text-3xl font-bold text-gray-900">0</p>
+                    <div class="flex items-center mt-2">
+                        <i data-lucide="users" class="w-4 h-4 text-blue-500 mr-1"></i>
+                        <span class="text-sm text-blue-600 font-medium">All accounts</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card hover-lift p-6 rounded-2xl fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Active Users</p>
+                    <p id="activeUsers" class="text-3xl font-bold text-gray-900">0</p>
+                    <div class="flex items-center mt-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-500 mr-1"></i>
+                        <span class="text-sm text-green-600 font-medium">Currently active</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card hover-lift p-6 rounded-2xl fade-in" style="animation-delay: 0.2s;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Administrators</p>
+                    <p id="adminUsers" class="text-3xl font-bold text-gray-900">0</p>
+                    <div class="flex items-center mt-2">
+                        <i data-lucide="shield" class="w-4 h-4 text-purple-500 mr-1"></i>
+                        <span class="text-sm text-purple-600 font-medium">Admin roles</span>
+                    </div>
+                </div>
+                <div class="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl">
+                    <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="glass-card rounded-2xl p-6 fade-in" style="animation-delay: 0.3s;">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">User Management</h3>
+                <p class="text-sm text-gray-600 mt-1">Manage user accounts, roles, and permissions</p>
+            </div>
+            <button onclick="showAddUserModal()"
+                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                Add User
+            </button>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="flex flex-col lg:flex-row gap-4 mb-6">
+            <div class="flex-1">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                    <input id="userSearchInput" type="text" placeholder="Search users by name or email..."
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <select id="userRoleFilter"
+                    class="px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                </select>
+                <select id="userStatusFilter"
+                    class="px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+                    <option value="">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="overflow-x-auto rounded-xl border border-gray-200">
+            <table class="w-full bg-white">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            User
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Role
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Last Login
+                        </th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody" class="divide-y divide-gray-200">
+                    <!-- Users will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                <i data-lucide="users" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+            <p class="text-gray-500 mb-6">Get started by adding your first user to the system.</p>
+            <button onclick="showAddUserModal()" class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                Add First User
+            </button>
+        </div>
+    </div>
+
+    <!-- Week Management Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <!-- Add New Week -->
+        <div class="glass-card rounded-2xl p-6 fade-in" style="animation-delay: 0.4s;">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <i data-lucide="calendar-plus" class="w-5 h-5 mr-2 text-blue-500"></i>
+                Add New Week
+            </h3>
+            <form id="addWeekForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input id="weekStartDate" type="date" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input id="weekEndDate" type="date" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Generated Week Name</label>
+                    <input id="generatedWeekName" type="text" readonly
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed" />
+                </div>
+                <button type="submit"
+                    class="w-full btn-primary text-white py-3 rounded-xl transition-all font-medium">
+                    <i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add Week
+                </button>
+            </form>
+        </div>
+
+        <!-- Active Weeks List -->
+        <div class="glass-card rounded-2xl p-6 fade-in" style="animation-delay: 0.5s;">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <i data-lucide="calendar" class="w-5 h-5 mr-2 text-green-500"></i>
+                Active Weeks
+            </h3>
+            <div id="activeWeeksList" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                <!-- Weeks will be populated here -->
+            </div>
+            <div id="noWeeksState" class="hidden text-center py-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-3">
+                    <i data-lucide="calendar-x" class="w-6 h-6 text-gray-400"></i>
+                </div>
+                <p class="text-gray-500 text-sm">No weeks configured yet</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="glass-card p-8 rounded-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h3 id="modalTitle" class="text-xl font-semibold text-gray-900">Add New User</h3>
+            <button onclick="closeUserModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+            </button>
+        </div>
+
+        <form id="userForm" class="space-y-5">
+            <input type="hidden" id="userId" value="">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                    <input id="firstName" type="text" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                    <input id="lastName" type="text" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                <input id="email" type="email" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input id="phone" type="tel" placeholder="(555) 123-4567"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <div id="passwordSection">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                <div class="relative">
+                    <input id="password" type="password" required
+                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button type="button" onclick="togglePasswordVisibility()" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters with uppercase, lowercase, number, and special character.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                <select id="role" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="user">User</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+
+            <div class="flex items-start space-x-3">
+                <input id="isActive" type="checkbox" checked
+                    class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Active Account</label>
+                    <p class="text-xs text-gray-500">User can log in and access the system</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-3 pt-4 border-t border-gray-200">
+                <button type="submit" class="flex-1 btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                    <i data-lucide="save" class="w-4 h-4 mr-2 inline"></i>
+                    <span id="submitButtonText">Create User</span>
+                </button>
+                <button type="button" onclick="closeUserModal()"
+                    class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-xl font-medium transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Initialize Lucide icons
+lucide.createIcons();
+
+// Global variables
+let allUsers = [];
+let allWeeks = [];
+let currentEditingUserId = null;
+
+// Load users data
+async function loadUsers() {
+    showLoading();
+    try {
+        const response = await fetch('/api/users');
+        const data = await response.json();
+
+        if (data.success || data.users) {
+            allUsers = data.users || [];
+            renderUsers(allUsers);
+            updateUserStats();
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Failed to load users');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Render users table
+function renderUsers(users) {
+    const tbody = document.getElementById('usersTableBody');
+    const emptyState = document.getElementById('emptyState');
+
+    if (users.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+    tbody.innerHTML = users.map(user => `
+        <tr class="hover:bg-blue-50/50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                            ${(user.first_name || user.first || '').charAt(0).toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">
+                            ${user.first_name || user.first || ''} ${user.last_name || user.last || ''}
+                        </div>
+                        <div class="text-sm text-gray-500">${user.phone || 'No phone'}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${user.email}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full ${user.role === 'admin' ? 'role-admin' : 'role-user'}">
+                    <i data-lucide="${user.role === 'admin' ? 'shield' : 'user'}" class="w-3 h-3 mr-1"></i>
+                    ${user.role === 'admin' ? 'Administrator' : 'User'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full ${user.is_active ? 'status-active' : 'status-inactive'}">
+                    <i data-lucide="${user.is_active ? 'check-circle' : 'x-circle'}" class="w-3 h-3 mr-1"></i>
+                    ${user.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                ${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                <div class="flex items-center justify-center space-x-2">
+                    <button onclick="editUser('${user.id}')" 
+                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit User">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="toggleUserStatus('${user.id}', ${!user.is_active})" 
+                        class="p-2 text-${user.is_active ? 'orange' : 'green'}-600 hover:bg-${user.is_active ? 'orange' : 'green'}-50 rounded-lg transition-colors" 
+                        title="${user.is_active ? 'Deactivate' : 'Activate'} User">
+                        <i data-lucide="${user.is_active ? 'user-x' : 'user-check'}" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="deleteUser('${user.id}', '${(user.first_name || user.first || '')} ${(user.last_name || user.last || '')}')" 
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete User">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+
+    lucide.createIcons();
+}
+
+// Update user statistics
+function updateUserStats() {
+    const totalUsers = allUsers.length;
+    const activeUsers = allUsers.filter(user => user.is_active).length;
+    const adminUsers = allUsers.filter(user => user.role === 'admin').length;
+
+    document.getElementById('totalUsers').textContent = totalUsers;
+    document.getElementById('activeUsers').textContent = activeUsers;
+    document.getElementById('adminUsers').textContent = adminUsers;
+}
+
+// Show add user modal
+function showAddUserModal() {
+    currentEditingUserId = null;
+    document.getElementById('modalTitle').textContent = 'Add New User';
+    document.getElementById('submitButtonText').textContent = 'Create User';
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('passwordSection').style.display = 'block';
+    document.getElementById('password').required = true;
+    document.getElementById('userModal').classList.remove('hidden');
+}
+
+// Edit user
+function editUser(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+
+    currentEditingUserId = userId;
+    document.getElementById('modalTitle').textContent = 'Edit User';
+    document.getElementById('submitButtonText').textContent = 'Update User';
+    document.getElementById('userId').value = userId;
+    document.getElementById('firstName').value = user.first_name || user.first || '';
+    document.getElementById('lastName').value = user.last_name || user.last || '';
+    document.getElementById('email').value = user.email;
+    document.getElementById('phone').value = user.phone || '';
+    document.getElementById('role').value = user.role;
+    document.getElementById('isActive').checked = user.is_active;
+
+    // Hide password field for editing
+    document.getElementById('passwordSection').style.display = 'none';
+    document.getElementById('password').required = false;
+
+    document.getElementById('userModal').classList.remove('hidden');
+}
+
+// Close user modal
+function closeUserModal() {
+    document.getElementById('userModal').classList.add('hidden');
+    currentEditingUserId = null;
+}
+
+// Toggle password visibility
+function togglePasswordVisibility() {
+    const passwordField = document.getElementById('password');
+    const eyeIcon = passwordField.nextElementSibling.querySelector('i');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        eyeIcon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        passwordField.type = 'password';
+        eyeIcon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+}
+
+// Toggle user status
+async function toggleUserStatus(userId, newStatus) {
+    try {
+        const response = await fetch(`/api/users/${userId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ is_active: newStatus })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess(`User ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+            await loadUsers();
+        } else {
+            throw new Error(data.message || 'Failed to update user status');
+        }
+    } catch (error) {
+        console.error('Error updating user status:', error);
+        showError('Failed to update user status');
+    }
+}
+
+// Delete user
+function deleteUser(userId, userName) {
+    showDeleteModal(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`, async () => {
+        try {
+            const response = await fetch(`/api/users/${userId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showSuccess('User deleted successfully!');
+                await loadUsers();
+            } else {
+                throw new Error(data.message || 'Failed to delete user');
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            showError('Failed to delete user');
+        }
+    });
+}
+
+// Form submission
+document.getElementById('userForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const formData = {
+        first_name: document.getElementById('firstName').value.trim(),
+        last_name: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim() || null,
+        role: document.getElementById('role').value,
+        is_active: document.getElementById('isActive').checked
+    };
+
+    // Add password for new users
+    if (!currentEditingUserId) {
+        formData.password = document.getElementById('password').value;
+    }
+
+    try {
+        const url = currentEditingUserId ? `/api/users/${currentEditingUserId}` : '/api/users';
+        const method = currentEditingUserId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess(`User ${currentEditingUserId ? 'updated' : 'created'} successfully!`);
+            closeUserModal();
+            await loadUsers();
+        } else {
+            throw new Error(data.message || `Failed to ${currentEditingUserId ? 'update' : 'create'} user`);
+        }
+    } catch (error) {
+        console.error('Error saving user:', error);
+        showError(`Failed to ${currentEditingUserId ? 'update' : 'create'} user`);
+    }
+});
+
+// Search and filter functionality
+document.getElementById('userSearchInput').addEventListener('input', function () {
+    filterUsers();
+});
+
+document.getElementById('userRoleFilter').addEventListener('change', function () {
+    filterUsers();
+});
+
+document.getElementById('userStatusFilter').addEventListener('change', function () {
+    filterUsers();
+});
+
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+    const roleFilter = document.getElementById('userRoleFilter').value;
+    const statusFilter = document.getElementById('userStatusFilter').value;
+
+    const filtered = allUsers.filter(user => {
+        const fullName = `${user.first_name || user.first || ''} ${user.last_name || user.last || ''}`.toLowerCase();
+        const matchesSearch = fullName.includes(searchTerm) || user.email.toLowerCase().includes(searchTerm);
+        const matchesRole = !roleFilter || user.role === roleFilter;
+        const matchesStatus = statusFilter === '' || user.is_active.toString() === statusFilter;
+
+        return matchesSearch && matchesRole && matchesStatus;
+    });
+
+    renderUsers(filtered);
+}
+
+// Week Management Functions
+async function loadWeeks() {
+    try {
+        const res = await fetch('/api/weeks');
+        const data = await res.json();
+
+        if (data.success) {
+            allWeeks = data.weeks || [];
+            renderActiveWeeks(allWeeks);
+        } else {
+            showError(data.message || 'Failed to load weeks');
+        }
+    } catch (error) {
+        console.error('Error loading weeks:', error);
+        showError('Failed to load weeks');
+    }
+}
+
+function renderActiveWeeks(weeks) {
+    const container = document.getElementById('activeWeeksList');
+    const noWeeksState = document.getElementById('noWeeksState');
+    
+    container.innerHTML = '';
+
+    if (weeks.length === 0) {
+        noWeeksState.classList.remove('hidden');
+        return;
+    }
+
+    noWeeksState.classList.add('hidden');
+
+    weeks.forEach(week => {
+        const weekDiv = document.createElement('div');
+        weekDiv.className = 'flex items-center justify-between p-4 bg-white/60 rounded-xl hover:bg-white/80 transition-all border border-gray-200/50';
+        weekDiv.innerHTML = `
+            <div class="flex-1">
+                <div class="font-medium text-gray-900">${week.week_name}</div>
+                <div class="text-sm text-gray-600">${week.start_date} to ${week.end_date}</div>
+                <div class="text-xs text-gray-500 mt-1">Created: ${week.created_at}</div>
+            </div>
+            <button onclick="deleteWeek('${week.id}')" 
+                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+                title="Delete Week">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        `;
+        container.appendChild(weekDiv);
+    });
+
+    // Re-initialize Lucide icons
+    lucide.createIcons();
+}
+
+// Week form functionality
+document.getElementById('weekStartDate')?.addEventListener('change', updateWeekName);
+document.getElementById('weekEndDate')?.addEventListener('change', updateWeekName);
+
+function updateWeekName() {
+    const startDate = document.getElementById('weekStartDate').value;
+    const endDate = document.getElementById('weekEndDate').value;
+
+    if (startDate && endDate) {
+        // Parse dates manually to avoid timezone issues
+        const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+        const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+
+        // Create Date objects in local timezone (month is 0-based)
+        const start = new Date(startYear, startMonth - 1, startDay);
+        const end = new Date(endYear, endMonth - 1, endDay);
+
+        // Format for display: "Aug 04, 2025 - Aug 08, 2025"
+        const options = { month: 'short', day: '2-digit', year: 'numeric' };
+        const startFormatted = start.toLocaleDateString('en-US', options);
+        const endFormatted = end.toLocaleDateString('en-US', options);
+        const weekName = `${startFormatted} - ${endFormatted}`;
+
+        document.getElementById('generatedWeekName').value = weekName;
+    }
+}
+
+document.getElementById('addWeekForm')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Get dates from input (YYYY-MM-DD format)
+    const startDateInput = document.getElementById('weekStartDate').value;
+    const endDateInput = document.getElementById('weekEndDate').value;
+
+    // Parse dates manually to avoid timezone issues
+    const [startYear, startMonth, startDay] = startDateInput.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDateInput.split('-').map(Number);
+
+    // Create Date objects in local timezone
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
+
+    // Format dates as MM-DD-YYYY for backend
+    const startFormatted = `${(startDate.getMonth() + 1).toString().padStart(2, '0')}-${startDate.getDate().toString().padStart(2, '0')}-${startDate.getFullYear()}`;
+    const endFormatted = `${(endDate.getMonth() + 1).toString().padStart(2, '0')}-${endDate.getDate().toString().padStart(2, '0')}-${endDate.getFullYear()}`;
+
+    const formData = {
+        start_date: startFormatted,
+        end_date: endFormatted,
+        week_name: document.getElementById('generatedWeekName').value
+    };
+
+    try {
+        const res = await fetch('/api/weeks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showSuccess('Week added successfully!');
+            document.getElementById('addWeekForm').reset();
+            document.getElementById('generatedWeekName').value = '';
+            await loadWeeks();
+        } else {
+            showError(data.message);
+        }
+    } catch (error) {
+        console.error('Error adding week:', error);
+        showError('Failed to add week');
+    }
+});
+
+async function deleteWeek(weekId) {
+    showDeleteModal('Are you sure you want to delete this week? This action cannot be undone.', async () => {
+        try {
+            const res = await fetch(`/api/weeks/${weekId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showSuccess('Week deleted successfully!');
+                await loadWeeks();
+            } else {
+                showError(data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting week:', error);
+            showError('Failed to delete week');
+        }
+    });
+}
+
+// Utility functions (these should be available from the parent template)
+function showLoading() {
+    document.getElementById('loadingSpinner')?.classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner')?.classList.add('hidden');
+}
+
+function showSuccess(message) {
+    const toast = document.getElementById('successToast');
+    const messageEl = document.getElementById('successMessage');
+    if (toast && messageEl) {
+        messageEl.textContent = message;
+        toast.classList.remove('translate-x-full');
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+        }, 3000);
+    }
+}
+
+function showError(message) {
+    const toast = document.getElementById('errorToast');
+    const messageEl = document.getElementById('errorMessage');
+    if (toast && messageEl) {
+        messageEl.textContent = message;
+        toast.classList.remove('translate-x-full');
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+        }, 3000);
+    }
+}
+
+function showDeleteModal(message, confirmCallback) {
+    const modal = document.getElementById('deleteModal');
+    const messageEl = document.getElementById('deleteModalText');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+    if (modal && messageEl && confirmBtn) {
+        messageEl.textContent = message;
+        modal.classList.remove('hidden');
+
+        confirmBtn.onclick = () => {
+            closeDeleteModal();
+            confirmCallback();
+        };
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function () {
+    loadUsers();
+    loadWeeks();
+    
+    // Update page title and subtitle
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    
+    if (pageTitle) {
+        pageTitle.textContent = 'User Management';
+    }
+    if (pageSubtitle) {
+        pageSubtitle.textContent = 'Manage user accounts, roles, and permissions';
+    }
+});
+
+// Close modals when clicking outside
+document.getElementById('userModal')?.addEventListener('click', function (e) {
+    if (e.target === this) {
+        closeUserModal();
+    }
+});
+
+// Handle form validation
+document.getElementById('userForm')?.addEventListener('input', function(e) {
+    const field = e.target;
+    const isValid = field.checkValidity();
+    
+    // Remove existing validation classes
+    field.classList.remove('border-red-300', 'border-green-300');
+    
+    // Add validation classes
+    if (field.value && !isValid) {
+        field.classList.add('border-red-300');
+    } else if (field.value && isValid) {
+        field.classList.add('border-green-300');
+    }
+});
+
+// Auto-update page title in navigation
+function updateNavigation() {
+    // Update active navigation item
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('bg-white/10', 'border', 'border-white/20', 'text-white');
+        item.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+    });
+
+    const userMgmtNav = document.getElementById('nav-user-management');
+    if (userMgmtNav) {
+        userMgmtNav.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+        userMgmtNav.classList.add('bg-white/10', 'border', 'border-white/20', 'text-white');
+    }
+}
+
+// Initialize navigation on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateNavigation();
+});
+</script>
+
+<style>
+/* Additional custom styles for this page */
+.role-admin {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.role-user {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.status-inactive {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+/* Custom scrollbar for weeks list */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced form validation styles */
+.border-red-300 {
+    border-color: #fca5a5 !important;
+    box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.1);
+}
+
+.border-green-300 {
+    border-color: #86efac !important;
+    box-shadow: 0 0 0 3px rgba(134, 239, 172, 0.1);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+    transition: all 0.2s ease;
+}
+
+/* Enhanced hover effects for table rows */
+tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Modal backdrop blur effect */
+#userModal.show {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+</style>

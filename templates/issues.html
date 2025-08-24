@@ -1,0 +1,1524 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div id="issuesLoadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-8 max-w-sm mx-4 text-center shadow-2xl">
+        <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Loading Issues</h3>
+        <p class="text-gray-500">Please wait while we fetch your data...</p>
+    </div>
+</div>
+
+<!-- Main Issues Content -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6 lg:p-8">
+    <!-- Page Header -->
+    <div class="mb-8 animate-fade-in">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div class="mb-4 lg:mb-0">
+                <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
+                    Issues Management
+                </h1>
+                <p class="text-gray-600 text-lg">Report machine issues and track resolution progress</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="reportIssueBtn" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 mr-2"></i>
+                    Report Issue
+                </button>
+                <button id="refreshIssuesBtn" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Issues Card -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 metric-card-hover animate-fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                    <i data-lucide="alert-circle" class="w-6 h-6 text-white"></i>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900" id="totalIssuesCount">--</div>
+                    <div class="text-sm text-gray-500">Total Issues</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center text-blue-600">
+                    <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+                    <span class="text-sm font-semibold">This Period</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Die-Cut 1 Issues -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 metric-card-hover animate-fade-in" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg">
+                    <i data-lucide="scissors" class="w-6 h-6 text-white"></i>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900" id="dieCut1Count">--</div>
+                    <div class="text-sm text-gray-500">Die-Cut 1</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center text-orange-600">
+                    <i data-lucide="tools" class="w-4 h-4 mr-1"></i>
+                    <span class="text-sm font-semibold">Machine Issues</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Die-Cut 2 Issues -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 metric-card-hover animate-fade-in" style="animation-delay: 0.2s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg">
+                    <i data-lucide="scissors" class="w-6 h-6 text-white"></i>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900" id="dieCut2Count">--</div>
+                    <div class="text-sm text-gray-500">Die-Cut 2</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center text-purple-600">
+                    <i data-lucide="settings" class="w-4 h-4 mr-1"></i>
+                    <span class="text-sm font-semibold">Machine Issues</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Issues -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 metric-card-hover animate-fade-in" style="animation-delay: 0.3s">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+                    <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900" id="recentIssuesCount">--</div>
+                    <div class="text-sm text-gray-500">Recent</div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center text-green-600">
+                    <i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                    <span class="text-sm font-semibold">Last 7 Days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 mb-8 animate-slide-up">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters & Search</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Line</label>
+                <select id="lineFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    <option value="">All Lines</option>
+                    <option value="Die-Cut 1">Die-Cut 1</option>
+                    <option value="Die-Cut 2">Die-Cut 2</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Shift</label>
+                <select id="shiftFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    <option value="">All Shifts</option>
+                    <option value="First Shift">First Shift</option>
+                    <option value="Second Shift">Second Shift</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" id="dateFilter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Submitter</label>
+                <input type="text" id="submitterFilter" placeholder="Search by submitter..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white">
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4 mt-4">
+            <button id="applyFiltersBtn" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold">
+                <i data-lucide="filter" class="w-4 h-4 mr-2"></i>
+                Apply Filters
+            </button>
+            <button id="clearFiltersBtn" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 font-semibold">
+                <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Issues Table -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 mb-8 animate-slide-up">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 lg:mb-0">Reported Issues</h3>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center text-sm text-gray-500">
+                    <i data-lucide="eye" class="w-4 h-4 mr-1 text-gray-400"></i>
+                    <span>View Only</span>
+                </div>
+                <div class="flex items-center text-sm text-blue-600">
+                    <i data-lucide="edit" class="w-4 h-4 mr-1"></i>
+                    <span>Can Edit</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Issues Table Container -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gradient-to-r from-gray-50 to-gray-100">
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-l-xl">Issue</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Line</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reported By</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permission</th>
+                        <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider rounded-r-xl">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="issuesTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Dynamic content will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationControls" class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 p-4 bg-gray-50 rounded-xl">
+            <!-- Page Info and Page Size Selector -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 text-sm text-gray-600">
+                <div id="paginationInfo" class="whitespace-nowrap">
+                    Showing 1–5 of 0
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="pageSize" class="text-sm text-gray-700">Rows per page:</label>
+                    <select id="pageSize" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="flex items-center gap-2">
+                <button id="firstPageBtn" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled aria-label="Go to first page">
+                    <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                </button>
+                <button id="prevPageBtn" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled aria-label="Go to previous page">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                
+                <!-- Page Numbers Container -->
+                <div id="pageNumbers" class="hidden sm:flex items-center gap-1">
+                    <!-- Page numbers will be dynamically inserted here -->
+                </div>
+                
+                <!-- Current page indicator for mobile -->
+                <div id="mobilePageInfo" class="sm:hidden px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg">
+                    Page <span id="currentPageMobile">1</span> of <span id="totalPagesMobile">1</span>
+                </div>
+                
+                <button id="nextPageBtn" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled aria-label="Go to next page">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+                <button id="lastPageBtn" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled aria-label="Go to last page">
+                    <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                <i data-lucide="search" class="w-12 h-12 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Issues Found</h3>
+            <p class="text-gray-500 max-w-md mx-auto">No issues match your current filters. Try adjusting your search criteria or report a new issue.</p>
+        </div>
+    </div>
+
+    <!-- Future Features Placeholder -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Issue Analytics Placeholder -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 animate-fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Issue Analytics</h3>
+                <div class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">Coming Soon</div>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Trend Analysis</p>
+                            <p class="text-sm text-gray-600">Issue frequency patterns</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="pie-chart" class="w-6 h-6 text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Root Cause Analysis</p>
+                            <p class="text-sm text-gray-600">Common issue categories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolution Tracking Placeholder -->
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 animate-fade-in" style="animation-delay: 0.1s">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Resolution Tracking</h3>
+                <div class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Future Release</div>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">Status Updates</p>
+                            <p class="text-sm text-gray-600">Track resolution progress</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mr-4">
+                            <i data-lucide="clock" class="w-6 h-6 text-orange-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-900">SLA Tracking</p>
+                            <p class="text-sm text-gray-600">Response time metrics</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Issue Report Modal -->
+<div id="issueReportModal" class="fixed inset-0 bg-blue-900/20 backdrop-blur-md z-50 hidden opacity-0 transition-all duration-300">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-blue-500/10"></div>
+        </div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white/90 backdrop-blur-xl rounded-3xl px-6 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-8 border border-white/30">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 sm:mx-0 sm:h-14 sm:w-14 mb-4 sm:mb-0 sm:mr-4 shadow-lg">
+                    <i data-lucide="alert-triangle" class="h-8 w-8 text-white"></i>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:text-left flex-1">
+                    <h3 class="text-2xl leading-6 font-bold text-gray-900 mb-2">Report Machine Issue</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-600">Submit a new machine or quality issue for tracking and resolution.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="issueReportForm" class="mt-6 space-y-6">
+                <div class="relative">
+                    <label for="issueTitle" class="block text-sm font-medium text-gray-700 mb-2">Issue Title *</label>
+                    <input type="text" id="issueTitle" name="title" required maxlength="255"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80"
+                           placeholder="Search or Select an Issue"
+                           autocomplete="off">
+                    <!-- Dropdown list for filtered suggestions -->
+                    <div id="issueTitleDropdown" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden">
+                        <div id="issueTitleLoading" class="px-4 py-3 text-sm text-gray-500">Loading issue titles...</div>
+                        <div id="issueTitleList" class="hidden"></div>
+                        <div id="issueTitleNoResults" class="px-4 py-3 text-sm text-gray-500 hidden">No matching issues found</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="issueLine" class="block text-sm font-medium text-gray-700 mb-2">Line *</label>
+                        <select id="issueLine" name="line" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                            <option value="">Select Line</option>
+                            <option value="Die-Cut 1">Die-Cut 1</option>
+                            <option value="Die-Cut 2">Die-Cut 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="issueShift" class="block text-sm font-medium text-gray-700 mb-2">Shift *</label>
+                        <select id="issueShift" name="shift" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                            <option value="">Select Shift</option>
+                            <option value="First Shift">First Shift</option>
+                            <option value="Second Shift">Second Shift</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="issueDate" class="block text-sm font-medium text-gray-700 mb-2">Report Date *</label>
+                        <input type="date" id="issueDate" name="reportDate" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                    </div>
+                    <div>
+                        <label for="issueTime" class="block text-sm font-medium text-gray-700 mb-2">Report Time *</label>
+                        <input type="time" id="issueTime" name="reportTime" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="issueDetails" class="block text-sm font-medium text-gray-700 mb-2">Issue Details *</label>
+                    <textarea id="issueDetails" name="issueDetails" required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 resize-none" placeholder="Detailed description of the issue, symptoms, and any relevant information..."></textarea>
+                </div>
+
+                <div class="mt-8 sm:mt-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" id="submitIssueBtn" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-base font-semibold text-white hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-300 transform hover:-translate-y-1">
+                        <span class="flex items-center">
+                            <i data-lucide="send" class="w-4 h-4 mr-2"></i>
+                            Submit Issue
+                        </span>
+                    </button>
+                    <button type="button" id="cancelIssueBtn" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm transition-all duration-300">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Issue Detail Modal -->
+<div id="issueDetailModal" class="fixed inset-0 bg-blue-900/20 backdrop-blur-md z-50 hidden opacity-0 transition-all duration-300">
+    <div class="flex items-center justify-center min-h-screen px-4 py-4 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-blue-500/10"></div>
+        </div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white/90 backdrop-blur-xl rounded-3xl px-6 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-8 border border-white/30 max-h-[90vh] overflow-y-auto">
+            <!-- Permission Warning -->
+            <div id="permissionWarning" class="mb-6 p-4 rounded-xl border-l-4">
+                <div class="flex items-center">
+                    <i data-lucide="info" class="w-5 h-5 mr-3"></i>
+                    <p class="text-sm font-medium"></p>
+                </div>
+            </div>
+
+            <!-- Issue Header -->
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex-1">
+                    <h3 id="modalTitle" class="text-2xl font-bold text-gray-900 mb-2"></h3>
+                    <div class="flex flex-wrap gap-3">
+                        <span id="modalLine" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></span>
+                        <span id="modalShift" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"></span>
+                    </div>
+                </div>
+                <button id="closeDetailModal" class="ml-4 p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                    <i data-lucide="x" class="w-6 h-6 text-gray-400"></i>
+                </button>
+            </div>
+
+            <!-- Issue Details Form -->
+            <form id="issueDetailForm" class="space-y-6">
+                <input type="hidden" id="detailIssueId">
+                
+                <div>
+                    <label for="detailTitle" class="block text-sm font-medium text-gray-700 mb-2">Issue Title</label>
+                    <input type="text" id="detailTitle" name="title" maxlength="255" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80" readonly>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="detailLine" class="block text-sm font-medium text-gray-700 mb-2">Line</label>
+                        <select id="detailLine" name="line" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80" disabled>
+                            <option value="Die-Cut 1">Die-Cut 1</option>
+                            <option value="Die-Cut 2">Die-Cut 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="detailShift" class="block text-sm font-medium text-gray-700 mb-2">Shift</label>
+                        <select id="detailShift" name="shift" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80" disabled>
+                            <option value="First Shift">First Shift</option>
+                            <option value="Second Shift">Second Shift</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="detailDate" class="block text-sm font-medium text-gray-700 mb-2">Report Date</label>
+                        <input type="date" id="detailDate" name="reportDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80" readonly>
+                    </div>
+                    <div>
+                        <label for="detailTime" class="block text-sm font-medium text-gray-700 mb-2">Report Time</label>
+                        <input type="time" id="detailTime" name="reportTime" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80" readonly>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="detailIssueDetails" class="block text-sm font-medium text-gray-700 mb-2">Issue Details</label>
+                    <textarea id="detailIssueDetails" name="issueDetails" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white/80 resize-none" readonly></textarea>
+                </div>
+
+                <!-- Issue Metadata -->
+                <div class="bg-gray-50 rounded-xl p-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3">Issue Information</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Submitted By:</span>
+                            <span id="detailSubmittedBy" class="font-medium text-gray-900 ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Submitted On:</span>
+                            <span id="detailCreatedAt" class="font-medium text-gray-900 ml-2"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-6 border-t border-gray-200">
+                    <button type="button" id="editIssueBtn" class="hidden inline-flex items-center px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold">
+                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                        Edit Issue
+                    </button>
+                    <button type="submit" id="saveIssueBtn" class="hidden inline-flex items-center px-5 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 font-semibold">
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                        Save Changes
+                    </button>
+                    <button type="button" id="deleteIssueBtn" class="hidden inline-flex items-center px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold">
+                        <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                        Delete Issue
+                    </button>
+                    <button type="button" id="cancelEditBtn" class="hidden inline-flex items-center px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 font-semibold">
+                        <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                        Cancel
+                    </button>
+                    <button type="button" id="closeModalBtn" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 font-semibold">
+                        <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                        Close
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Toast -->
+<div id="issueToast" class="fixed top-4 right-4 z-50 transform translate-x-full transition-transform duration-300 max-w-md">
+    <div class="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 p-4">
+        <div class="flex items-center">
+            <div id="toastIcon" class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <p id="toastTitle" class="text-sm font-semibold text-gray-900"></p>
+                <p id="toastMessage" class="text-sm text-gray-600 mt-1"></p>
+            </div>
+            <button id="closeToast" class="ml-4 p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="x" class="w-4 h-4 text-gray-400"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize Lucide icons
+lucide.createIcons();
+
+// Global state
+let currentIssues = [];
+let allIssues = []; // Store all issues for pagination
+let currentUser = '{{ session.get("user_full_name", "User") }}';
+let isEditMode = false;
+let availableIssueTitles = [];
+let filteredTitles = [];
+
+// Pagination state
+let currentPage = 1;
+let pageSize = 5;
+let totalPages = 1;
+let totalItems = 0;
+
+// DOM Elements
+const reportIssueBtn = document.getElementById('reportIssueBtn');
+const refreshIssuesBtn = document.getElementById('refreshIssuesBtn');
+const issueReportModal = document.getElementById('issueReportModal');
+const issueDetailModal = document.getElementById('issueDetailModal');
+const issueReportForm = document.getElementById('issueReportForm');
+const issueDetailForm = document.getElementById('issueDetailForm');
+const issuesTableBody = document.getElementById('issuesTableBody');
+const emptyState = document.getElementById('emptyState');
+const loadingOverlay = document.getElementById('issuesLoadingOverlay');
+
+// Filter elements
+const lineFilter = document.getElementById('lineFilter');
+const shiftFilter = document.getElementById('shiftFilter');
+const dateFilter = document.getElementById('dateFilter');
+const submitterFilter = document.getElementById('submitterFilter');
+const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+
+// Pagination elements
+const paginationControls = document.getElementById('paginationControls');
+const paginationInfo = document.getElementById('paginationInfo');
+const pageSize_select = document.getElementById('pageSize');
+const firstPageBtn = document.getElementById('firstPageBtn');
+const prevPageBtn = document.getElementById('prevPageBtn');
+const nextPageBtn = document.getElementById('nextPageBtn');
+const lastPageBtn = document.getElementById('lastPageBtn');
+const pageNumbers = document.getElementById('pageNumbers');
+const currentPageMobile = document.getElementById('currentPageMobile');
+const totalPagesMobile = document.getElementById('totalPagesMobile');
+
+// Searchable dropdown elements
+const issueTitleInput = document.getElementById('issueTitle');
+const issueTitleDropdown = document.getElementById('issueTitleDropdown');
+const issueTitleLoading = document.getElementById('issueTitleLoading');
+const issueTitleList = document.getElementById('issueTitleList');
+const issueTitleNoResults = document.getElementById('issueTitleNoResults');
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    setupEventListeners();
+    loadIssues();
+});
+
+function initializePage() {
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('issueDate').value = today;
+    
+    // Set default time to current time
+    const now = new Date();
+    const timeString = now.toTimeString().slice(0, 5);
+    document.getElementById('issueTime').value = timeString;
+}
+
+function setupEventListeners() {
+    // Report Issue Modal
+    reportIssueBtn.addEventListener('click', openReportModal);
+    document.getElementById('cancelIssueBtn').addEventListener('click', closeReportModal);
+    document.getElementById('submitIssueBtn').addEventListener('click', handleIssueSubmit);
+    
+    // Detail Modal
+    document.getElementById('closeDetailModal').addEventListener('click', closeDetailModal);
+    document.getElementById('editIssueBtn').addEventListener('click', enableEditMode);
+    document.getElementById('saveIssueBtn').addEventListener('click', handleIssueSave);
+    document.getElementById('deleteIssueBtn').addEventListener('click', handleIssueDelete);
+    document.getElementById('cancelEditBtn').addEventListener('click', disableEditMode);
+    document.getElementById('closeModalBtn').addEventListener('click', closeDetailModal);
+    
+    // Filters
+    applyFiltersBtn.addEventListener('click', applyFilters);
+    clearFiltersBtn.addEventListener('click', clearFilters);
+    refreshIssuesBtn.addEventListener('click', loadIssues);
+    
+    // Pagination event listeners
+    setupPaginationEventListeners();
+    
+    // Searchable dropdown for issue titles
+    setupSearchableDropdown();
+    
+    // Close modals on backdrop click
+    issueReportModal.addEventListener('click', (e) => {
+        if (e.target === issueReportModal) closeReportModal();
+    });
+    
+    issueDetailModal.addEventListener('click', (e) => {
+        if (e.target === issueDetailModal) closeDetailModal();
+    });
+    
+    // Toast close
+    document.getElementById('closeToast').addEventListener('click', hideToast);
+}
+
+async function loadIssues() {
+    showLoading(true);
+    
+    try {
+        const response = await fetch('/api/issues');
+        const result = await response.json();
+        
+        if (result.success) {
+            allIssues = result.data;
+            updateStatsCards(allIssues);
+            applyFiltersAndPagination();
+        } else {
+            showToast('Error', 'Failed to load issues', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading issues:', error);
+        showToast('Error', 'Failed to load issues', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderIssuesTable(issues) {
+    if (issues.length === 0) {
+        issuesTableBody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        paginationControls.classList.add('hidden');
+        return;
+    }
+    
+    emptyState.classList.add('hidden');
+    paginationControls.classList.remove('hidden');
+    
+    issuesTableBody.innerHTML = issues.map(issue => {
+        const canEdit = issue.submitted_by === currentUser;
+        const permissionIcon = canEdit ?
+            '<i data-lucide="edit" class="w-4 h-4 text-blue-600"></i>' :
+            '<i data-lucide="eye" class="w-4 h-4 text-gray-400"></i>';
+        const permissionText = canEdit ? 'Can Edit' : 'View Only';
+        const permissionClass = canEdit ? 'text-blue-600' : 'text-gray-500';
+        
+        const lineClass = issue.line === 'Die-Cut 1' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800';
+        const shiftClass = issue.shift === 'First Shift' ? 'bg-yellow-100 text-yellow-800' : 'bg-indigo-100 text-indigo-800';
+        
+        return `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4">
+                    <div class="font-medium text-gray-900">${escapeHtml(issue.title)}</div>
+                    <div class="text-sm text-gray-500">${escapeHtml(issue.issue_details.substring(0, 100))}${issue.issue_details.length > 100 ? '...' : ''}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${lineClass}">
+                        ${issue.line}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${shiftClass}">
+                        ${issue.shift}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-gray-900">${escapeHtml(issue.submitted_by)}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900">${issue.report_date}</div>
+                    <div class="text-sm text-gray-500">${issue.report_time}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center ${permissionClass}">
+                        ${permissionIcon}
+                        <span class="ml-1 text-xs font-medium">${permissionText}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="viewIssue('${issue.id}')" class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                        <i data-lucide="eye" class="w-4 h-4 mr-1"></i>
+                        View
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Re-initialize Lucide icons for new content
+    lucide.createIcons();
+}
+
+function updateStatsCards(issues) {
+    const totalIssues = issues.length;
+    const dieCut1Issues = issues.filter(i => i.line === 'Die-Cut 1').length;
+    const dieCut2Issues = issues.filter(i => i.line === 'Die-Cut 2').length;
+    
+    // Calculate recent issues (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentIssues = issues.filter(i => new Date(i.report_date) >= sevenDaysAgo).length;
+    
+    document.getElementById('totalIssuesCount').textContent = totalIssues;
+    document.getElementById('dieCut1Count').textContent = dieCut1Issues;
+    document.getElementById('dieCut2Count').textContent = dieCut2Issues;
+    document.getElementById('recentIssuesCount').textContent = recentIssues;
+}
+
+function applyFilters() {
+    // Reset to first page when filters change
+    currentPage = 1;
+    applyFiltersAndPagination();
+}
+
+function clearFilters() {
+    lineFilter.value = '';
+    shiftFilter.value = '';
+    dateFilter.value = '';
+    submitterFilter.value = '';
+    currentPage = 1;
+    applyFiltersAndPagination();
+}
+
+function openReportModal() {
+    issueReportForm.reset();
+    // Set default values
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toTimeString().slice(0, 5);
+    document.getElementById('issueDate').value = today;
+    document.getElementById('issueTime').value = now;
+    
+    // Load issue titles when modal opens
+    loadIssueTitles();
+    
+    showModal(issueReportModal);
+}
+
+// Searchable dropdown functions
+function setupSearchableDropdown() {
+    // Input event listeners
+    issueTitleInput.addEventListener('input', handleTitleInput);
+    issueTitleInput.addEventListener('focus', handleTitleFocus);
+    issueTitleInput.addEventListener('blur', handleTitleBlur);
+    issueTitleInput.addEventListener('keydown', handleTitleKeydown);
+    
+    // Dropdown list click handler
+    issueTitleList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('dropdown-item')) {
+            selectTitle(e.target.textContent);
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!issueTitleInput.contains(e.target) && !issueTitleDropdown.contains(e.target)) {
+            hideDropdown();
+        }
+    });
+}
+
+async function loadIssueTitles() {
+    showDropdownLoading();
+    
+    try {
+        const response = await fetch('/api/issue-titles');
+        const result = await response.json();
+        
+        if (result.success) {
+            availableIssueTitles = result.titles || [];
+            filteredTitles = [...availableIssueTitles];
+            hideDropdownLoading();
+        } else {
+            console.error('Failed to load issue titles:', result.message);
+            availableIssueTitles = [];
+            filteredTitles = [];
+            hideDropdownLoading();
+        }
+    } catch (error) {
+        console.error('Error loading issue titles:', error);
+        availableIssueTitles = [];
+        filteredTitles = [];
+        hideDropdownLoading();
+    }
+}
+
+function handleTitleInput(e) {
+    const query = e.target.value.toLowerCase().trim();
+    
+    // Filter titles based on input
+    if (query === '') {
+        filteredTitles = [...availableIssueTitles];
+    } else {
+        filteredTitles = availableIssueTitles.filter(title =>
+            title.toLowerCase().includes(query)
+        );
+    }
+    
+    updateDropdownList();
+    showDropdown();
+}
+
+function handleTitleFocus() {
+    if (availableIssueTitles.length > 0) {
+        updateDropdownList();
+        showDropdown();
+    }
+}
+
+function handleTitleBlur(e) {
+    // Delay hiding to allow clicks on dropdown items
+    setTimeout(() => {
+        hideDropdown();
+    }, 200);
+}
+
+function handleTitleKeydown(e) {
+    const items = issueTitleList.querySelectorAll('.dropdown-item');
+    const currentSelected = issueTitleList.querySelector('.dropdown-item.bg-blue-100');
+    let currentIndex = currentSelected ? Array.from(items).indexOf(currentSelected) : -1;
+    
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (currentIndex < items.length - 1) {
+                if (currentSelected) currentSelected.classList.remove('bg-blue-100');
+                items[currentIndex + 1].classList.add('bg-blue-100');
+            }
+            break;
+            
+        case 'ArrowUp':
+            e.preventDefault();
+            if (currentIndex > 0) {
+                if (currentSelected) currentSelected.classList.remove('bg-blue-100');
+                items[currentIndex - 1].classList.add('bg-blue-100');
+            }
+            break;
+            
+        case 'Enter':
+            e.preventDefault();
+            if (currentSelected) {
+                selectTitle(currentSelected.textContent);
+            }
+            break;
+            
+        case 'Escape':
+            e.preventDefault();
+            hideDropdown();
+            break;
+    }
+}
+
+function updateDropdownList() {
+    if (filteredTitles.length === 0) {
+        issueTitleList.classList.add('hidden');
+        issueTitleNoResults.classList.remove('hidden');
+    } else {
+        issueTitleNoResults.classList.add('hidden');
+        issueTitleList.classList.remove('hidden');
+        
+        issueTitleList.innerHTML = filteredTitles.map(title =>
+            `<div class="dropdown-item px-4 py-3 text-sm text-gray-700 hover:bg-blue-100 cursor-pointer border-b border-gray-100 last:border-b-0">${escapeHtml(title)}</div>`
+        ).join('');
+    }
+}
+
+function selectTitle(title) {
+    issueTitleInput.value = title;
+    hideDropdown();
+    issueTitleInput.focus();
+}
+
+function showDropdown() {
+    issueTitleDropdown.classList.remove('hidden');
+}
+
+function hideDropdown() {
+    issueTitleDropdown.classList.add('hidden');
+    // Clear selection highlights
+    const selected = issueTitleList.querySelector('.dropdown-item.bg-blue-100');
+    if (selected) selected.classList.remove('bg-blue-100');
+}
+
+function showDropdownLoading() {
+    issueTitleLoading.classList.remove('hidden');
+    issueTitleList.classList.add('hidden');
+    issueTitleNoResults.classList.add('hidden');
+    showDropdown();
+}
+
+function hideDropdownLoading() {
+    issueTitleLoading.classList.add('hidden');
+}
+
+// Pagination Functions
+function setupPaginationEventListeners() {
+    // Page size change
+    pageSize_select.addEventListener('change', (e) => {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1; // Reset to first page
+        applyFiltersAndPagination();
+    });
+    
+    // Navigation buttons
+    firstPageBtn.addEventListener('click', () => goToPage(1));
+    prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+    nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+    lastPageBtn.addEventListener('click', () => goToPage(totalPages));
+}
+
+function applyFiltersAndPagination() {
+    // Apply filters first
+    const line = lineFilter.value;
+    const shift = shiftFilter.value;
+    const date = dateFilter.value;
+    const submitter = submitterFilter.value.toLowerCase();
+    
+    const filteredIssues = allIssues.filter(issue => {
+        return (!line || issue.line === line) &&
+               (!shift || issue.shift === shift) &&
+               (!date || issue.report_date === date) &&
+               (!submitter || issue.submitted_by.toLowerCase().includes(submitter));
+    });
+    
+    // Update total items and calculate total pages
+    totalItems = filteredIssues.length;
+    totalPages = Math.ceil(totalItems / pageSize);
+    
+    // Ensure current page is within bounds
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+    if (currentPage < 1) {
+        currentPage = 1;
+    }
+    
+    // Calculate pagination slice
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const paginatedIssues = filteredIssues.slice(startIndex, endIndex);
+    
+    // Update current issues for other functions
+    currentIssues = paginatedIssues;
+    
+    // Render table and update pagination UI
+    renderIssuesTable(paginatedIssues);
+    updatePaginationUI();
+}
+
+function goToPage(page) {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+        currentPage = page;
+        applyFiltersAndPagination();
+    }
+}
+
+function updatePaginationUI() {
+    // Update pagination info text
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    const endItem = Math.min(currentPage * pageSize, totalItems);
+    paginationInfo.textContent = `Showing ${startItem}–${endItem} of ${totalItems}`;
+    
+    // Update mobile page info
+    currentPageMobile.textContent = currentPage;
+    totalPagesMobile.textContent = totalPages;
+    
+    // Update navigation button states
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages || totalPages === 0;
+    
+    firstPageBtn.disabled = isFirstPage;
+    prevPageBtn.disabled = isFirstPage;
+    nextPageBtn.disabled = isLastPage;
+    lastPageBtn.disabled = isLastPage;
+    
+    // Update page size selector
+    pageSize_select.value = pageSize.toString();
+    
+    // Generate page numbers
+    generatePageNumbers();
+    
+    // Show/hide pagination based on whether there are results
+    if (totalItems === 0) {
+        paginationControls.classList.add('hidden');
+    } else {
+        paginationControls.classList.remove('hidden');
+    }
+}
+
+function generatePageNumbers() {
+    pageNumbers.innerHTML = '';
+    
+    if (totalPages <= 1) {
+        return;
+    }
+    
+    // Calculate which page numbers to show
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    // Add ellipsis and first page if needed
+    if (startPage > 1) {
+        addPageButton(1);
+        if (startPage > 2) {
+            addEllipsis();
+        }
+    }
+    
+    // Add page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        addPageButton(i);
+    }
+    
+    // Add ellipsis and last page if needed
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            addEllipsis();
+        }
+        addPageButton(totalPages);
+    }
+}
+
+function addPageButton(pageNum) {
+    const isCurrentPage = pageNum === currentPage;
+    const button = document.createElement('button');
+    button.className = isCurrentPage
+        ? 'px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors'
+        : 'px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors';
+    button.textContent = pageNum;
+    button.setAttribute('aria-label', `Go to page ${pageNum}`);
+    button.setAttribute('aria-current', isCurrentPage ? 'page' : 'false');
+    
+    if (!isCurrentPage) {
+        button.addEventListener('click', () => goToPage(pageNum));
+    }
+    
+    pageNumbers.appendChild(button);
+}
+
+function addEllipsis() {
+    const span = document.createElement('span');
+    span.className = 'px-3 py-2 text-sm text-gray-400';
+    span.textContent = '...';
+    span.setAttribute('aria-hidden', 'true');
+    pageNumbers.appendChild(span);
+}
+
+function closeReportModal() {
+    hideModal(issueReportModal);
+}
+
+async function handleIssueSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(issueReportForm);
+    const issueData = {
+        title: formData.get('title'),
+        line: formData.get('line'),
+        shift: formData.get('shift'),
+        issueDetails: formData.get('issueDetails'),
+        reportDate: formData.get('reportDate'),
+        reportTime: formData.get('reportTime')
+    };
+    
+    // Validation
+    if (!issueData.title || !issueData.line || !issueData.shift || !issueData.issueDetails || !issueData.reportDate || !issueData.reportTime) {
+        showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/submit-issue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(issueData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Success', 'Issue reported successfully', 'success');
+            closeReportModal();
+            loadIssues(); // Reload issues
+        } else {
+            showToast('Error', result.message || 'Failed to submit issue', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting issue:', error);
+        showToast('Error', 'Failed to submit issue', 'error');
+    }
+}
+
+async function viewIssue(issueId) {
+    try {
+        const response = await fetch(`/api/issues/${issueId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            populateDetailModal(result.data);
+            showModal(issueDetailModal);
+        } else {
+            showToast('Error', 'Failed to load issue details', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading issue:', error);
+        showToast('Error', 'Failed to load issue details', 'error');
+    }
+}
+
+function populateDetailModal(issue) {
+    try {
+        const canEdit = issue.submitted_by === currentUser;
+        
+        // Set permission warning with null checks
+        const warningEl = document.getElementById('permissionWarning');
+        const warningText = warningEl ? warningEl.querySelector('p') : null;
+        
+        if (warningEl && warningText) {
+            if (canEdit) {
+                warningEl.className = 'mb-6 p-4 rounded-xl border-l-4 bg-blue-50 border-blue-400';
+                warningText.textContent = 'You can edit or delete this issue since you are the original reporter.';
+                warningText.className = 'text-sm font-medium text-blue-800';
+            } else {
+                warningEl.className = 'mb-6 p-4 rounded-xl border-l-4 bg-yellow-50 border-yellow-400';
+                warningText.textContent = 'You can only view this issue. Only the original reporter can edit or delete it.';
+                warningText.className = 'text-sm font-medium text-yellow-800';
+            }
+        }
+        
+        // Populate form fields with null checks
+        const detailIssueId = document.getElementById('detailIssueId');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailLine = document.getElementById('detailLine');
+        const detailShift = document.getElementById('detailShift');
+        const detailDate = document.getElementById('detailDate');
+        const detailTime = document.getElementById('detailTime');
+        const detailIssueDetails = document.getElementById('detailIssueDetails');
+        const detailSubmittedBy = document.getElementById('detailSubmittedBy');
+        const detailCreatedAt = document.getElementById('detailCreatedAt');
+        
+        if (detailIssueId) detailIssueId.value = issue.id;
+        if (detailTitle) detailTitle.value = issue.title;
+        if (detailLine) detailLine.value = issue.line;
+        if (detailShift) detailShift.value = issue.shift;
+        if (detailDate) detailDate.value = issue.report_date;
+        if (detailTime) detailTime.value = issue.report_time;
+        if (detailIssueDetails) detailIssueDetails.value = issue.issue_details;
+        if (detailSubmittedBy) detailSubmittedBy.textContent = issue.submitted_by;
+        if (detailCreatedAt) detailCreatedAt.textContent = new Date(issue.created_at).toLocaleDateString();
+        
+        // Set modal header
+        const modalTitle = document.getElementById('modalTitle');
+        if (modalTitle) modalTitle.textContent = issue.title;
+        
+        const lineEl = document.getElementById('modalLine');
+        const shiftEl = document.getElementById('modalShift');
+        
+        if (lineEl) {
+            lineEl.textContent = issue.line;
+            lineEl.className = issue.line === 'Die-Cut 1' ?
+                'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800' :
+                'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800';
+        }
+        
+        if (shiftEl) {
+            shiftEl.textContent = issue.shift;
+            shiftEl.className = issue.shift === 'First Shift' ?
+                'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800' :
+                'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800';
+        }
+        
+        // Show/hide buttons based on permissions
+        const editBtn = document.getElementById('editIssueBtn');
+        const deleteBtn = document.getElementById('deleteIssueBtn');
+        const saveBtn = document.getElementById('saveIssueBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // Always ensure buttons start in hidden state with null checks
+        if (editBtn) editBtn.classList.add('hidden');
+        if (deleteBtn) deleteBtn.classList.add('hidden');
+        if (saveBtn) saveBtn.classList.add('hidden');
+        if (cancelEditBtn) cancelEditBtn.classList.add('hidden');
+        if (closeModalBtn) closeModalBtn.classList.add('hidden');
+        
+        if (canEdit) {
+            // User owns this issue - show edit and delete buttons, hide close
+            if (editBtn) editBtn.classList.remove('hidden');
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+        } else {
+            // User doesn't own this issue - show only close button
+            if (closeModalBtn) closeModalBtn.classList.remove('hidden');
+        }
+        
+        // Set to view mode
+        disableEditMode();
+        
+    } catch (error) {
+        console.error('Error populating detail modal:', error);
+        showToast('Error', 'Failed to load issue details', 'error');
+    }
+}
+
+function enableEditMode() {
+    // Check if current user can edit before enabling edit mode
+    const currentIssueId = document.getElementById('detailIssueId').value;
+    const currentIssueData = allIssues.find(issue => issue.id === currentIssueId);
+    const canEdit = currentIssueData && currentIssueData.submitted_by === currentUser;
+    
+    // Only enable edit mode if user has permission
+    if (!canEdit) {
+        showToast('Permission Denied', 'You can only edit issues that you reported', 'error');
+        return;
+    }
+    
+    isEditMode = true;
+    
+    // Enable form fields
+    document.getElementById('detailTitle').readOnly = false;
+    document.getElementById('detailLine').disabled = false;
+    document.getElementById('detailShift').disabled = false;
+    document.getElementById('detailDate').readOnly = false;
+    document.getElementById('detailTime').readOnly = false;
+    document.getElementById('detailIssueDetails').readOnly = false;
+    
+    // Show/hide buttons for edit mode (only for owners)
+    document.getElementById('editIssueBtn').classList.add('hidden');
+    document.getElementById('deleteIssueBtn').classList.add('hidden');
+    document.getElementById('saveIssueBtn').classList.remove('hidden');
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+    document.getElementById('closeModalBtn').classList.add('hidden');
+}
+
+function disableEditMode() {
+    isEditMode = false;
+    
+    // Disable form fields
+    document.getElementById('detailTitle').readOnly = true;
+    document.getElementById('detailLine').disabled = true;
+    document.getElementById('detailShift').disabled = true;
+    document.getElementById('detailDate').readOnly = true;
+    document.getElementById('detailTime').readOnly = true;
+    document.getElementById('detailIssueDetails').readOnly = true;
+    
+    // Show/hide buttons - restore original state
+    const editBtn = document.getElementById('editIssueBtn');
+    const deleteBtn = document.getElementById('deleteIssueBtn');
+    const saveBtn = document.getElementById('saveIssueBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    // We need to check if the current user can edit to show proper buttons
+    const currentIssueId = document.getElementById('detailIssueId').value;
+    const currentIssueData = allIssues.find(issue => issue.id === currentIssueId);
+    const canEdit = currentIssueData && currentIssueData.submitted_by === currentUser;
+    
+    // Always ensure buttons start in hidden state
+    editBtn.classList.add('hidden');
+    deleteBtn.classList.add('hidden');
+    saveBtn.classList.add('hidden');
+    cancelEditBtn.classList.add('hidden');
+    closeModalBtn.classList.add('hidden');
+    
+    if (canEdit) {
+        // User owns this issue - show edit and delete buttons
+        editBtn.classList.remove('hidden');
+        deleteBtn.classList.remove('hidden');
+    } else {
+        // User doesn't own this issue - show only close button
+        closeModalBtn.classList.remove('hidden');
+    }
+}
+
+async function handleIssueSave(e) {
+    e.preventDefault();
+    
+    const issueId = document.getElementById('detailIssueId').value;
+    const formData = new FormData(issueDetailForm);
+    const issueData = {
+        title: formData.get('title'),
+        line: formData.get('line'),
+        shift: formData.get('shift'),
+        issueDetails: formData.get('issueDetails'),
+        reportDate: formData.get('reportDate'),
+        reportTime: formData.get('reportTime')
+    };
+    
+    try {
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(issueData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Success', 'Issue updated successfully', 'success');
+            disableEditMode();
+            loadIssues(); // Reload issues
+        } else {
+            showToast('Error', result.message || 'Failed to update issue', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating issue:', error);
+        showToast('Error', 'Failed to update issue', 'error');
+    }
+}
+
+async function handleIssueDelete() {
+    try {
+        // Check if current user can delete before proceeding
+        const issueIdElement = document.getElementById('detailIssueId');
+        if (!issueIdElement) {
+            console.error('Issue ID element not found');
+            showToast('Error', 'Cannot find issue to delete', 'error');
+            return;
+        }
+        
+        const currentIssueId = issueIdElement.value;
+        if (!currentIssueId) {
+            console.error('No issue ID found');
+            showToast('Error', 'No issue selected for deletion', 'error');
+            return;
+        }
+        
+        const currentIssueData = allIssues.find(issue => issue.id === currentIssueId);
+        const canEdit = currentIssueData && currentIssueData.submitted_by === currentUser;
+        
+        // Only allow delete if user has permission
+        if (!canEdit) {
+            showToast('Permission Denied', 'You can only delete issues that you reported', 'error');
+            return;
+        }
+        
+        if (!confirm('Are you sure you want to delete this issue? This action cannot be undone.')) {
+            return;
+        }
+        
+        const issueId = currentIssueId;
+        
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Remove the issue from our local arrays immediately
+            allIssues = allIssues.filter(issue => issue.id !== issueId);
+            
+            // Update the display with the new data first
+            applyFiltersAndPagination();
+            updateStatsCards(allIssues);
+            
+            // Close modal
+            closeDetailModal();
+            
+            // Show success message immediately - no setTimeout needed
+            showToast('Success', 'Issue deleted successfully', 'success');
+            
+            // Reload from server to ensure consistency (but don't wait for it)
+            loadIssues();
+        } else {
+            showToast('Error', result.message || 'Failed to delete issue', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting issue:', error);
+        showToast('Error', 'Failed to delete issue', 'error');
+    }
+}
+
+function closeDetailModal() {
+    hideModal(issueDetailModal);
+    disableEditMode();
+}
+
+function showModal(modal) {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+    }, 10);
+}
+
+function hideModal(modal) {
+    modal.classList.add('opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+function showLoading(show) {
+    if (show) {
+        loadingOverlay.classList.remove('hidden');
+    } else {
+        loadingOverlay.classList.add('hidden');
+    }
+}
+
+function showToast(title, message, type = 'info') {
+    const toast = document.getElementById('issueToast');
+    const icon = document.getElementById('toastIcon');
+    const titleEl = document.getElementById('toastTitle');
+    const messageEl = document.getElementById('toastMessage');
+    
+    // Add null checks to prevent errors
+    if (!toast || !icon || !titleEl || !messageEl) {
+        console.error('Toast elements not found');
+        // Show a simple alert if toast elements are missing
+        alert(`${title}: ${message}`);
+        return;
+    }
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Find or create icon element
+    let iconEl = icon.querySelector('i');
+    if (!iconEl) {
+        iconEl = document.createElement('i');
+        icon.innerHTML = '';
+        icon.appendChild(iconEl);
+    }
+    
+    if (type === 'success') {
+        icon.className = 'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mr-3 bg-green-100';
+        iconEl.setAttribute('data-lucide', 'check-circle');
+        iconEl.className = 'w-6 h-6 text-green-600';
+    } else if (type === 'error') {
+        icon.className = 'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mr-3 bg-red-100';
+        iconEl.setAttribute('data-lucide', 'alert-circle');
+        iconEl.className = 'w-6 h-6 text-red-600';
+    } else {
+        icon.className = 'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mr-3 bg-blue-100';
+        iconEl.setAttribute('data-lucide', 'info');
+        iconEl.className = 'w-6 h-6 text-blue-600';
+    }
+    
+    // Re-initialize Lucide icons safely
+    try {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.warn('Failed to create Lucide icons:', error);
+    }
+    
+    // Show toast
+    toast.classList.remove('translate-x-full');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        hideToast();
+    }, 5000);
+}
+
+function hideToast() {
+    const toast = document.getElementById('issueToast');
+    toast.classList.add('translate-x-full');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

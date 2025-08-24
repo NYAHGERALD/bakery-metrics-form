@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+    <!-- Background overlay with blur -->
+    <div class="fixed inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-pink-600/20 backdrop-blur-sm"></div>
+    
+    <!-- Modal Container -->
+    <div class="relative z-10 w-full max-w-md mx-auto">
+        <!-- Glassmorphism Modal -->
+        <div class="bg-white/25 backdrop-blur-md border border-white/30 rounded-3xl shadow-2xl p-8 md:p-10">
+            <!-- Success Icon -->
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg class="w-10 h-10 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Success Message -->
+            <div class="text-center space-y-4">
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Welcome Aboard!
+                </h1>
+                
+                <div class="space-y-2">
+                    <p class="text-lg md:text-xl font-semibold text-gray-700">
+                        Hi <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-bold">{{ name }}</span>!
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        Your account has been successfully created. You're all set to explore and enjoy our platform.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Decorative Elements -->
+            <div class="flex justify-center my-8">
+                <div class="flex space-x-2">
+                    <div class="w-2 h-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full animate-pulse"></div>
+                    <div class="w-2 h-2 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 h-2 bg-gradient-to-r from-pink-400 to-pink-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                </div>
+            </div>
+            
+            <!-- Return to Login Button -->
+            <div class="space-y-4">
+                <a href="/login" class="block w-full">
+                    <button class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-out">
+                        <span class="flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span>Return to Login</span>
+                        </span>
+                    </button>
+                </a>
+                
+                <!-- Alternative text link -->
+                <p class="text-center text-sm text-gray-500">
+                    Ready to get started? 
+                    <a href="/register" class="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors">
+                        Sign in now
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Floating decorative elements -->
+        <div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-400/30 to-purple-400/30 rounded-full blur-xl -translate-x-16 -translate-y-16"></div>
+        <div class="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-pink-400/30 to-orange-400/30 rounded-full blur-xl translate-x-20 translate-y-20"></div>
+    </div>
+    
+    <!-- Additional floating elements for extra visual appeal -->
+    <div class="fixed top-10 left-10 w-6 h-6 bg-white/20 rounded-full animate-pulse"></div>
+    <div class="fixed top-20 right-20 w-4 h-4 bg-white/30 rounded-full animate-pulse" style="animation-delay: 1s"></div>
+    <div class="fixed bottom-20 left-20 w-8 h-8 bg-white/10 rounded-full animate-pulse" style="animation-delay: 2s"></div>
+    <div class="fixed bottom-10 right-10 w-5 h-5 bg-white/25 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+</body>
+</html>
