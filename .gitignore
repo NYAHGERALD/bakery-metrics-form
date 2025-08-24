@@ -38,9 +38,12 @@ pip-wheel-metadata/
 *.sqlite3
 *.dump
 *.sql.gz
+bakery_metrics_db
+bakery_data.db
 
 # Credentials / Keys / Certificates
 credentials.json
+credentials.json.save
 service*.json
 *.pem
 *.key
@@ -50,6 +53,12 @@ service*.json
 *.pfx
 id_rsa
 id_ed25519
+
+# Temporary / Cache files
+cookies.txt
+*.tmp
+*.temp
+*.cache
 
 # -------------------------
 # Logs
