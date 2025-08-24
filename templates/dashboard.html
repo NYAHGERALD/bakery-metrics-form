@@ -316,21 +316,6 @@
             100% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); }
         }
 
-        .nav-link.loading {
-            pointer-events: none;
-            opacity: 0.7;
-            background: linear-gradient(135deg, rgba(100, 116, 139, 0.2) 0%, rgba(71, 85, 105, 0.2) 100%);
-        }
-
-        .nav-link.loading i {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
         /* Mobile Navigation Enhancements */
         .nav-link-mobile {
             position: relative;
@@ -363,15 +348,6 @@
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             border-radius: 0 2px 2px 0;
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        }
-
-        .nav-link-mobile.loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        .nav-link-mobile.loading i {
-            animation: spin 1s linear infinite;
         }
 
         /* Enhanced Tooltip Styles */
@@ -461,20 +437,6 @@
         }
 
         /* Loading Indicators */
-        .loading-indicator {
-            transition: opacity 0.3s ease;
-        }
-
-        .nav-link.loading .loading-indicator,
-        .nav-link-mobile.loading .loading-indicator {
-            opacity: 1 !important;
-        }
-
-        .nav-link:not(.loading) .loading-indicator,
-        .nav-link-mobile:not(.loading) .loading-indicator {
-            opacity: 0;
-        }
-
         /* Enhanced sidebar responsiveness */
         @media (max-width: 1024px) {
             .tooltip-container::after,
@@ -497,15 +459,6 @@
             }
         }
 
-        /* Additional hover effects for better UX */
-        .nav-link:hover .loading-indicator {
-            opacity: 0 !important;
-        }
-
-        .nav-link-mobile:hover .loading-indicator {
-            opacity: 0 !important;
-        }
-
         /* Improved focus states for accessibility */
         .nav-link:focus,
         .nav-link-mobile:focus {
@@ -516,6 +469,49 @@
         /* Smooth transitions for all interactive elements */
         .nav-link i,
         .nav-link-mobile i {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Management trigger mobile - same styling as nav-link-mobile but no navigation behavior */
+        .management-trigger-mobile {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #cbd5e1;
+            font-weight: 500;
+            border-radius: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+        }
+
+        .management-trigger-mobile:hover {
+            background-color: rgba(51, 65, 85, 0.5);
+            transform: translateX(4px);
+        }
+
+        .management-trigger-mobile.active {
+            background-color: rgba(6, 182, 212, 0.1);
+            color: #22d3ee;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .management-trigger-mobile.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: linear-gradient(180deg, #22d3ee 0%, #06b6d4 100%);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .management-trigger-mobile i {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -651,7 +647,7 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             z-index: 51;
             transform: translateX(-100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0.25s;
             border-left: 1px solid rgba(255, 255, 255, 0.1);
             visibility: hidden;
             opacity: 0;
@@ -661,6 +657,7 @@
             transform: translateX(0);
             visibility: visible;
             opacity: 1;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0s;
         }
 
         /* Tablet secondary sidebar - positioned next to main sidebar */
@@ -683,6 +680,11 @@
                 width: 100vw;
                 background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
                 backdrop-filter: blur(10px);
+                transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0s linear 0.2s;
+            }
+            
+            .secondary-sidebar-mobile.open {
+                transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0s linear 0s;
             }
             
             .secondary-sidebar-mobile .p-6 {
@@ -785,6 +787,13 @@
                 font-size: 1.1rem;
                 border-radius: 16px;
                 margin-bottom: 0.75rem;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .secondary-sidebar-mobile .secondary-nav-link:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
             }
             
             .secondary-sidebar-mobile .secondary-nav-link i {
@@ -794,6 +803,26 @@
             
             .secondary-sidebar-mobile h3 {
                 font-size: 1.25rem;
+            }
+            
+            .nav-link-mobile {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .nav-link-mobile:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+            
+            .grouped-nav-trigger {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .grouped-nav-trigger:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
             }
         }
         
@@ -1082,9 +1111,6 @@
                             class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
                             <i data-lucide="bar-chart-3" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
                             <span class="font-semibold">Bakery Metrics</span>
-                            <div class="loading-indicator opacity-0 ml-auto">
-                                <div class="w-4 h-4 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                            </div>
                         </a>
                     </div>
 
@@ -1094,9 +1120,6 @@
                             class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
                             <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
                             <span class="font-semibold">Submit Data</span>
-                            <div class="loading-indicator opacity-0 ml-auto">
-                                <div class="w-4 h-4 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                            </div>
                         </a>
                     </div>
 
@@ -1108,9 +1131,6 @@
                             <i data-lucide="alert-triangle"
                                 class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
                             <span class="font-semibold">Report Machine Issues</span>
-                            <div class="loading-indicator opacity-0 ml-auto">
-                                <div class="w-4 h-4 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                            </div>
                         </a>
                     </div>
 
@@ -1236,27 +1256,19 @@
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="package" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Inventory</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     
                     <a href="/inventory-overview" data-page="inventory-overview" id="inventory-overview-nav"
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="trending-up" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Inventory Tracking</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
+                    </a>
                     </a>
                     
                     <a href="/help" data-page="help" id="help-nav"
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="help-circle" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Help Center</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     
                 </nav>
@@ -1290,39 +1302,27 @@
                         class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="home" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Dashboard</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     <a href="/report" data-page="report" id="report-nav-mobile"
                         class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="bar-chart-3" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Bakery Metrics</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     <a href="/form" data-page="form" id="form-nav-mobile"
                         class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="file-text" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Submit Data</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     <!-- Mobile Sidebar - Enhanced Machine Issues Button -->
                     <a href="/issues" data-page="issues" id="issues-nav-mobile"
                         class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="alert-triangle" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Report Machine Issues</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     
                     <!-- Mobile Grouped Navigation Trigger -->
                     <button type="button" id="managementMenuTriggerMobile"
-                        class="nav-link-mobile grouped-nav-trigger flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300 w-full">
+                        class="management-trigger-mobile grouped-nav-trigger flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300 w-full">
                         <i data-lucide="layers" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Management</span>
                     </button>
@@ -1450,27 +1450,18 @@
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="package" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Inventory</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     
                     <a href="/inventory-overview" data-page="inventory-overview" id="inventory-overview-nav-mobile"
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="trending-up" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Inventory Tracking</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                     
                     <a href="/help" data-page="help" id="help-nav-mobile"
                         class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
                         <i data-lucide="help-circle" class="w-5 h-5 transition-all duration-300"></i>
                         <span class="font-medium">Help Center</span>
-                        <div class="loading-indicator opacity-0 ml-auto">
-                            <div class="w-3 h-3 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                        </div>
                     </a>
                 </nav>
                 
@@ -2213,6 +2204,82 @@
         closeMobileSidebar.addEventListener('click', closeMobileSidebarFunction);
         mobileSidebarOverlay.addEventListener('click', closeMobileSidebarFunction);
 
+        // Force close all sidebars function - override any conflicts
+        window.forceCloseAllSidebars = function() {
+            console.log('forceCloseAllSidebars called'); // Debug
+            
+            // Set a flag to prevent reopening
+            window.preventSidebarReopening = true;
+            
+            // Temporarily disable the management trigger to prevent reopening
+            const managementMenuTriggerMobileEl = document.getElementById('managementMenuTriggerMobile');
+            if (managementMenuTriggerMobileEl) {
+                managementMenuTriggerMobileEl.style.pointerEvents = 'none';
+                console.log('Disabled management trigger mobile'); // Debug
+            }
+            
+            // Force close mobile sidebar
+            const mobileSidebarEl = document.getElementById('mobileSidebar');
+            const mobileSidebarOverlayEl = document.getElementById('mobileSidebarOverlay');
+            if (mobileSidebarEl) {
+                mobileSidebarEl.classList.remove('-translate-x-0');
+                mobileSidebarEl.classList.add('-translate-x-full');
+                mobileSidebarEl.style.transform = 'translateX(-100%)'; // Force with inline style
+            }
+            if (mobileSidebarOverlayEl) {
+                mobileSidebarOverlayEl.classList.remove('block');
+                mobileSidebarOverlayEl.classList.add('hidden');
+                mobileSidebarOverlayEl.style.display = 'none'; // Force with inline style
+            }
+            
+            // Force close secondary sidebar
+            const secondarySidebarMobileEl = document.getElementById('secondarySidebarMobile');
+            if (secondarySidebarMobileEl) {
+                secondarySidebarMobileEl.classList.remove('open');
+                secondarySidebarMobileEl.style.transform = 'translateX(-100%)'; // Force with inline style
+                secondarySidebarMobileEl.style.visibility = 'hidden'; // Force with inline style
+                secondarySidebarMobileEl.style.opacity = '0'; // Force with inline style
+                console.log('Forced secondary sidebar closed with inline styles'); // Debug
+            }
+            if (managementMenuTriggerMobileEl) {
+                managementMenuTriggerMobileEl.classList.remove('active');
+            }
+            
+            // Force close desktop secondary sidebar
+            const secondarySidebarEl = document.getElementById('secondarySidebar');
+            const managementMenuTriggerEl = document.getElementById('managementMenuTrigger');
+            if (secondarySidebarEl) {
+                secondarySidebarEl.classList.remove('open');
+            }
+            if (managementMenuTriggerEl) {
+                managementMenuTriggerEl.classList.remove('active');
+            }
+            
+            // Update state variables IMMEDIATELY
+            if (typeof isMobileSecondarySidebarOpen !== 'undefined') {
+                isMobileSecondarySidebarOpen = false;
+                console.log('Set isMobileSecondarySidebarOpen to false'); // Debug
+            }
+            if (typeof isSecondarySidebarOpen !== 'undefined') {
+                isSecondarySidebarOpen = false;
+            }
+            
+            console.log('All sidebars forcefully closed'); // Debug
+            
+            // Re-enable the management trigger after a longer delay and clear the flag
+            setTimeout(function() {
+                if (managementMenuTriggerMobileEl) {
+                    managementMenuTriggerMobileEl.style.pointerEvents = '';
+                    console.log('Re-enabled management trigger mobile'); // Debug
+                }
+                // Clear the flag after navigation should be complete
+                setTimeout(function() {
+                    window.preventSidebarReopening = false;
+                    console.log('Cleared prevent reopening flag'); // Debug
+                }, 1000);
+            }, 500); // Wait longer before re-enabling
+        };
+
         // Secondary Sidebar Functionality
         const managementMenuTrigger = document.getElementById('managementMenuTrigger');
         const managementMenuTriggerMobile = document.getElementById('managementMenuTriggerMobile');
@@ -2259,18 +2326,46 @@
 
         // Mobile Secondary Sidebar - Click-based interaction
         if (managementMenuTriggerMobile && secondarySidebarMobile) {
+            // Enhanced touch feedback for mobile
+            managementMenuTriggerMobile.addEventListener('touchstart', (e) => {
+                managementMenuTriggerMobile.style.transform = 'scale(0.98)';
+                managementMenuTriggerMobile.style.transition = 'transform 0.1s ease';
+            }, { passive: true });
+            
+            managementMenuTriggerMobile.addEventListener('touchend', (e) => {
+                managementMenuTriggerMobile.style.transform = '';
+                managementMenuTriggerMobile.style.transition = '';
+            }, { passive: true });
+            
             managementMenuTriggerMobile.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Check if the trigger is temporarily disabled (during force close)
+                if (managementMenuTriggerMobile.style.pointerEvents === 'none') {
+                    console.log('Management trigger click ignored - temporarily disabled'); // Debug
+                    return;
+                }
+                
+                // Check if we're preventing reopening
+                if (window.preventSidebarReopening) {
+                    console.log('Management trigger click ignored - reopening prevented'); // Debug
+                    return;
+                }
+                
+                console.log('Management trigger clicked, current state:', isMobileSecondarySidebarOpen); // Debug
                 
                 if (isMobileSecondarySidebarOpen) {
                     secondarySidebarMobile.classList.remove('open');
                     managementMenuTriggerMobile.classList.remove('active');
                     isMobileSecondarySidebarOpen = false;
+                    console.log('Secondary sidebar closed via management trigger'); // Debug
                 } else {
-                    secondarySidebarMobile.classList.add('open');
+                    // Open sidebar immediately - no delay
                     managementMenuTriggerMobile.classList.add('active');
+                    secondarySidebarMobile.classList.add('open');
                     isMobileSecondarySidebarOpen = true;
+                    console.log('Secondary sidebar opened via management trigger'); // Debug
                 }
             });
 
@@ -2337,9 +2432,23 @@
 
             // Close when clicking outside (mobile)
             document.addEventListener('click', (e) => {
+                // Don't interfere if management trigger is temporarily disabled (during force close)
+                if (managementMenuTriggerMobile.style.pointerEvents === 'none') {
+                    console.log('Global click handler ignored - force close in progress'); // Debug
+                    return;
+                }
+                
+                // Don't interfere if we're preventing reopening
+                if (window.preventSidebarReopening) {
+                    console.log('Global click handler ignored - reopening prevented'); // Debug
+                    return;
+                }
+                
                 if (isMobileSecondarySidebarOpen && 
                     !managementMenuTriggerMobile.contains(e.target) && 
-                    !secondarySidebarMobile.contains(e.target)) {
+                    !secondarySidebarMobile.contains(e.target) &&
+                    !e.target.closest('.secondary-nav-link')) {
+                    console.log('Global click - closing secondary sidebar'); // Debug
                     secondarySidebarMobile.classList.remove('open');
                     managementMenuTriggerMobile.classList.remove('active');
                     isMobileSecondarySidebarOpen = false;
@@ -2355,23 +2464,6 @@
                 }
             });
         }
-
-        // Handle navigation clicks in secondary sidebars
-        document.querySelectorAll('.secondary-nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Close secondary sidebars on navigation
-                if (isSecondarySidebarOpen && secondarySidebar) {
-                    secondarySidebar.classList.remove('open');
-                    managementMenuTrigger.classList.remove('active');
-                    isSecondarySidebarOpen = false;
-                }
-                if (isMobileSecondarySidebarOpen && secondarySidebarMobile) {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                }
-            });
-        });
 
         // Keyboard support for secondary sidebars
         document.addEventListener('keydown', (e) => {
@@ -3655,8 +3747,7 @@
 
 
         // Enhanced Navigation Management
-        let isNavigating = false;
-
+        
         // Enhanced Active navigation state management
         function setActiveNavigation() {
             const currentPath = window.location.pathname;
@@ -3665,12 +3756,6 @@
             // Remove active class from all links
             navLinks.forEach(link => {
                 link.classList.remove('active');
-                // Reset loading state
-                link.classList.remove('loading');
-                const loadingIndicator = link.querySelector('.loading-indicator');
-                if (loadingIndicator) {
-                    loadingIndicator.classList.add('opacity-0');
-                }
             });
 
             // Remove active state from grouped triggers
@@ -3703,65 +3788,51 @@
                     const secondarySidebar = document.getElementById('secondarySidebar');
                     const secondarySidebarMobile = document.getElementById('secondarySidebarMobile');
                     
+                    // Always mark triggers as active
                     if (managementTrigger) managementTrigger.classList.add('active');
                     if (managementTriggerMobile) managementTriggerMobile.classList.add('active');
-                    if (secondarySidebar) secondarySidebar.classList.add('open');
-                    if (secondarySidebarMobile) secondarySidebarMobile.classList.add('open');
+                    
+                    // Only auto-open secondary sidebar on desktop, NOT on mobile
+                    if (secondarySidebar && window.innerWidth >= 768) {
+                        secondarySidebar.classList.add('open');
+                    }
+                    // Do NOT auto-open mobile secondary sidebar
+                    // if (secondarySidebarMobile) secondarySidebarMobile.classList.add('open');
+                    
+                    console.log('setActiveNavigation: secondary page detected, auto-open disabled for mobile'); // Debug
                 }
             }
         }
 
-        // Enhanced navigation with loading states
+        // Simplified navigation - no loading states
         function handleNavigation(event) {
-            // Allow default behavior but add loading states
             const link = event.currentTarget;
             const href = link.getAttribute('href');
             
-            // Don't handle if already navigating or same page
-            if (isNavigating || window.location.pathname === href) {
+            console.log('handleNavigation called for link:', link); // Debug
+            console.log('Link classes:', link.classList.toString()); // Debug
+            console.log('Is secondary nav link:', link.classList.contains('secondary-nav-link')); // Debug
+            
+            // Don't handle if same page
+            if (window.location.pathname === href) {
                 event.preventDefault();
                 return;
             }
 
-            // Set loading state
-            isNavigating = true;
-            setNavigationLoading(link, true);
-            showPageLoadingOverlay();
-
-            // Allow normal navigation to proceed
-            // The loading state will be cleared when the new page loads
-            setTimeout(() => {
-                // Fallback to clear loading state
-                if (isNavigating) {
-                    isNavigating = false;
-                    hidePageLoadingOverlay();
-                    setNavigationLoading(link, false);
-                }
-            }, 5000); // 5 second timeout
-        }
-
-        // Set loading state for navigation link
-        function setNavigationLoading(link, loading) {
-            const loadingIndicator = link.querySelector('.loading-indicator');
-            const icon = link.querySelector('i[data-lucide]');
-            
-            if (loading) {
-                link.classList.add('loading');
-                if (loadingIndicator) {
-                    loadingIndicator.classList.remove('opacity-0');
-                }
-                if (icon) {
-                    icon.style.transform = 'scale(0.9)';
-                }
-            } else {
-                link.classList.remove('loading');
-                if (loadingIndicator) {
-                    loadingIndicator.classList.add('opacity-0');
-                }
-                if (icon) {
-                    icon.style.transform = '';
-                }
+            // If this is a secondary nav link, close all sidebars immediately
+            if (link.classList.contains('secondary-nav-link')) {
+                // Stop the event from bubbling to prevent other click handlers from interfering
+                event.stopPropagation();
+                
+                console.log('Secondary nav link clicked - using force close'); // Debug log
+                
+                // Use the force close function with a slight delay to override any conflicts
+                setTimeout(function() {
+                    window.forceCloseAllSidebars();
+                }, 10);
             }
+
+            // Allow normal navigation to proceed immediately - no loading states
         }
 
         // Page loading overlay management
@@ -3852,8 +3923,7 @@
 
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Clear loading state from any previous navigation
-            isNavigating = false;
+            // Clear any loading overlay from previous navigation
             hidePageLoadingOverlay();
             
             // Set up navigation
@@ -3863,6 +3933,27 @@
             const allNavLinks = document.querySelectorAll('.nav-link, .nav-link-mobile, .secondary-nav-link');
             allNavLinks.forEach(link => {
                 link.addEventListener('click', handleNavigation);
+            });
+            
+            // Add SPECIFIC event listeners for secondary nav links to ensure they close sidebars
+            const secondaryNavLinks = document.querySelectorAll('.secondary-nav-link');
+            console.log('Found secondary nav links:', secondaryNavLinks.length); // Debug
+            secondaryNavLinks.forEach(link => {
+                console.log('Adding click listener to secondary nav link:', link); // Debug
+                link.addEventListener('click', function(event) {
+                    console.log('DIRECT secondary nav link clicked!'); // Debug
+                    event.stopPropagation();
+                    
+                    // Force close all sidebars immediately
+                    window.forceCloseAllSidebars();
+                    
+                    // Let the normal navigation proceed after a tiny delay
+                    setTimeout(function() {
+                        if (link.href && link.href !== '#') {
+                            window.location.href = link.href;
+                        }
+                    }, 50);
+                }, true); // Use capture phase to ensure this runs first
             });
             
             // Set up mobile sidebar
@@ -3875,13 +3966,8 @@
         // Handle page visibility change to reset loading states
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
-                // Page became visible, clear any loading states
-                isNavigating = false;
+                // Page became visible, clear any loading overlay
                 hidePageLoadingOverlay();
-                const allNavLinks = document.querySelectorAll('.nav-link, .nav-link-mobile');
-                allNavLinks.forEach(link => {
-                    setNavigationLoading(link, false);
-                });
             }
         });
 
