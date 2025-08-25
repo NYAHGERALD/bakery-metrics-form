@@ -317,14 +317,14 @@
 
 <!-- Issue Report Modal -->
 <div id="issueReportModal" class="fixed inset-0 bg-blue-900/20 backdrop-blur-md z-50 hidden opacity-0 transition-all duration-300">
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="flex items-center justify-center min-h-screen px-2 py-4 text-center sm:px-4 sm:pt-4 sm:pb-20 sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
             <div class="absolute inset-0 bg-blue-500/10"></div>
         </div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block align-bottom bg-white/90 backdrop-blur-xl rounded-3xl px-6 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-8 border border-white/30">
+        <div class="inline-block align-bottom bg-white/90 backdrop-blur-xl rounded-3xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all w-full max-w-lg mx-auto sm:my-8 sm:align-middle sm:w-full sm:px-6 sm:pb-4 lg:px-8 border border-white/30 max-h-[95vh] overflow-y-auto">
             <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 sm:mx-0 sm:h-14 sm:w-14 mb-4 sm:mb-0 sm:mr-4 shadow-lg">
                     <i data-lucide="alert-triangle" class="h-8 w-8 text-white"></i>
@@ -337,11 +337,11 @@
                 </div>
             </div>
 
-            <form id="issueReportForm" class="mt-6 space-y-6">
+            <form id="issueReportForm" class="mt-4 space-y-4 sm:mt-6 sm:space-y-6">
                 <div class="relative">
                     <label for="issueTitle" class="block text-sm font-medium text-gray-700 mb-2">Issue Title *</label>
                     <input type="text" id="issueTitle" name="title" required maxlength="255"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80"
+                           class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 text-sm sm:text-base"
                            placeholder="Search or Select an Issue"
                            autocomplete="off">
                     <!-- Dropdown list for filtered suggestions -->
@@ -352,10 +352,10 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="issueLine" class="block text-sm font-medium text-gray-700 mb-2">Line *</label>
-                        <select id="issueLine" name="line" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                        <select id="issueLine" name="line" required class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 text-sm sm:text-base">
                             <option value="">Select Line</option>
                             <option value="Die-Cut 1">Die-Cut 1</option>
                             <option value="Die-Cut 2">Die-Cut 2</option>
@@ -363,7 +363,7 @@
                     </div>
                     <div>
                         <label for="issueShift" class="block text-sm font-medium text-gray-700 mb-2">Shift *</label>
-                        <select id="issueShift" name="shift" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                        <select id="issueShift" name="shift" required class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 text-sm sm:text-base">
                             <option value="">Select Shift</option>
                             <option value="First Shift">First Shift</option>
                             <option value="Second Shift">Second Shift</option>
@@ -371,30 +371,30 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="issueDate" class="block text-sm font-medium text-gray-700 mb-2">Report Date *</label>
-                        <input type="date" id="issueDate" name="reportDate" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                        <input type="date" id="issueDate" name="reportDate" required class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 text-sm sm:text-base">
                     </div>
                     <div>
                         <label for="issueTime" class="block text-sm font-medium text-gray-700 mb-2">Report Time *</label>
-                        <input type="time" id="issueTime" name="reportTime" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80">
+                        <input type="time" id="issueTime" name="reportTime" required class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 text-sm sm:text-base">
                     </div>
                 </div>
 
                 <div>
                     <label for="issueDetails" class="block text-sm font-medium text-gray-700 mb-2">Issue Details *</label>
-                    <textarea id="issueDetails" name="issueDetails" required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 resize-none" placeholder="Detailed description of the issue, symptoms, and any relevant information..."></textarea>
+                    <textarea id="issueDetails" name="issueDetails" required rows="4" class="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-xl focus:ring-red-500 focus:border-red-500 bg-white/80 resize-none text-sm sm:text-base" placeholder="Detailed description of the issue, symptoms, and any relevant information..."></textarea>
                 </div>
 
-                <div class="mt-8 sm:mt-6 sm:flex sm:flex-row-reverse">
-                    <button type="submit" id="submitIssueBtn" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-base font-semibold text-white hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-300 transform hover:-translate-y-1">
+                <div class="mt-6 pt-4 border-t border-gray-200 space-y-3 sm:mt-8 sm:pt-6 sm:flex sm:flex-row-reverse sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
+                    <button type="submit" id="submitIssueBtn" class="w-full inline-flex justify-center items-center rounded-xl border border-transparent shadow-lg px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-sm font-semibold text-white hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm transition-all duration-300 transform hover:-translate-y-1">
                         <span class="flex items-center">
                             <i data-lucide="send" class="w-4 h-4 mr-2"></i>
                             Submit Issue
                         </span>
                     </button>
-                    <button type="button" id="cancelIssueBtn" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:w-auto sm:text-sm transition-all duration-300">
+                    <button type="button" id="cancelIssueBtn" class="w-full inline-flex justify-center items-center rounded-xl border border-gray-300 shadow-sm px-4 py-3 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:w-auto sm:text-sm transition-all duration-300">
                         Cancel
                     </button>
                 </div>
