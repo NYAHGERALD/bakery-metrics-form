@@ -25,7 +25,7 @@ load_dotenv()
 
 # Flask App Configuration
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
+app.secret_key = os.getenv('SECRET_KEY', '')
 app.permanent_session_lifetime = timedelta(hours=2)
 
 # Database Configuration
@@ -35,7 +35,8 @@ DATABASE_CONFIG = {
     'user': os.getenv('DB_USER', ''),
     'password': os.getenv('DB_PASSWORD', ''),
     'port': os.getenv('DB_PORT', ''),
-    'sslmode': 'require'
+    'connect_timeout': 10,  # 10 second timeout
+    'sslmode': 'required'
 }
 
 # Google Drive Configuration (for image uploads)
@@ -10418,6 +10419,243 @@ def get_user_status():
         return jsonify({
             'success': False,
             'message': 'Error checking user status'
+        }), 500
+
+
+@app.route('/api/week-average', methods=['GET'])
+@login_required
+@password_change_required
+def get_week_average():
+    """API endpoint to calculate and return weekly averages for OEE, Volume, and Waste"""
+    try:
+        week = request.args.get('week')
+        
+        if not week:
+            return jsonify({"error": "Week parameter is required"}), 400
+
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Get weekly sheet ID
+                cur.execute("""
+                    SELECT id, week_start, week_end FROM weekly_sheets WHERE sheet_name = %s
+                """, (week,))
+                
+                sheet_result = cur.fetchone()
+                if not sheet_result:
+                    return jsonify({"error": "Week sheet not found"}), 404
+
+                weekly_sheet_id = sheet_result['id']
+                
+                # Get week submissions for this week
+                cur.execute("""
+                    SELECT id, day_of_week FROM week_submissions 
+                    WHERE week_name = %s 
+                    AND day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+                """, (week,))
+                
+                week_submissions = cur.fetchall()
+                
+                if not week_submissions:
+                    return jsonify({
+                        "success": False,
+                        "error": "No data found for the selected week"
+                    }), 404
+                
+                submission_ids = [sub['id'] for sub in week_submissions]
+                submission_ids_placeholder = ','.join(['%s'] * len(submission_ids))
+                
+                # Get first shift metrics
+                cur.execute(f"""
+                    SELECT 
+                        die_cut1_oee_pct, die_cut2_oee_pct, oee_avg_pct,
+                        die_cut1_lbs, die_cut2_lbs, pounds_total,
+                        die_cut1_waste_lb, die_cut2_waste_lb,
+                        die_cut1_waste_pct, die_cut2_waste_pct, waste_avg_pct
+                    FROM first_shift_metrics
+                    WHERE week_submission_id IN ({submission_ids_placeholder})
+                    AND die_cut1_oee_pct IS NOT NULL
+                """, submission_ids)
+                
+                first_shift_data = cur.fetchall()
+                
+                # Get second shift metrics
+                cur.execute(f"""
+                    SELECT 
+                        die_cut1_oee_pct, die_cut2_oee_pct, oee_avg_pct,
+                        die_cut1_lbs, die_cut2_lbs, pounds_total,
+                        die_cut1_waste_lb, die_cut2_waste_lb,
+                        die_cut1_waste_pct, die_cut2_waste_pct, waste_avg_pct
+                    FROM second_shift_metrics
+                    WHERE week_submission_id IN ({submission_ids_placeholder})
+                    AND die_cut1_oee_pct IS NOT NULL
+                """, submission_ids)
+                
+                second_shift_data = cur.fetchall()
+                
+                # Get both shifts metrics (combined data)
+                cur.execute(f"""
+                    SELECT 
+                        oee_avg_pct,
+                        pounds_total,
+                        die_cut1_waste_lb,
+                        die_cut2_waste_lb
+                    FROM both_shifts_metrics
+                    WHERE week_submission_id IN ({submission_ids_placeholder})
+                    AND oee_avg_pct IS NOT NULL
+                """, submission_ids)
+                
+                both_shifts_data = cur.fetchall()
+                
+                # Calculate averages and totals
+                def safe_avg(values):
+                    filtered = [v for v in values if v is not None]
+                    return sum(filtered) / len(filtered) if filtered else 0
+                
+                def safe_total(values):
+                    filtered = [v for v in values if v is not None]
+                    return sum(filtered) if filtered else 0
+                
+                # FIRST SHIFT CALCULATIONS
+                # Die Cut 1 - First Shift
+                first_dc1_oee_avg = safe_avg([row['die_cut1_oee_pct'] for row in first_shift_data])
+                first_dc1_volume_total = safe_total([row['die_cut1_lbs'] for row in first_shift_data])
+                first_dc1_waste_total = safe_total([row['die_cut1_waste_lb'] for row in first_shift_data])
+                
+                # Die Cut 2 - First Shift
+                first_dc2_oee_avg = safe_avg([row['die_cut2_oee_pct'] for row in first_shift_data])
+                first_dc2_volume_total = safe_total([row['die_cut2_lbs'] for row in first_shift_data])
+                first_dc2_waste_total = safe_total([row['die_cut2_waste_lb'] for row in first_shift_data])
+                
+                # Total - First Shift
+                first_total_oee_avg = safe_avg([row['oee_avg_pct'] for row in first_shift_data])
+                first_total_volume_total = safe_total([row['pounds_total'] for row in first_shift_data])
+                first_total_waste_total = first_dc1_waste_total + first_dc2_waste_total
+                
+                # SECOND SHIFT CALCULATIONS
+                # Die Cut 1 - Second Shift
+                second_dc1_oee_avg = safe_avg([row['die_cut1_oee_pct'] for row in second_shift_data])
+                second_dc1_volume_total = safe_total([row['die_cut1_lbs'] for row in second_shift_data])
+                second_dc1_waste_total = safe_total([row['die_cut1_waste_lb'] for row in second_shift_data])
+                
+                # Die Cut 2 - Second Shift
+                second_dc2_oee_avg = safe_avg([row['die_cut2_oee_pct'] for row in second_shift_data])
+                second_dc2_volume_total = safe_total([row['die_cut2_lbs'] for row in second_shift_data])
+                second_dc2_waste_total = safe_total([row['die_cut2_waste_lb'] for row in second_shift_data])
+                
+                # Total - Second Shift
+                second_total_oee_avg = safe_avg([row['oee_avg_pct'] for row in second_shift_data])
+                second_total_volume_total = safe_total([row['pounds_total'] for row in second_shift_data])
+                second_total_waste_total = second_dc1_waste_total + second_dc2_waste_total
+                
+                # BOTH SHIFTS CALCULATIONS
+                # Die Cut 1 - Both Shifts (combine first and second shift data)
+                both_dc1_oee_avg = safe_avg([row['die_cut1_oee_pct'] for row in first_shift_data + second_shift_data])
+                both_dc1_volume_total = first_dc1_volume_total + second_dc1_volume_total
+                both_dc1_waste_total = first_dc1_waste_total + second_dc1_waste_total
+                
+                # Die Cut 2 - Both Shifts
+                both_dc2_oee_avg = safe_avg([row['die_cut2_oee_pct'] for row in first_shift_data + second_shift_data])
+                both_dc2_volume_total = first_dc2_volume_total + second_dc2_volume_total
+                both_dc2_waste_total = first_dc2_waste_total + second_dc2_waste_total
+                
+                # Total - Both Shifts
+                both_total_oee_avg = safe_avg([row['oee_avg_pct'] for row in both_shifts_data])
+                both_total_volume_total = safe_total([row['pounds_total'] for row in both_shifts_data])
+                both_total_waste_total = both_dc1_waste_total + both_dc2_waste_total
+                
+                # Format response data with separate Die Cut calculations
+                response = {
+                    "success": True,
+                    "week": week,
+                    "period": f"{sheet_result['week_start']} to {sheet_result['week_end']}",
+                    "averages": {
+                        "oee": {
+                            "die_cut_1": {
+                                "first_shift": round(first_dc1_oee_avg, 1) if first_dc1_oee_avg > 0 else 0,
+                                "second_shift": round(second_dc1_oee_avg, 1) if second_dc1_oee_avg > 0 else 0,
+                                "both_shifts": round(both_dc1_oee_avg, 1) if both_dc1_oee_avg > 0 else 0
+                            },
+                            "die_cut_2": {
+                                "first_shift": round(first_dc2_oee_avg, 1) if first_dc2_oee_avg > 0 else 0,
+                                "second_shift": round(second_dc2_oee_avg, 1) if second_dc2_oee_avg > 0 else 0,
+                                "both_shifts": round(both_dc2_oee_avg, 1) if both_dc2_oee_avg > 0 else 0
+                            },
+                            "total": {
+                                "first_shift": round(first_total_oee_avg, 1) if first_total_oee_avg > 0 else 0,
+                                "second_shift": round(second_total_oee_avg, 1) if second_total_oee_avg > 0 else 0,
+                                "both_shifts": round(both_total_oee_avg, 1) if both_total_oee_avg > 0 else 0
+                            }
+                        },
+                        "volume": {
+                            "die_cut_1": {
+                                "first_shift": round(first_dc1_volume_total, 0) if first_dc1_volume_total > 0 else 0,
+                                "second_shift": round(second_dc1_volume_total, 0) if second_dc1_volume_total > 0 else 0,
+                                "both_shifts": round(both_dc1_volume_total, 0) if both_dc1_volume_total > 0 else 0
+                            },
+                            "die_cut_2": {
+                                "first_shift": round(first_dc2_volume_total, 0) if first_dc2_volume_total > 0 else 0,
+                                "second_shift": round(second_dc2_volume_total, 0) if second_dc2_volume_total > 0 else 0,
+                                "both_shifts": round(both_dc2_volume_total, 0) if both_dc2_volume_total > 0 else 0
+                            },
+                            "total": {
+                                "first_shift": round(first_total_volume_total, 0) if first_total_volume_total > 0 else 0,
+                                "second_shift": round(second_total_volume_total, 0) if second_total_volume_total > 0 else 0,
+                                "both_shifts": round(both_total_volume_total, 0) if both_total_volume_total > 0 else 0
+                            }
+                        },
+                        "waste": {
+                            "pounds": {
+                                "die_cut_1": {
+                                    "first_shift": round(first_dc1_waste_total, 1) if first_dc1_waste_total > 0 else 0,
+                                    "second_shift": round(second_dc1_waste_total, 1) if second_dc1_waste_total > 0 else 0,
+                                    "both_shifts": round(both_dc1_waste_total, 1) if both_dc1_waste_total > 0 else 0
+                                },
+                                "die_cut_2": {
+                                    "first_shift": round(first_dc2_waste_total, 1) if first_dc2_waste_total > 0 else 0,
+                                    "second_shift": round(second_dc2_waste_total, 1) if second_dc2_waste_total > 0 else 0,
+                                    "both_shifts": round(both_dc2_waste_total, 1) if both_dc2_waste_total > 0 else 0
+                                },
+                                "total": {
+                                    "first_shift": round(first_total_waste_total, 1) if first_total_waste_total > 0 else 0,
+                                    "second_shift": round(second_total_waste_total, 1) if second_total_waste_total > 0 else 0,
+                                    "both_shifts": round(both_total_waste_total, 1) if both_total_waste_total > 0 else 0
+                                }
+                            },
+                            "percentage": {
+                                "die_cut_1": {
+                                    "first_shift": round((first_dc1_waste_total / first_dc1_volume_total * 100), 1) if first_dc1_volume_total > 0 else 0,
+                                    "second_shift": round((second_dc1_waste_total / second_dc1_volume_total * 100), 1) if second_dc1_volume_total > 0 else 0,
+                                    "both_shifts": round((both_dc1_waste_total / both_dc1_volume_total * 100), 1) if both_dc1_volume_total > 0 else 0
+                                },
+                                "die_cut_2": {
+                                    "first_shift": round((first_dc2_waste_total / first_dc2_volume_total * 100), 1) if first_dc2_volume_total > 0 else 0,
+                                    "second_shift": round((second_dc2_waste_total / second_dc2_volume_total * 100), 1) if second_dc2_volume_total > 0 else 0,
+                                    "both_shifts": round((both_dc2_waste_total / both_dc2_volume_total * 100), 1) if both_dc2_volume_total > 0 else 0
+                                },
+                                "total": {
+                                    "first_shift": round((first_total_waste_total / first_total_volume_total * 100), 1) if first_total_volume_total > 0 else 0,
+                                    "second_shift": round((second_total_waste_total / second_total_volume_total * 100), 1) if second_total_volume_total > 0 else 0,
+                                    "both_shifts": round((both_total_waste_total / both_total_volume_total * 100), 1) if both_total_volume_total > 0 else 0
+                                }
+                            }
+                        }
+                    },
+                    "data_points": {
+                        "first_shift_count": len(first_shift_data),
+                        "second_shift_count": len(second_shift_data),
+                        "both_shifts_count": len(both_shifts_data),
+                        "week_submissions": len(week_submissions)
+                    }
+                }
+                
+                logger.info(f"Week average calculated for {week}: {response['averages']}")
+                return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"Week average calculation error: {e}")
+        return jsonify({
+            "success": False,
+            "error": f"Failed to calculate week average: {str(e)}"
         }), 500
 
 

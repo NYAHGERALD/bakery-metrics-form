@@ -112,22 +112,22 @@
           </div>
           
           <!-- Controls -->
-          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center gap-4">
             <!-- Filters -->
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-              <div class="flex items-center gap-2">
-                <label class="text-sm font-semibold text-blue-100">Week:</label>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20 w-full lg:w-auto">
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <label class="text-sm font-semibold text-blue-100 whitespace-nowrap">Week:</label>
                 <select id="week"
-                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm">
+                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm flex-1 sm:flex-none min-w-0">
                   {% for week in week_names %}
                   <option value="{{ week }}" {% if week==default_week %}selected{% endif %} class="text-gray-900 bg-white">{{ week }}</option>
                   {% endfor %}
                 </select>
               </div>
-              <div class="flex items-center gap-2">
-                <label class="text-sm font-semibold text-blue-100">Day:</label>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <label class="text-sm font-semibold text-blue-100 whitespace-nowrap">Day:</label>
                 <select id="day"
-                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm">
+                  class="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white text-sm focus:ring-2 focus:ring-white/50 focus:border-transparent backdrop-blur-sm flex-1 sm:flex-none">
                   <option value="Monday" class="text-gray-900 bg-white">Monday</option>
                   <option value="Tuesday" class="text-gray-900 bg-white">Tuesday</option>
                   <option value="Wednesday" class="text-gray-900 bg-white">Wednesday</option>
@@ -138,20 +138,28 @@
             </div>
             
             <!-- Action Buttons -->
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
               <select id="recordSelector"
-                class="px-3 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white focus:ring-2 focus:ring-white/50 backdrop-blur-sm">
+                class="px-3 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white focus:ring-2 focus:ring-white/50 backdrop-blur-sm w-full sm:w-auto">
                 <option value="latest">Latest Record</option>
               </select>
+              <button id="weekAverageBtn"
+                class="px-4 py-2 text-sm bg-emerald-500/80 border border-emerald-400/50 rounded-lg text-white hover:bg-emerald-600/80 transition-colors backdrop-blur-sm font-semibold whitespace-nowrap">
+                <i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i>
+                <span class="hidden sm:inline">Week Average</span>
+                <span class="sm:hidden">Week Avg</span>
+              </button>
               <button id="tableViewToggle"
-                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm">
+                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap">
                 <i data-lucide="eye" class="w-4 h-4 inline mr-1"></i>
-                Compact
+                <span class="hidden sm:inline">Compact</span>
+                <span class="sm:hidden">View</span>
               </button>
               <button id="refreshTable"
-                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm">
+                class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap">
                 <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i>
-                Refresh
+                <span class="hidden sm:inline">Refresh</span>
+                <span class="sm:hidden">Sync</span>
               </button>
             </div>
           </div>
@@ -165,9 +173,9 @@
             <tr>
               <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">KPI METRIC</th>
               <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">TARGET</th>
-              <th class="px-6 py-4 text-left text-sm font-black text-blue-800 uppercase tracking-wider bg-blue-50">FIRST SHIFT</th>
-              <th class="px-6 py-4 text-left text-sm font-black text-indigo-800 uppercase tracking-wider bg-indigo-50">SECOND SHIFT</th>
-              <th class="px-6 py-4 text-left text-sm font-black text-purple-800 uppercase tracking-wider bg-purple-50">BOTH SHIFTS</th>
+              <th id="firstShiftHeader" class="px-6 py-4 text-left text-sm font-black text-blue-800 uppercase tracking-wider bg-blue-50">FIRST SHIFT</th>
+              <th id="secondShiftHeader" class="px-6 py-4 text-left text-sm font-black text-indigo-800 uppercase tracking-wider bg-indigo-50">SECOND SHIFT</th>
+              <th id="bothShiftsHeader" class="px-6 py-4 text-left text-sm font-black text-purple-800 uppercase tracking-wider bg-purple-50">BOTH SHIFTS</th>
               <th class="px-6 py-4 text-left text-sm font-black text-gray-800 uppercase tracking-wider">STATUS</th>
             </tr>
           </thead>
@@ -628,6 +636,9 @@
   <script>
     // Initialize Lucide icons
     lucide.createIcons();
+    
+    // Global state for Week Average button toggle
+    let isShowingWeekAverage = false;
 
     // Set timestamps
     document.getElementById('reportTimestamp').textContent = new Date().toLocaleString();
@@ -642,6 +653,9 @@
       loadAvailableRecords();
       initializeEventListeners();
       startRealTimeUpdates();
+      
+      // Initialize Week Average button state
+      updateWeekAverageButton();
       
       // Load dashboard metrics with real data
       fetchDashboardMetrics();
@@ -682,6 +696,11 @@
         fetchReportData(week, day, 'both'),
         fetchDashboardMetrics()
       ]);
+      
+      // Reset to daily metrics view when filters change
+      isShowingWeekAverage = false;
+      updateWeekAverageButton();
+      document.getElementById('reportPeriod').textContent = 'Current Week';
     }
 
     // Initialize event listeners
@@ -703,7 +722,31 @@
           loadAvailableRecords(),
           fetchDashboardMetrics()
         ]);
+        // Reset to daily metrics view after refresh
+        isShowingWeekAverage = false;
+        updateWeekAverageButton();
+        document.getElementById('reportPeriod').textContent = 'Current Week';
         showNotification('Data refreshed successfully', 'success');
+      });
+
+      // Week Average button with toggle functionality
+      document.getElementById('weekAverageBtn').addEventListener('click', async () => {
+        if (isShowingWeekAverage) {
+          // Currently showing week average, switch to daily metrics
+          await loadMetricsData();
+          isShowingWeekAverage = false;
+          updateWeekAverageButton();
+          document.getElementById('reportPeriod').textContent = 'Current Week';
+          showNotification('Switched to daily metrics view', 'success');
+        } else {
+          // Currently showing daily metrics, switch to week average
+          await calculateWeekAverage();
+          if (document.getElementById('reportPeriod').textContent.includes('Week Average')) {
+            // Only update state if week average calculation was successful
+            isShowingWeekAverage = true;
+            updateWeekAverageButton();
+          }
+        }
       });
 
       // Generate insights - Enhanced with click confirmation
@@ -1921,6 +1964,238 @@
         generateAIInsights()
       ]);
       showNotification('Data refreshed successfully', 'success');
+    }
+
+    // Update column headers based on current view state
+    function updateColumnHeaders() {
+      const firstShiftHeader = document.getElementById('firstShiftHeader');
+      const secondShiftHeader = document.getElementById('secondShiftHeader');
+      const bothShiftsHeader = document.getElementById('bothShiftsHeader');
+      
+      if (isShowingWeekAverage) {
+        // Show WEEK AVG in column headers when displaying week averages
+        firstShiftHeader.innerHTML = 'FIRST SHIFT<br><span class="text-xs">WEEK AVG</span>';
+        secondShiftHeader.innerHTML = 'SECOND SHIFT<br><span class="text-xs">WEEK AVG</span>';
+        bothShiftsHeader.innerHTML = 'BOTH SHIFTS<br><span class="text-xs">WEEK AVG</span>';
+      } else {
+        // Show regular column headers when displaying daily metrics
+        firstShiftHeader.textContent = 'FIRST SHIFT';
+        secondShiftHeader.textContent = 'SECOND SHIFT';
+        bothShiftsHeader.textContent = 'BOTH SHIFTS';
+      }
+    }
+
+    // Update Week Average button text based on current state
+    function updateWeekAverageButton() {
+      const button = document.getElementById('weekAverageBtn');
+      if (isShowingWeekAverage) {
+        // Currently showing week averages, button should offer to switch to daily
+        button.innerHTML = '<i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Daily Metrics</span><span class="sm:hidden">Daily</span>';
+      } else {
+        // Currently showing daily metrics, button should offer week average
+        button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Average</span><span class="sm:hidden">Week Avg</span>';
+      }
+      lucide.createIcons();
+      
+      // Update column headers to match current state
+      updateColumnHeaders();
+    }
+
+    // Calculate and display week average metrics
+    async function calculateWeekAverage() {
+      try {
+        // Show loading state
+        const button = document.getElementById('weekAverageBtn');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i>Calculating...';
+        button.disabled = true;
+        
+        showNotification('Calculating week averages...', 'info');
+        
+        // Get current week selection
+        const week = document.getElementById('week').value;
+        
+        if (!week || week === 'latest') {
+          showNotification('Please select a specific week to calculate averages', 'warning');
+          button.innerHTML = originalText;
+          button.disabled = false;
+          return;
+        }
+
+        // Fetch week average data from API
+        const response = await fetch(`/api/week-average?week=${encodeURIComponent(week)}`);
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to calculate week averages');
+        }
+
+        // Display the calculated averages in the table
+        displayWeekAverages(data.averages);
+        
+        // Update report period indicator
+        document.getElementById('reportPeriod').textContent = `Week Average (${data.period})`;
+        
+        // Show success notification with data points info
+        const totalDataPoints = data.data_points.first_shift_count + data.data_points.second_shift_count + data.data_points.both_shifts_count;
+        showNotification(`Week averages calculated successfully using ${totalDataPoints} data points from ${data.data_points.week_submissions} day submissions`, 'success');
+        
+        // Log calculation details
+        console.log('📊 Week Average Data:', data);
+
+      } catch (error) {
+        console.error('Week average calculation error:', error);
+        showNotification(`Error calculating week averages: ${error.message}`, 'error');
+      } finally {
+        // Restore button state (don't change text here as it's handled by updateWeekAverageButton)
+        const button = document.getElementById('weekAverageBtn');
+        button.disabled = false;
+        if (!isShowingWeekAverage) {
+          // Only reset to default if we're not successfully showing week averages
+          button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Average</span><span class="sm:hidden">Week Avg</span>';
+        }
+        lucide.createIcons();
+      }
+    }
+
+    // Display week average values in the table
+    function displayWeekAverages(averages) {
+      // OEE Values (percentages) - now using separate die cut values
+      updateTableCell('oeeDieCut1FirstShift', averages.oee.die_cut_1.first_shift, '%', 'oee');
+      updateTableCell('oeeDieCut1SecondShift', averages.oee.die_cut_1.second_shift, '%', 'oee');
+      updateTableCell('oeeDieCut1Both', averages.oee.die_cut_1.both_shifts, '%', 'oee');
+      
+      updateTableCell('oeeDieCut2FirstShift', averages.oee.die_cut_2.first_shift, '%', 'oee');
+      updateTableCell('oeeDieCut2SecondShift', averages.oee.die_cut_2.second_shift, '%', 'oee');
+      updateTableCell('oeeDieCut2Both', averages.oee.die_cut_2.both_shifts, '%', 'oee');
+      
+      updateTableCell('oeeTotalFirstShift', averages.oee.total.first_shift, '%', 'oee');
+      updateTableCell('oeeTotalSecondShift', averages.oee.total.second_shift, '%', 'oee');
+      updateTableCell('oeeTotalBoth', averages.oee.total.both_shifts, '%', 'oee');
+
+      // Volume Values (pounds) - now using separate die cut values
+      updateTableCell('volumeDieCut1FirstShift', averages.volume.die_cut_1.first_shift, ' lbs', 'volume');
+      updateTableCell('volumeDieCut1SecondShift', averages.volume.die_cut_1.second_shift, ' lbs', 'volume');
+      updateTableCell('volumeDieCut1Both', averages.volume.die_cut_1.both_shifts, ' lbs', 'volume');
+      
+      updateTableCell('volumeDieCut2FirstShift', averages.volume.die_cut_2.first_shift, ' lbs', 'volume');
+      updateTableCell('volumeDieCut2SecondShift', averages.volume.die_cut_2.second_shift, ' lbs', 'volume');
+      updateTableCell('volumeDieCut2Both', averages.volume.die_cut_2.both_shifts, ' lbs', 'volume');
+      
+      updateTableCell('volumeTotalFirstShift', averages.volume.total.first_shift, ' lbs', 'volume');
+      updateTableCell('volumeTotalSecondShift', averages.volume.total.second_shift, ' lbs', 'volume');
+      updateTableCell('volumeTotalBoth', averages.volume.total.both_shifts, ' lbs', 'volume');
+
+      // Waste Values (percentages) - now using separate die cut values
+      updateTableCell('wasteDieCut1FirstShift', averages.waste.percentage.die_cut_1.first_shift, '%', 'waste');
+      updateTableCell('wasteDieCut1SecondShift', averages.waste.percentage.die_cut_1.second_shift, '%', 'waste');
+      updateTableCell('wasteDieCut1Both', averages.waste.percentage.die_cut_1.both_shifts, '%', 'waste');
+      
+      updateTableCell('wasteDieCut2FirstShift', averages.waste.percentage.die_cut_2.first_shift, '%', 'waste');
+      updateTableCell('wasteDieCut2SecondShift', averages.waste.percentage.die_cut_2.second_shift, '%', 'waste');
+      updateTableCell('wasteDieCut2Both', averages.waste.percentage.die_cut_2.both_shifts, '%', 'waste');
+      
+      updateTableCell('wasteTotalFirstShift', averages.waste.percentage.total.first_shift, '%', 'waste');
+      updateTableCell('wasteTotalSecondShift', averages.waste.percentage.total.second_shift, '%', 'waste');
+      updateTableCell('wasteTotalBoth', averages.waste.percentage.total.both_shifts, '%', 'waste');
+
+      // Update status indicators based on averages
+      updateStatusIndicators(averages);
+    }
+
+    // Helper function to update table cells with formatting and styling
+    function updateTableCell(elementId, value, suffix, type) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      if (value === 0 || value === null || value === undefined) {
+        element.textContent = '-';
+        element.className = 'inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600';
+        return;
+      }
+
+      const formattedValue = value.toLocaleString() + suffix;
+      element.textContent = formattedValue;
+
+      // Apply styling based on metric type and value - using only GREEN and RED
+      let className = 'inline-flex items-center px-3 py-2 rounded-full text-sm font-bold ';
+      
+      if (type === 'oee') {
+        // OEE: ON TARGET (≥70%) and ABOVE TARGET = GREEN, BELOW TARGET = RED
+        if (value >= 70) {
+          className += 'bg-emerald-100 text-emerald-800'; // GREEN for on/above target
+        } else {
+          className += 'bg-red-100 text-red-800'; // RED for below target
+        }
+      } else if (type === 'volume') {
+        // VOLUME: ON TARGET (≥6000 lbs for individual, ≥12000 lbs for total) and ABOVE = GREEN, BELOW = RED
+        // Using 6000 as target for individual die cuts, 12000 for total
+        const target = (suffix.includes('Total') || value > 10000) ? 12000 : 6000;
+        if (value >= target) {
+          className += 'bg-emerald-100 text-emerald-800'; // GREEN for on/above target
+        } else {
+          className += 'bg-red-100 text-red-800'; // RED for below target
+        }
+      } else if (type === 'waste') {
+        // WASTE: BELOW TARGET (≤3.75%) = GREEN, ON TARGET and ABOVE TARGET = RED
+        if (value <= 3.75) {
+          className += 'bg-emerald-100 text-emerald-800'; // GREEN for below target (good)
+        } else {
+          className += 'bg-red-100 text-red-800'; // RED for on/above target (bad)
+        }
+      }
+
+      element.className = className;
+    }
+
+    // Update status indicators based on calculated averages - Dynamic based on BOTH SHIFTS values
+    function updateStatusIndicators(averages) {
+      // OEE Status - Individual status for each die cut based on its BOTH SHIFTS value
+      updateSingleStatusElement('oeeDieCut1Status', averages.oee.die_cut_1.both_shifts, 'oee');
+      updateSingleStatusElement('oeeDieCut2Status', averages.oee.die_cut_2.both_shifts, 'oee');
+      updateSingleStatusElement('oeeTotalStatus', averages.oee.total.both_shifts, 'oee');
+
+      // Volume Status - Individual status for each die cut based on its BOTH SHIFTS value
+      updateSingleStatusElement('volumeDieCut1Status', averages.volume.die_cut_1.both_shifts, 'volume', 6000);
+      updateSingleStatusElement('volumeDieCut2Status', averages.volume.die_cut_2.both_shifts, 'volume', 6000);
+      updateSingleStatusElement('volumeTotalStatus', averages.volume.total.both_shifts, 'volume', 12000);
+
+      // Waste Status - Individual status for each die cut based on its BOTH SHIFTS value
+      updateSingleStatusElement('wasteDieCut1Status', averages.waste.percentage.die_cut_1.both_shifts, 'waste');
+      updateSingleStatusElement('wasteDieCut2Status', averages.waste.percentage.die_cut_2.both_shifts, 'waste');
+      updateSingleStatusElement('wasteTotalStatus', averages.waste.percentage.total.both_shifts, 'waste');
+    }
+
+    // Helper function to update individual status elements
+    function updateSingleStatusElement(elementId, value, type, customTarget = null) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      let isGood = false;
+      let statusText = '';
+
+      if (type === 'oee') {
+        // OEE: ≥70% = GREEN (TARGET MET/ON TARGET), <70% = RED (BELOW TARGET)
+        isGood = value >= 70;
+        statusText = isGood ? 'TARGET MET' : 'BELOW TARGET';
+      } else if (type === 'volume') {
+        // Volume: ≥target = GREEN (ON TARGET), <target = RED (BELOW TARGET)
+        const target = customTarget || 6000;
+        isGood = value >= target;
+        statusText = isGood ? 'ON TARGET' : 'BELOW TARGET';
+      } else if (type === 'waste') {
+        // Waste: ≤3.75% = GREEN (BELOW TARGET), >3.75% = RED (ABOVE TARGET)
+        isGood = value <= 3.75;
+        statusText = isGood ? 'BELOW TARGET' : 'ABOVE TARGET';
+      }
+
+      // Apply green for good performance, red for needs improvement
+      element.textContent = statusText;
+      if (isGood) {
+        element.className = 'inline-flex items-center px-4 py-3 rounded-full text-sm font-bold uppercase bg-emerald-100 text-emerald-700';
+      } else {
+        element.className = 'inline-flex items-center px-4 py-3 rounded-full text-sm font-bold uppercase bg-red-100 text-red-700';
+      }
     }
   </script>
 
