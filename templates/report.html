@@ -146,8 +146,8 @@
               <button id="weekAverageBtn"
                 class="px-4 py-2 text-sm bg-emerald-500/80 border border-emerald-400/50 rounded-lg text-white hover:bg-emerald-600/80 transition-colors backdrop-blur-sm font-semibold whitespace-nowrap">
                 <i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i>
-                <span class="hidden sm:inline">Week Average</span>
-                <span class="sm:hidden">Week Avg</span>
+                <span class="hidden sm:inline">Week Summary</span>
+                <span class="sm:hidden">Week Sum</span>
               </button>
               <button id="tableViewToggle"
                 class="px-4 py-2 text-sm bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-colors backdrop-blur-sm whitespace-nowrap">
@@ -637,7 +637,7 @@
     // Initialize Lucide icons
     lucide.createIcons();
     
-    // Global state for Week Average button toggle
+    // Global state for Week Summary button toggle
     let isShowingWeekAverage = false;
 
     // Set timestamps
@@ -654,7 +654,7 @@
       initializeEventListeners();
       startRealTimeUpdates();
       
-      // Initialize Week Average button state
+      // Initialize Week Summary button state
       updateWeekAverageButton();
       
       // Load dashboard metrics with real data
@@ -729,20 +729,20 @@
         showNotification('Data refreshed successfully', 'success');
       });
 
-      // Week Average button with toggle functionality
+      // Week Summary button with toggle functionality
       document.getElementById('weekAverageBtn').addEventListener('click', async () => {
         if (isShowingWeekAverage) {
-          // Currently showing week average, switch to daily metrics
+          // Currently showing week summary, switch to daily metrics
           await loadMetricsData();
           isShowingWeekAverage = false;
           updateWeekAverageButton();
           document.getElementById('reportPeriod').textContent = 'Current Week';
           showNotification('Switched to daily metrics view', 'success');
         } else {
-          // Currently showing daily metrics, switch to week average
+          // Currently showing daily metrics, switch to week summary
           await calculateWeekAverage();
-          if (document.getElementById('reportPeriod').textContent.includes('Week Average')) {
-            // Only update state if week average calculation was successful
+          if (document.getElementById('reportPeriod').textContent.includes('Week Summary')) {
+            // Only update state if week summary calculation was successful
             isShowingWeekAverage = true;
             updateWeekAverageButton();
           }
@@ -1973,10 +1973,10 @@
       const bothShiftsHeader = document.getElementById('bothShiftsHeader');
       
       if (isShowingWeekAverage) {
-        // Show WEEK AVG in column headers when displaying week averages
-        firstShiftHeader.innerHTML = 'FIRST SHIFT<br><span class="text-xs">WEEK AVG</span>';
-        secondShiftHeader.innerHTML = 'SECOND SHIFT<br><span class="text-xs">WEEK AVG</span>';
-        bothShiftsHeader.innerHTML = 'BOTH SHIFTS<br><span class="text-xs">WEEK AVG</span>';
+        // Show WEEK SUMMARY in column headers when displaying week summary
+        firstShiftHeader.innerHTML = 'FIRST SHIFT<br><span class="text-xs">WEEK SUMMARY</span>';
+        secondShiftHeader.innerHTML = 'SECOND SHIFT<br><span class="text-xs">WEEK SUMMARY</span>';
+        bothShiftsHeader.innerHTML = 'BOTH SHIFTS<br><span class="text-xs">WEEK SUMMARY</span>';
       } else {
         // Show regular column headers when displaying daily metrics
         firstShiftHeader.textContent = 'FIRST SHIFT';
@@ -1985,15 +1985,15 @@
       }
     }
 
-    // Update Week Average button text based on current state
+    // Update Week Summary button text based on current state
     function updateWeekAverageButton() {
       const button = document.getElementById('weekAverageBtn');
       if (isShowingWeekAverage) {
-        // Currently showing week averages, button should offer to switch to daily
+        // Currently showing week summary, button should offer to switch to daily
         button.innerHTML = '<i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Daily Metrics</span><span class="sm:hidden">Daily</span>';
       } else {
-        // Currently showing daily metrics, button should offer week average
-        button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Average</span><span class="sm:hidden">Week Avg</span>';
+        // Currently showing daily metrics, button should offer week summary
+        button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Summary</span><span class="sm:hidden">Week Sum</span>';
       }
       lucide.createIcons();
       
@@ -2001,7 +2001,7 @@
       updateColumnHeaders();
     }
 
-    // Calculate and display week average metrics
+    // Calculate and display week summary metrics
     async function calculateWeekAverage() {
       try {
         // Show loading state
@@ -2010,7 +2010,7 @@
         button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i>Calculating...';
         button.disabled = true;
         
-        showNotification('Calculating week averages...', 'info');
+        showNotification('Calculating week summary...', 'info');
         
         // Get current week selection
         const week = document.getElementById('week').value;
@@ -2022,43 +2022,43 @@
           return;
         }
 
-        // Fetch week average data from API
+        // Fetch week summary data from API
         const response = await fetch(`/api/week-average?week=${encodeURIComponent(week)}`);
         const data = await response.json();
 
         if (!data.success) {
-          throw new Error(data.error || 'Failed to calculate week averages');
+          throw new Error(data.error || 'Failed to calculate week summary');
         }
 
         // Display the calculated averages in the table
         displayWeekAverages(data.averages);
         
         // Update report period indicator
-        document.getElementById('reportPeriod').textContent = `Week Average (${data.period})`;
+        document.getElementById('reportPeriod').textContent = `Week Summary (${data.period})`;
         
         // Show success notification with data points info
         const totalDataPoints = data.data_points.first_shift_count + data.data_points.second_shift_count + data.data_points.both_shifts_count;
-        showNotification(`Week averages calculated successfully using ${totalDataPoints} data points from ${data.data_points.week_submissions} day submissions`, 'success');
+        showNotification(`Week summary calculated successfully using ${totalDataPoints} data points from ${data.data_points.week_submissions} day submissions`, 'success');
         
         // Log calculation details
-        console.log('📊 Week Average Data:', data);
+        console.log('📊 Week Summary Data:', data);
 
       } catch (error) {
-        console.error('Week average calculation error:', error);
-        showNotification(`Error calculating week averages: ${error.message}`, 'error');
+        console.error('Week summary calculation error:', error);
+        showNotification(`Error calculating week summary: ${error.message}`, 'error');
       } finally {
         // Restore button state (don't change text here as it's handled by updateWeekAverageButton)
         const button = document.getElementById('weekAverageBtn');
         button.disabled = false;
         if (!isShowingWeekAverage) {
-          // Only reset to default if we're not successfully showing week averages
-          button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Average</span><span class="sm:hidden">Week Avg</span>';
+          // Only reset to default if we're not successfully showing week summary
+          button.innerHTML = '<i data-lucide="calendar-check" class="w-4 h-4 inline mr-1"></i><span class="hidden sm:inline">Week Summary</span><span class="sm:hidden">Week Sum</span>';
         }
         lucide.createIcons();
       }
     }
 
-    // Display week average values in the table
+    // Display week summary values in the table
     function displayWeekAverages(averages) {
       // OEE Values (percentages) - now using separate die cut values
       updateTableCell('oeeDieCut1FirstShift', averages.oee.die_cut_1.first_shift, '%', 'oee');

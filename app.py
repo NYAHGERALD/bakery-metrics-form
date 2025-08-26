@@ -36,7 +36,7 @@ DATABASE_CONFIG = {
     'password': os.getenv('DB_PASSWORD', ''),
     'port': os.getenv('DB_PORT', ''),
     'connect_timeout': 10,  # 10 second timeout
-    'sslmode': 'require'
+    'sslmode': 'disable'
 }
 
 # Google Drive Configuration (for image uploads)
