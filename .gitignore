@@ -169,6 +169,15 @@ static/uploads/
 media/
 
 # -------------------------
+# Documentation files (auto-generated)
+# -------------------------
+EMAIL_IMPLEMENTATION_COMPLETE.md
+EMAIL_SETUP_GUIDE.md
+FINAL_STATUS_REPORT.md
+test_email_system.py
+test_gmail_connection.py
+
+# -------------------------
 # Deployment
 # -------------------------
 # Keep render.yaml for Render deployments
