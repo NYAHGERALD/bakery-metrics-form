@@ -2,6 +2,7 @@
 # Professional authentication with password hashing and session management
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
+from flask_mail import Mail, Message
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import bcrypt
@@ -15,6 +16,7 @@ from functools import wraps
 import logging
 from contextlib import contextmanager
 import time
+import threading
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +30,18 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', '')
 app.permanent_session_lifetime = timedelta(hours=2)
 
+# Email Configuration (Flask-Mail)
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', '')
+
+# Initialize Flask-Mail
+mail = Mail(app)
+
 # Database Configuration
 DATABASE_CONFIG = {
     'host': os.getenv('DB_HOST', ''),
@@ -36,7 +50,7 @@ DATABASE_CONFIG = {
     'password': os.getenv('DB_PASSWORD', ''),
     'port': os.getenv('DB_PORT', ''),
     'connect_timeout': 10,  # 10 second timeout
-    'sslmode': 'disable'
+    'sslmode': 'require'
 }
 
 # Google Drive Configuration (for image uploads)
@@ -372,6 +386,348 @@ def get_all_week_sheets():
     except Exception as e:
         logger.error(f"Error getting week sheets: {e}")
         return []
+
+# Email notification functions
+def get_all_active_users():
+    """Get all active users for email notifications."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id, email, first_name, last_name
+                    FROM users 
+                    WHERE is_active = true AND email IS NOT NULL AND email != ''
+                    ORDER BY first_name, last_name
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        logger.error(f"Error fetching active users: {e}")
+        return []
+
+def create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by):
+    """Create professional HTML email for metrics notification."""
+    # Extract the metrics data
+    first_shift = metrics_data.get('first_shift', {})
+    second_shift = metrics_data.get('second_shift', {})
+    
+    # Helper function to format percentage
+    def format_percentage(value):
+        if value is None or value == '':
+            return 'N/A'
+        try:
+            return f"{float(value):.1f}%"
+        except (ValueError, TypeError):
+            return 'N/A'
+    
+    # Helper function to format pounds
+    def format_pounds(value):
+        if value is None or value == '':
+            return 'N/A'
+        try:
+            return f"{float(value):,.0f} lbs"
+        except (ValueError, TypeError):
+            return 'N/A'
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bakery Metrics Report</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }}
+            .container {{
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }}
+            .header {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 28px;
+                font-weight: 300;
+            }}
+            .header p {{
+                margin: 10px 0 0 0;
+                opacity: 0.9;
+                font-size: 16px;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .info-section {{
+                background-color: #f8f9fa;
+                border-left: 4px solid #667eea;
+                padding: 20px;
+                margin-bottom: 30px;
+                border-radius: 0 5px 5px 0;
+            }}
+            .info-section h3 {{
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 18px;
+            }}
+            .info-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }}
+            .info-item {{
+                background: white;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #e0e0e0;
+            }}
+            .info-item strong {{
+                color: #667eea;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }}
+            .info-item div {{
+                font-size: 16px;
+                margin-top: 5px;
+                font-weight: 600;
+                color: #333;
+            }}
+            .metrics-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }}
+            .metrics-table th {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 10px;
+                text-align: center;
+                font-weight: 600;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }}
+            .metrics-table td {{
+                padding: 12px 10px;
+                text-align: center;
+                border-bottom: 1px solid #eee;
+                font-weight: 500;
+            }}
+            .metrics-table tr:nth-child(even) {{
+                background-color: #f8f9fa;
+            }}
+            .metrics-table tr:hover {{
+                background-color: #e3f2fd;
+            }}
+            .metric-category {{
+                background-color: #667eea !important;
+                color: white !important;
+                font-weight: bold;
+                text-align: left !important;
+                padding-left: 15px !important;
+            }}
+            .footer {{
+                background-color: #2c3e50;
+                color: white;
+                padding: 20px 30px;
+                text-align: center;
+                font-size: 14px;
+            }}
+            .footer p {{
+                margin: 5px 0;
+                opacity: 0.8;
+            }}
+            .do-not-reply {{
+                background-color: #fff3cd;
+                border: 1px solid #ffeaa7;
+                color: #856404;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+                text-align: center;
+                font-weight: 600;
+            }}
+            @media (max-width: 600px) {{
+                .container {{
+                    margin: 10px;
+                }}
+                .header, .content, .footer {{
+                    padding: 20px;
+                }}
+                .metrics-table {{
+                    font-size: 12px;
+                }}
+                .metrics-table th, .metrics-table td {{
+                    padding: 8px 5px;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📊 Bakery Metrics Report</h1>
+                <p>Daily Production Metrics Submission</p>
+            </div>
+            
+            <div class="content">
+                <div class="do-not-reply">
+                    ⚠️ DO NOT REPLY - This is an automated notification
+                </div>
+                
+                <div class="info-section">
+                    <h3>📋 Submission Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Week</strong>
+                            <div>{week_name}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>Day</strong>
+                            <div>{day_of_week}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>Submitted By</strong>
+                            <div>{submitted_by}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>Submission Time</strong>
+                            <div>{datetime.now().strftime('%B %d, %Y at %I:%M %p')}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>📈 Production Metrics Summary</h3>
+                
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; padding-left: 15px;">Metric</th>
+                            <th>Die Cut 1</th>
+                            <th>Die Cut 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="metric-category">First Shift - OEE</td>
+                            <td>{format_percentage(first_shift.get('first_die_cut1_oee_pct'))}</td>
+                            <td>{format_percentage(first_shift.get('first_die_cut2_oee_pct'))}</td>
+                        </tr>
+                        <tr>
+                            <td class="metric-category">First Shift - Waste</td>
+                            <td>{format_pounds(first_shift.get('first_die_cut1_waste_lbs'))}</td>
+                            <td>{format_pounds(first_shift.get('first_die_cut2_waste_lbs'))}</td>
+                        </tr>
+                        <tr>
+                            <td class="metric-category">Second Shift - OEE</td>
+                            <td>{format_percentage(second_shift.get('second_die_cut1_oee_pct'))}</td>
+                            <td>{format_percentage(second_shift.get('second_die_cut2_oee_pct'))}</td>
+                        </tr>
+                        <tr>
+                            <td class="metric-category">Second Shift - Waste</td>
+                            <td>{format_pounds(second_shift.get('second_die_cut1_waste_lbs'))}</td>
+                            <td>{format_pounds(second_shift.get('second_die_cut2_waste_lbs'))}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-section">
+                    <h3>📊 Additional Production Data</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>First Shift - Die Cut 1 Volume</strong>
+                            <div>{format_pounds(first_shift.get('first_die_cut1_pounds'))}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>First Shift - Die Cut 2 Volume</strong>
+                            <div>{format_pounds(first_shift.get('first_die_cut2_pounds'))}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>Second Shift - Die Cut 1 Volume</strong>
+                            <div>{format_pounds(second_shift.get('second_die_cut1_pounds'))}</div>
+                        </div>
+                        <div class="info-item">
+                            <strong>Second Shift - Die Cut 2 Volume</strong>
+                            <div>{format_pounds(second_shift.get('second_die_cut2_pounds'))}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p><strong>Bakery Metrics System</strong></p>
+                <p>Automated notification • {datetime.now().strftime('%Y')}</p>
+                <p>This email was sent automatically when metrics data was submitted to the system.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html_content
+
+def send_metrics_notification_async(recipients, subject, html_content):
+    """Send email notification asynchronously."""
+    def send_email():
+        try:
+            with app.app_context():
+                msg = Message(
+                    subject=subject,
+                    recipients=recipients,
+                    html=html_content,
+                    sender=app.config['MAIL_DEFAULT_SENDER']
+                )
+                mail.send(msg)
+                logger.info(f"Metrics notification email sent successfully to {len(recipients)} recipients")
+        except Exception as e:
+            logger.error(f"Failed to send metrics notification email: {e}")
+    
+    # Start email sending in a separate thread to not block the main request
+    thread = threading.Thread(target=send_email)
+    thread.daemon = True
+    thread.start()
+
+def send_metrics_notification(metrics_data, week_name, day_of_week, submitted_by):
+    """Send metrics notification to all active users."""
+    try:
+        # Get all active users
+        users = get_all_active_users()
+        if not users:
+            logger.warning("No active users found for email notification")
+            return False
+        
+        # Prepare email content
+        subject = f"📊 Bakery Metrics Submitted - {week_name} ({day_of_week})"
+        html_content = create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by)
+        
+        # Get recipient email addresses
+        recipients = [user['email'] for user in users]
+        
+        # Send email asynchronously
+        send_metrics_notification_async(recipients, subject, html_content)
+        
+        logger.info(f"Initiated metrics notification email to {len(recipients)} users")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error sending metrics notification: {e}")
+        return False
 
 # Google Drive image upload function (keeping existing functionality)
 def upload_image_to_drive(image_file):
@@ -1282,6 +1638,20 @@ def submit():
 
                 logger.info(f"Form submission completed successfully: {message}")
 
+                # Send email notification to all users if submission was successful
+                if updated:
+                    try:
+                        # Prepare metrics data for email
+                        email_metrics_data = {
+                            'first_shift': first_shift_data,
+                            'second_shift': second_shift_data
+                        }
+                        send_metrics_notification(email_metrics_data, week_name, day_of_week, submitted_by)
+                        logger.info("Email notification initiated for metrics submission")
+                    except Exception as email_error:
+                        # Don't let email errors affect the main submission
+                        logger.error(f"Email notification failed (submission still successful): {email_error}")
+
                 # Always return JSON response for the enhanced form
                 return jsonify({
                     'success': updated,
@@ -1306,6 +1676,49 @@ def submit():
         )
         
         return jsonify({'success': False, 'message': error_msg}), 500
+
+
+# Test route for email functionality (can be removed in production)
+@app.route('/test-email')
+@login_required
+def test_email():
+    """Test route to verify email functionality - REMOVE IN PRODUCTION"""
+    try:
+        # Test data
+        test_metrics = {
+            'first_shift': {
+                'first_die_cut1_oee_pct': 85.5,
+                'first_die_cut2_oee_pct': 78.2,
+                'first_die_cut1_pounds': 5500,
+                'first_die_cut2_pounds': 4800,
+                'first_die_cut1_waste_lbs': 120,
+                'first_die_cut2_waste_lbs': 95
+            },
+            'second_shift': {
+                'second_die_cut1_oee_pct': 82.1,
+                'second_die_cut2_oee_pct': 75.9,
+                'second_die_cut1_pounds': 5200,
+                'second_die_cut2_pounds': 4600,
+                'second_die_cut1_waste_lbs': 110,
+                'second_die_cut2_waste_lbs': 88
+            }
+        }
+        
+        # Send test email
+        success = send_metrics_notification(
+            test_metrics, 
+            "Test Week", 
+            "Monday", 
+            "Test User"
+        )
+        
+        return jsonify({
+            'success': success,
+            'message': 'Test email sent' if success else 'Test email failed'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 
 
