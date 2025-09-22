@@ -17,6 +17,14 @@ import logging
 from contextlib import contextmanager
 import time
 import threading
+from reportlab.lib.pagesizes import letter, A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.pdfgen import canvas
+import tempfile
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -404,37 +412,15 @@ def get_all_active_users():
         logger.error(f"Error fetching active users: {e}")
         return []
 
-def create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by):
-    """Create professional HTML email for metrics notification."""
-    # Extract the metrics data
-    first_shift = metrics_data.get('first_shift', {})
-    second_shift = metrics_data.get('second_shift', {})
-    
-    # Helper function to format percentage
-    def format_percentage(value):
-        if value is None or value == '':
-            return 'N/A'
-        try:
-            return f"{float(value):.1f}%"
-        except (ValueError, TypeError):
-            return 'N/A'
-    
-    # Helper function to format pounds
-    def format_pounds(value):
-        if value is None or value == '':
-            return 'N/A'
-        try:
-            return f"{float(value):,.0f} lbs"
-        except (ValueError, TypeError):
-            return 'N/A'
-
+def create_simple_metrics_email_html(recipient_name):
+    """Create simple HTML email for metrics notification with PDF attachments."""
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Bakery Metrics Report</title>
+        <title>Daily and Weekly Bakery Metrics</title>
         <style>
             body {{
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -444,237 +430,65 @@ def create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by
                 background-color: #f5f5f5;
             }}
             .container {{
-                max-width: 800px;
+                max-width: 600px;
                 margin: 0 auto;
                 background-color: #ffffff;
                 border-radius: 10px;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 overflow: hidden;
             }}
-            .header {{
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-            }}
-            .header h1 {{
-                margin: 0;
-                font-size: 28px;
-                font-weight: 300;
-            }}
-            .header p {{
-                margin: 10px 0 0 0;
-                opacity: 0.9;
-                font-size: 16px;
-            }}
             .content {{
                 padding: 30px;
+                text-align: left;
             }}
-            .info-section {{
-                background-color: #f8f9fa;
-                border-left: 4px solid #667eea;
-                padding: 20px;
-                margin-bottom: 30px;
-                border-radius: 0 5px 5px 0;
-            }}
-            .info-section h3 {{
-                margin: 0 0 15px 0;
-                color: #333;
-                font-size: 18px;
-            }}
-            .info-grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
-            }}
-            .info-item {{
-                background: white;
-                padding: 15px;
-                border-radius: 5px;
-                border: 1px solid #e0e0e0;
-            }}
-            .info-item strong {{
-                color: #667eea;
-                font-size: 14px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }}
-            .info-item div {{
+            .greeting {{
                 font-size: 16px;
-                margin-top: 5px;
-                font-weight: 600;
+                margin-bottom: 20px;
                 color: #333;
             }}
-            .metrics-table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background: white;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }}
-            .metrics-table th {{
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 15px 10px;
-                text-align: center;
-                font-weight: 600;
-                font-size: 14px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }}
-            .metrics-table td {{
-                padding: 12px 10px;
-                text-align: center;
-                border-bottom: 1px solid #eee;
-                font-weight: 500;
-            }}
-            .metrics-table tr:nth-child(even) {{
-                background-color: #f8f9fa;
-            }}
-            .metrics-table tr:hover {{
-                background-color: #e3f2fd;
-            }}
-            .metric-category {{
-                background-color: #667eea !important;
-                color: white !important;
-                font-weight: bold;
-                text-align: left !important;
-                padding-left: 15px !important;
-            }}
-            .footer {{
-                background-color: #2c3e50;
-                color: white;
-                padding: 20px 30px;
-                text-align: center;
-                font-size: 14px;
-            }}
-            .footer p {{
-                margin: 5px 0;
-                opacity: 0.8;
-            }}
-            .do-not-reply {{
-                background-color: #fff3cd;
-                border: 1px solid #ffeaa7;
-                color: #856404;
-                padding: 15px;
-                border-radius: 5px;
+            .message {{
+                font-size: 16px;
                 margin-bottom: 20px;
-                text-align: center;
-                font-weight: 600;
+                color: #333;
+                line-height: 1.8;
+            }}
+            .link {{
+                color: #0066cc;
+                text-decoration: none;
+            }}
+            .link:hover {{
+                text-decoration: underline;
+            }}
+            .signature {{
+                font-size: 16px;
+                margin-top: 30px;
+                color: #333;
             }}
             @media (max-width: 600px) {{
                 .container {{
                     margin: 10px;
                 }}
-                .header, .content, .footer {{
+                .content {{
                     padding: 20px;
-                }}
-                .metrics-table {{
-                    font-size: 12px;
-                }}
-                .metrics-table th, .metrics-table td {{
-                    padding: 8px 5px;
                 }}
             }}
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="header">
-                <h1>📊 Bakery Metrics Report</h1>
-                <p>Daily Production Metrics Submission</p>
-            </div>
-            
             <div class="content">
-                <div class="do-not-reply">
-                    ⚠️ DO NOT REPLY - This is an automated notification
+                <div class="greeting">
+                    Good morning {recipient_name},
                 </div>
                 
-                <div class="info-section">
-                    <h3>📋 Submission Details</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <strong>Week</strong>
-                            <div>{week_name}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>Day</strong>
-                            <div>{day_of_week}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>Submitted By</strong>
-                            <div>{submitted_by}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>Submission Time</strong>
-                            <div>{datetime.now().strftime('%B %d, %Y at %I:%M %p')}</div>
-                        </div>
-                    </div>
+                <div class="message">
+                    Please find attached the daily and weekly Bakery Metrics PDFs below for your review. For more detailed insights, important updates, and interactive chart visualizations, kindly visit our web app at: <a href="http://www.nyabeatz.com" class="link">http://www.nyabeatz.com</a>.
                 </div>
-
-                <h3>📈 Production Metrics Summary</h3>
                 
-                <table class="metrics-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align: left; padding-left: 15px;">Metric</th>
-                            <th>Die Cut 1</th>
-                            <th>Die Cut 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="metric-category">First Shift - OEE</td>
-                            <td>{format_percentage(first_shift.get('first_die_cut1_oee_pct'))}</td>
-                            <td>{format_percentage(first_shift.get('first_die_cut2_oee_pct'))}</td>
-                        </tr>
-                        <tr>
-                            <td class="metric-category">First Shift - Waste</td>
-                            <td>{format_pounds(first_shift.get('first_die_cut1_waste_lbs'))}</td>
-                            <td>{format_pounds(first_shift.get('first_die_cut2_waste_lbs'))}</td>
-                        </tr>
-                        <tr>
-                            <td class="metric-category">Second Shift - OEE</td>
-                            <td>{format_percentage(second_shift.get('second_die_cut1_oee_pct'))}</td>
-                            <td>{format_percentage(second_shift.get('second_die_cut2_oee_pct'))}</td>
-                        </tr>
-                        <tr>
-                            <td class="metric-category">Second Shift - Waste</td>
-                            <td>{format_pounds(second_shift.get('second_die_cut1_waste_lbs'))}</td>
-                            <td>{format_pounds(second_shift.get('second_die_cut2_waste_lbs'))}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="info-section">
-                    <h3>📊 Additional Production Data</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <strong>First Shift - Die Cut 1 Volume</strong>
-                            <div>{format_pounds(first_shift.get('first_die_cut1_pounds'))}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>First Shift - Die Cut 2 Volume</strong>
-                            <div>{format_pounds(first_shift.get('first_die_cut2_pounds'))}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>Second Shift - Die Cut 1 Volume</strong>
-                            <div>{format_pounds(second_shift.get('second_die_cut1_pounds'))}</div>
-                        </div>
-                        <div class="info-item">
-                            <strong>Second Shift - Die Cut 2 Volume</strong>
-                            <div>{format_pounds(second_shift.get('second_die_cut2_pounds'))}</div>
-                        </div>
-                    </div>
+                <div class="signature">
+                    Best regards,<br>
+                    Bakery Metrics Administrator.
                 </div>
-            </div>
-            
-            <div class="footer">
-                <p><strong>Bakery Metrics System</strong></p>
-                <p>Automated notification • {datetime.now().strftime('%Y')}</p>
-                <p>This email was sent automatically when metrics data was submitted to the system.</p>
             </div>
         </div>
     </body>
@@ -682,21 +496,90 @@ def create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by
     """
     return html_content
 
-def send_metrics_notification_async(recipients, subject, html_content):
-    """Send email notification asynchronously."""
+def send_metrics_notification_async(recipients, subject, html_content, week_name, day_of_week):
+    """Send email notification asynchronously with PDF attachments."""
     def send_email():
+        daily_pdf_path = None
+        weekly_pdf_path = None
+        
         try:
             with app.app_context():
+                # Create PDF attachments
+                daily_pdf_path = create_daily_metrics_pdf(week_name, day_of_week)
+                weekly_pdf_path = create_weekly_summary_pdf(week_name)
+                
+                # Create email message
                 msg = Message(
                     subject=subject,
                     recipients=recipients,
                     html=html_content,
                     sender=app.config['MAIL_DEFAULT_SENDER']
                 )
+                
+                # Attach PDFs if they were created successfully
+                if daily_pdf_path and os.path.exists(daily_pdf_path):
+                    with open(daily_pdf_path, 'rb') as f:
+                        msg.attach(
+                            filename=f"Daily_Metrics_{week_name}_{day_of_week}.pdf",
+                            content_type="application/pdf",
+                            data=f.read()
+                        )
+                    logger.info(f"Attached daily metrics PDF for {week_name} {day_of_week}")
+                
+                if weekly_pdf_path and os.path.exists(weekly_pdf_path):
+                    with open(weekly_pdf_path, 'rb') as f:
+                        msg.attach(
+                            filename=f"Weekly_Summary_{week_name}.pdf",
+                            content_type="application/pdf",
+                            data=f.read()
+                        )
+                    logger.info(f"Attached weekly summary PDF for {week_name}")
+                
+                # Send email
                 mail.send(msg)
-                logger.info(f"Metrics notification email sent successfully to {len(recipients)} recipients")
+                logger.info(f"Metrics notification email with PDF attachments sent successfully to {len(recipients)} recipients")
+                
+                # Log the email activity
+                try:
+                    with get_db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                INSERT INTO email_activity_log 
+                                (type, week_name, day_of_week, recipient_count, status, sent_at)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                            """, (
+                                'automatic', week_name, day_of_week, len(recipients), 
+                                'sent', datetime.now()
+                            ))
+                        conn.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log email activity: {log_error}")
+                
         except Exception as e:
             logger.error(f"Failed to send metrics notification email: {e}")
+            # Log the failed attempt
+            try:
+                with get_db_connection() as conn:
+                    with conn.cursor() as cur:
+                        cur.execute("""
+                            INSERT INTO email_activity_log 
+                            (type, week_name, day_of_week, recipient_count, status, sent_at, error_message)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """, (
+                            'automatic', week_name, day_of_week, len(recipients), 
+                            'failed', datetime.now(), str(e)
+                        ))
+                    conn.commit()
+            except:
+                pass
+        finally:
+            # Clean up temporary PDF files
+            for pdf_path in [daily_pdf_path, weekly_pdf_path]:
+                if pdf_path and os.path.exists(pdf_path):
+                    try:
+                        os.unlink(pdf_path)
+                    except Exception as e:
+                        logger.warning(f"Failed to clean up PDF file {pdf_path}: {e}")
     
     # Start email sending in a separate thread to not block the main request
     thread = threading.Thread(target=send_email)
@@ -704,30 +587,1015 @@ def send_metrics_notification_async(recipients, subject, html_content):
     thread.start()
 
 def send_metrics_notification(metrics_data, week_name, day_of_week, submitted_by):
-    """Send metrics notification to all active users."""
+    """Send metrics notification to users with enabled email preferences and PDF attachments."""
     try:
-        # Get all active users
-        users = get_all_active_users()
+        # Get users with enabled email preferences instead of all active users
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        u.id,
+                        u.email,
+                        u.first_name,
+                        u.last_name
+                    FROM users u
+                    JOIN email_notification_preferences enp 
+                        ON u.id = enp.user_id 
+                    WHERE u.is_active = true 
+                        AND enp.is_enabled = true 
+                        AND enp.preference_type = 'automatic'
+                    ORDER BY u.first_name, u.last_name, u.email
+                """)
+                users = cur.fetchall()
+        
         if not users:
-            logger.warning("No active users found for email notification")
+            logger.warning("No users with enabled email preferences found for email notification")
             return False
         
-        # Prepare email content
-        subject = f"📊 Bakery Metrics Submitted - {week_name} ({day_of_week})"
-        html_content = create_metrics_email_html(metrics_data, week_name, day_of_week, submitted_by)
+        # Prepare email content with simplified message
+        subject = "Daily and Weekly Bakery Metrics"
         
-        # Get recipient email addresses
-        recipients = [user['email'] for user in users]
+        # Send individual emails to each user with their name
+        for user in users:
+            # Get user's first name for personalization
+            first_name = user.get('first_name', '').strip()
+            last_name = user.get('last_name', '').strip()
+            
+            if first_name:
+                user_name = first_name
+            elif first_name and last_name:
+                user_name = f"{first_name} {last_name}".strip()
+            else:
+                # Fallback to extracting name from email if no name is available
+                email_name = user['email'].split('@')[0].replace('.', ' ').replace('_', ' ').title()
+                user_name = email_name
+            
+            html_content = create_simple_metrics_email_html(user_name)
+            
+            # Send email asynchronously with PDF attachments
+            send_metrics_notification_async([user['email']], subject, html_content, week_name, day_of_week)
         
-        # Send email asynchronously
-        send_metrics_notification_async(recipients, subject, html_content)
-        
-        logger.info(f"Initiated metrics notification email to {len(recipients)} users")
+        logger.info(f"Initiated simplified metrics notification emails with PDF attachments to {len(users)} users with enabled preferences")
         return True
         
     except Exception as e:
         logger.error(f"Error sending metrics notification: {e}")
         return False
+
+# PDF Generation Functions (Global)
+
+def create_daily_metrics_pdf(week_name, day_of_week):
+    """Create simple, well-formatted PDF table for daily metrics."""
+    # Get data from both_shifts_metrics table for combined totals
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        ws.submitted_by,
+                        ws.created_at as submitted_at,
+                        -- First shift data
+                        fs.die_cut1_oee_pct as first_die_cut1_oee_pct,
+                        fs.die_cut2_oee_pct as first_die_cut2_oee_pct,
+                        fs.die_cut1_lbs as first_die_cut1_lbs,
+                        fs.die_cut2_lbs as first_die_cut2_lbs,
+                        fs.pounds_total as first_shift_pounds_total,
+                        fs.die_cut1_waste_pct,
+                        fs.die_cut2_waste_pct,
+                        fs.oee_avg_pct as first_shift_oee_avg,
+                        fs.waste_avg_pct as first_shift_waste_percent,
+                        -- Second shift data
+                        ss.die_cut1_oee_pct as second_die_cut1_oee_pct,
+                        ss.die_cut2_oee_pct as second_die_cut2_oee_pct,
+                        ss.die_cut1_lbs as second_die_cut1_lbs,
+                        ss.die_cut2_lbs as second_die_cut2_lbs,
+                        ss.pounds_total as second_shift_pounds_total,
+                        ss.die_cut1_waste_pct as second_die_cut1_waste_pct,
+                        ss.die_cut2_waste_pct as second_die_cut2_waste_pct,
+                        ss.oee_avg_pct as second_shift_oee_avg,
+                        ss.waste_avg_pct as second_shift_waste_percent,
+                        -- Both shifts combined data
+                        bs.die_cut1_oee_pct as both_die_cut1_oee_pct,
+                        bs.die_cut2_oee_pct as both_die_cut2_oee_pct,
+                        bs.oee_avg_pct as both_oee_avg_pct,
+                        bs.die_cut1_lbs as both_die_cut1_lbs,
+                        bs.die_cut2_lbs as both_die_cut2_lbs,
+                        bs.pounds_total as both_pounds_total,
+                        bs.die_cut1_waste_pct as both_die_cut1_waste_pct,
+                        bs.die_cut2_waste_pct as both_die_cut2_waste_pct,
+                        bs.waste_avg_pct as both_waste_avg_pct
+                    FROM week_submissions ws
+                    LEFT JOIN first_shift_metrics fs ON ws.id = fs.week_submission_id
+                    LEFT JOIN second_shift_metrics ss ON ws.id = ss.week_submission_id
+                    LEFT JOIN both_shifts_metrics bs ON ws.id = bs.week_submission_id
+                    WHERE ws.week_name = %s AND ws.day_of_week = %s
+                    ORDER BY ws.created_at DESC
+                    LIMIT 1
+                """, (week_name, day_of_week))
+                metrics_data = cur.fetchone()
+    except Exception as e:
+        logger.error(f"Error fetching daily metrics data: {e}")
+        return None
+
+    if not metrics_data:
+        return None
+    
+    # Create temporary file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    
+    try:
+        # Create PDF document with portrait orientation
+        doc = SimpleDocTemplate(temp_file.name, pagesize=letter,
+                              rightMargin=72, leftMargin=72,
+                              topMargin=72, bottomMargin=72)
+        
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Helper functions
+        def format_value(value, value_type='number'):
+            """Format values with proper units."""
+            if value is None or value == '':
+                return 'N/A'
+            try:
+                num_value = float(value)
+                if value_type == 'percentage':
+                    return f"{num_value:.2f}%"
+                elif value_type == 'pounds':
+                    return f"{num_value:,.0f}"
+                else:
+                    return f"{num_value:,.1f}"
+            except (ValueError, TypeError):
+                return 'N/A'
+        
+        def get_status_and_color(value, metric_type, target_type):
+            """Get status text and background color based on targets."""
+            if value is None or value == '':
+                return 'N/A', colors.white
+            
+            try:
+                num_value = float(value)
+                if metric_type == 'OEE':
+                    if num_value >= 70:
+                        return 'ON TARGET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+                elif metric_type == 'VOLUME':
+                    if target_type == 'die_cut':
+                        target = 6000
+                    else:  # total
+                        target = 12000
+                    if num_value >= target:
+                        return 'TARGET MET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+                elif metric_type == 'WASTE':
+                    if num_value <= 3.75:
+                        return 'ON TARGET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+            except (ValueError, TypeError):
+                pass
+            
+            return 'N/A', colors.white
+        
+        # Header information
+        title_style = ParagraphStyle(
+            'Title',
+            parent=styles['Title'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        elements.append(Paragraph("DAILY METRICS REPORT", title_style))
+        
+        # Report metadata
+        header_info = [
+            ['Date:', f"{week_name} - {day_of_week}"],
+            ['Submitted By:', metrics_data.get('submitted_by', 'N/A')],
+            ['Time:', metrics_data.get('submitted_at', datetime.now()).strftime('%I:%M %p')],
+            ['Title:', 'Bakery Production Metrics']
+        ]
+        
+        header_table = Table(header_info, colWidths=[1.5*inch, 4*inch])
+        header_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        
+        elements.append(header_table)
+        elements.append(Spacer(1, 30))
+        
+        # Main metrics table
+        table_data = [
+            ['Key Performance Indicator', 'Targets', 'First Shift', 'Second Shift', 'Both Shift', 'Status']
+        ]
+        
+        # OEE Section
+        table_data.append(['OEE', '', '', '', '', ''])
+        
+        # OEE Die Cut 1 - use database column values instead of calculations
+        first_oee1 = metrics_data.get('first_die_cut1_oee_pct')
+        second_oee1 = metrics_data.get('second_die_cut1_oee_pct')
+        both_die_cut1_oee = metrics_data.get('both_die_cut1_oee_pct')
+        
+        status_text, status_color = get_status_and_color(both_die_cut1_oee, 'OEE', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 1',
+            '≥ 70%',
+            format_value(first_oee1, 'percentage'),
+            format_value(second_oee1, 'percentage'),
+            format_value(both_die_cut1_oee, 'percentage'),
+            status_text
+        ])
+        
+        # OEE Die Cut 2 - use database column values instead of calculations
+        first_oee2 = metrics_data.get('first_die_cut2_oee_pct')
+        second_oee2 = metrics_data.get('second_die_cut2_oee_pct')
+        both_die_cut2_oee = metrics_data.get('both_die_cut2_oee_pct')
+        
+        status_text, status_color = get_status_and_color(both_die_cut2_oee, 'OEE', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 2',
+            '≥ 70%',
+            format_value(first_oee2, 'percentage'),
+            format_value(second_oee2, 'percentage'),
+            format_value(both_die_cut2_oee, 'percentage'),
+            status_text
+        ])
+        
+        # OEE Total - use database column values instead of calculations
+        first_shift_oee_avg = metrics_data.get('first_shift_oee_avg')
+        second_shift_oee_avg = metrics_data.get('second_shift_oee_avg')
+        both_oee_avg = metrics_data.get('both_oee_avg_pct')
+        
+        status_text, status_color = get_status_and_color(both_oee_avg, 'OEE', 'total')
+        
+        table_data.append([
+            'Total',
+            '≥ 70%',
+            format_value(first_shift_oee_avg, 'percentage'),
+            format_value(second_shift_oee_avg, 'percentage'),
+            format_value(both_oee_avg, 'percentage'),
+            status_text
+        ])
+        
+        # VOLUME Section
+        table_data.append(['VOLUME', '', '', '', '', ''])
+        
+        # Volume Die Cut 1 - use database column values instead of calculations
+        first_vol1 = metrics_data.get('first_die_cut1_lbs')
+        second_vol1 = metrics_data.get('second_die_cut1_lbs')
+        both_die_cut1_lbs = metrics_data.get('both_die_cut1_lbs')
+        
+        status_text, status_color = get_status_and_color(both_die_cut1_lbs, 'VOLUME', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 1',
+            '≥ 6,000 lbs',
+            format_value(first_vol1, 'pounds'),
+            format_value(second_vol1, 'pounds'),
+            format_value(both_die_cut1_lbs, 'pounds'),
+            status_text
+        ])
+        
+        # Volume Die Cut 2 - use database column values instead of calculations
+        first_vol2 = metrics_data.get('first_die_cut2_lbs')
+        second_vol2 = metrics_data.get('second_die_cut2_lbs')
+        both_die_cut2_lbs = metrics_data.get('both_die_cut2_lbs')
+        
+        status_text, status_color = get_status_and_color(both_die_cut2_lbs, 'VOLUME', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 2',
+            '≥ 6,000 lbs',
+            format_value(first_vol2, 'pounds'),
+            format_value(second_vol2, 'pounds'),
+            format_value(both_die_cut2_lbs, 'pounds'),
+            status_text
+        ])
+        
+        # Volume Total - use database column values instead of calculations
+        first_shift_pounds_total = metrics_data.get('first_shift_pounds_total')
+        second_shift_pounds_total = metrics_data.get('second_shift_pounds_total')
+        both_pounds_total = metrics_data.get('both_pounds_total')
+        
+        status_text, status_color = get_status_and_color(both_pounds_total, 'VOLUME', 'total')
+        
+        table_data.append([
+            'Total',
+            '≥ 12,000 lbs',
+            format_value(first_shift_pounds_total, 'pounds'),
+            format_value(second_shift_pounds_total, 'pounds'),
+            format_value(both_pounds_total, 'pounds'),
+            status_text
+        ])
+        
+        # WASTE Section
+        table_data.append(['WASTE', '', '', '', '', ''])
+        
+        # Waste Die Cut 1 - use database column values instead of calculations
+        first_waste1 = metrics_data.get('die_cut1_waste_pct')
+        second_waste1 = metrics_data.get('second_die_cut1_waste_pct')
+        both_die_cut1_waste_pct = metrics_data.get('both_die_cut1_waste_pct')
+        
+        status_text, status_color = get_status_and_color(both_die_cut1_waste_pct, 'WASTE', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 1',
+            '≤ 3.75%',
+            format_value(first_waste1, 'percentage'),
+            format_value(second_waste1, 'percentage'),
+            format_value(both_die_cut1_waste_pct, 'percentage'),
+            status_text
+        ])
+        
+        # Waste Die Cut 2 - use database column values instead of calculations
+        first_waste2 = metrics_data.get('die_cut2_waste_pct')
+        second_waste2 = metrics_data.get('second_die_cut2_waste_pct')
+        both_die_cut2_waste_pct = metrics_data.get('both_die_cut2_waste_pct')
+        
+        status_text, status_color = get_status_and_color(both_die_cut2_waste_pct, 'WASTE', 'die_cut')
+        
+        table_data.append([
+            'Die Cut 2',
+            '≤ 3.75%',
+            format_value(first_waste2, 'percentage'),
+            format_value(second_waste2, 'percentage'),
+            format_value(both_die_cut2_waste_pct, 'percentage'),
+            status_text
+        ])
+        
+        # Waste Total - use database column values instead of manual calculations
+        first_shift_waste_total = metrics_data.get('first_shift_waste_percent')
+        second_shift_waste_total = metrics_data.get('second_shift_waste_percent')
+        both_waste_avg = metrics_data.get('both_waste_avg_pct')
+        
+        status_text, status_color = get_status_and_color(both_waste_avg, 'WASTE', 'total')
+        
+        table_data.append([
+            'Total',
+            '≤ 3.75%',
+            format_value(first_shift_waste_total, 'percentage'),
+            format_value(second_shift_waste_total, 'percentage'),
+            format_value(both_waste_avg, 'percentage'),
+            status_text
+        ])
+        
+        # Create table
+        table = Table(table_data, colWidths=[2.2*inch, 1.2*inch, 1.1*inch, 1.1*inch, 1.1*inch, 1.3*inch])
+        
+        # Apply table styling
+        table_style = [
+            # Header row - colorful gradient-like colors
+            ('BACKGROUND', (0, 0), (0, 0), colors.Color(0.4, 0.5, 0.9)),  # Blue for KPI column
+            ('BACKGROUND', (1, 0), (1, 0), colors.Color(0.5, 0.6, 0.8)),  # Light blue for Targets
+            ('BACKGROUND', (2, 0), (2, 0), colors.Color(0.2, 0.7, 0.9)),  # Cyan for First Shift
+            ('BACKGROUND', (3, 0), (3, 0), colors.Color(0.3, 0.6, 0.9)),  # Medium blue for Second Shift
+            ('BACKGROUND', (4, 0), (4, 0), colors.Color(0.6, 0.3, 0.9)),  # Purple for Both Shift
+            ('BACKGROUND', (5, 0), (5, 0), colors.Color(0.9, 0.5, 0.2)),  # Orange for Status
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Category headers (OEE, VOLUME, WASTE) - vibrant colors
+            ('BACKGROUND', (0, 1), (-1, 1), colors.Color(0.2, 0.8, 0.4)),  # Green for OEE
+            ('BACKGROUND', (0, 5), (-1, 5), colors.Color(0.9, 0.6, 0.1)),  # Orange for VOLUME
+            ('BACKGROUND', (0, 9), (-1, 9), colors.Color(0.8, 0.2, 0.3)),  # Red for WASTE
+            ('TEXTCOLOR', (0, 1), (-1, 1), colors.white),
+            ('TEXTCOLOR', (0, 5), (-1, 5), colors.white),
+            ('TEXTCOLOR', (0, 9), (-1, 9), colors.white),
+            ('FONTNAME', (0, 1), (0, 1), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 5), (0, 5), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 9), (0, 9), 'Helvetica-Bold'),
+            
+            # Data rows
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 2), (-1, 4), [colors.white, colors.lightgrey]),
+            ('ROWBACKGROUNDS', (0, 6), (-1, 8), [colors.white, colors.lightgrey]),
+            ('ROWBACKGROUNDS', (0, 10), (-1, 12), [colors.white, colors.lightgrey]),
+        ]
+        
+        # Add conditional formatting for status colors
+        for i, row in enumerate(table_data[1:], 1):  # Skip header
+            if len(row) > 5 and row[5] in ['ON TARGET', 'TARGET MET']:
+                table_style.append(('BACKGROUND', (5, i), (5, i), colors.green))
+                table_style.append(('TEXTCOLOR', (5, i), (5, i), colors.white))
+            elif len(row) > 5 and row[5] == 'BELOW TARGET':
+                table_style.append(('BACKGROUND', (5, i), (5, i), colors.red))
+                table_style.append(('TEXTCOLOR', (5, i), (5, i), colors.white))
+        
+        table.setStyle(TableStyle(table_style))
+        elements.append(table)
+        
+        # Build PDF
+        doc.build(elements)
+        return temp_file.name
+        
+    except Exception as e:
+        logger.error(f"Error creating daily metrics PDF: {e}")
+        # Clean up temp file on error
+        try:
+            os.unlink(temp_file.name)
+        except:
+            pass
+        return None
+
+def create_weekly_summary_pdf(week_name):
+    """Create simple, well-formatted PDF table for weekly summary."""
+    # Get data for each day of the week
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        ws.day_of_week,
+                        ws.submitted_by,
+                        ws.created_at as submitted_at,
+                        -- Both shifts combined data
+                        bs.oee_avg_pct,
+                        bs.pounds_total,
+                        bs.waste_avg_pct,
+                        -- Individual Die Cut data from both shifts
+                        bs.die_cut1_oee_pct as both_die_cut1_oee_pct,
+                        bs.die_cut2_oee_pct as both_die_cut2_oee_pct,
+                        bs.die_cut1_lbs as both_die_cut1_lbs,
+                        bs.die_cut2_lbs as both_die_cut2_lbs,
+                        bs.die_cut1_waste_pct as both_die_cut1_waste_pct,
+                        bs.die_cut2_waste_pct as both_die_cut2_waste_pct
+                    FROM week_submissions ws
+                    LEFT JOIN both_shifts_metrics bs ON ws.id = bs.week_submission_id
+                    WHERE ws.week_name = %s
+                    ORDER BY 
+                        CASE ws.day_of_week 
+                            WHEN 'Monday' THEN 1
+                            WHEN 'Tuesday' THEN 2
+                            WHEN 'Wednesday' THEN 3
+                            WHEN 'Thursday' THEN 4
+                            WHEN 'Friday' THEN 5
+                            WHEN 'Saturday' THEN 6
+                            WHEN 'Sunday' THEN 7
+                        END
+                """, (week_name,))
+                weekly_data = cur.fetchall()
+    except Exception as e:
+        logger.error(f"Error fetching weekly summary data: {e}")
+        return None
+
+    if not weekly_data:
+        return None
+    
+    # Create temporary file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    
+    try:
+        # Create PDF document with portrait orientation
+        doc = SimpleDocTemplate(temp_file.name, pagesize=letter,
+                              rightMargin=72, leftMargin=72,
+                              topMargin=72, bottomMargin=72)
+        
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Helper functions
+        def format_value(value, value_type='number'):
+            """Format values with proper units."""
+            if value is None or value == '':
+                return 'N/A'
+            try:
+                num_value = float(value)
+                if value_type == 'percentage':
+                    return f"{num_value:.2f}%"
+                elif value_type == 'pounds':
+                    return f"{num_value:,.0f}"
+                else:
+                    return f"{num_value:,.1f}"
+            except (ValueError, TypeError):
+                return 'N/A'
+        
+        def get_status_and_color(value, metric_type, target_type='total'):
+            """Get status text and background color based on targets."""
+            if value is None or value == '':
+                return 'N/A', colors.white
+            
+            try:
+                num_value = float(value)
+                if metric_type == 'OEE':
+                    if num_value >= 70:
+                        return 'ON TARGET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+                elif metric_type == 'VOLUME':
+                    if num_value >= 12000:  # Weekly target
+                        return 'TARGET MET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+                elif metric_type == 'WASTE':
+                    if num_value <= 3.75:
+                        return 'ON TARGET', colors.green
+                    else:
+                        return 'BELOW TARGET', colors.red
+            except (ValueError, TypeError):
+                pass
+            
+            return 'N/A', colors.white
+        
+        # Header information
+        title_style = ParagraphStyle(
+            'Title',
+            parent=styles['Title'],
+            fontSize=18,
+            spaceAfter=30,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        elements.append(Paragraph("WEEKLY SUMMARY REPORT", title_style))
+        
+        # Report metadata
+        header_info = [
+            ['Date:', week_name],
+            ['Submitted By:', weekly_data[0].get('submitted_by', 'N/A') if weekly_data else 'N/A'],
+            ['Time:', weekly_data[0].get('submitted_at', datetime.now()).strftime('%I:%M %p') if weekly_data else datetime.now().strftime('%I:%M %p')],
+            ['Title:', 'Bakery Production Weekly Summary']
+        ]
+        
+        header_table = Table(header_info, colWidths=[1.5*inch, 4*inch])
+        header_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        
+        elements.append(header_table)
+        elements.append(Spacer(1, 30))
+        
+        # Daily breakdown table
+        table_data = [
+            ['Day', 'OEE %', 'Volume (lbs)', 'Waste %', 'Status']
+        ]
+        
+        # Process each day's data
+        for day_data in weekly_data:
+            day = day_data.get('day_of_week', 'N/A')
+            oee = day_data.get('oee_avg_pct')
+            volume = day_data.get('pounds_total')
+            waste = day_data.get('waste_avg_pct')
+            
+            # Determine overall status for the day
+            overall_status = 'GOOD'
+            if oee is not None and float(oee) < 70:
+                overall_status = 'NEEDS ATTENTION'
+            if volume is not None and float(volume) < 12000:
+                overall_status = 'NEEDS ATTENTION'
+            if waste is not None and float(waste) > 3.75:
+                overall_status = 'NEEDS ATTENTION'
+            
+            table_data.append([
+                day,
+                format_value(oee, 'percentage'),
+                format_value(volume, 'pounds'),
+                format_value(waste, 'percentage'),
+                overall_status
+            ])
+        
+        # Calculate weekly averages/totals for summary
+        oee_values = [float(d.get('oee_avg_pct', 0)) for d in weekly_data if d.get('oee_avg_pct')]
+        volume_values = [float(d.get('pounds_total', 0)) for d in weekly_data if d.get('pounds_total')]
+        waste_values = [float(d.get('waste_avg_pct', 0)) for d in weekly_data if d.get('waste_avg_pct')]
+        
+        avg_oee = sum(oee_values) / len(oee_values) if oee_values else 0
+        total_volume = sum(volume_values) if volume_values else 0
+        avg_waste = sum(waste_values) / len(waste_values) if waste_values else 0
+        
+        # Add summary row
+        table_data.append(['', '', '', '', ''])  # Empty separator row
+        table_data.append([
+            'WEEKLY SUMMARY',
+            format_value(avg_oee, 'percentage'),
+            format_value(total_volume, 'pounds'),
+            format_value(avg_waste, 'percentage'),
+            'SUMMARY'
+        ])
+        
+        # Create table
+        table = Table(table_data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+        
+        # Apply table styling
+        table_style = [
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Summary row
+            ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            
+            # Data rows
+            ('ALIGN', (1, 1), (-1, -2), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -3), [colors.white, colors.lightgrey]),
+        ]
+        
+        # Add conditional formatting for status colors
+        for i, row in enumerate(table_data[1:-2], 1):  # Skip header and summary rows
+            if len(row) > 4:
+                if row[4] == 'GOOD':
+                    table_style.append(('BACKGROUND', (4, i), (4, i), colors.green))
+                    table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+                elif row[4] == 'NEEDS ATTENTION':
+                    table_style.append(('BACKGROUND', (4, i), (4, i), colors.red))
+                    table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+        
+        table.setStyle(TableStyle(table_style))
+        elements.append(table)
+        
+        elements.append(Spacer(1, 30))
+        
+        # Weekly KPI Summary Table
+        summary_title_style = ParagraphStyle(
+            'SummaryTitle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=15,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        elements.append(Paragraph("WEEKLY KPI SUMMARY", summary_title_style))
+        
+        # Weekly summary table similar to daily format with die cut details
+        kpi_table_data = [
+            ['Key Performance Indicator', 'Targets', 'Weekly Average/Total', 'Status']
+        ]
+        
+        # Calculate die cut values first for reuse
+        dc1_oee_values = [float(d.get('both_die_cut1_oee_pct', 0)) for d in weekly_data if d.get('both_die_cut1_oee_pct')]
+        dc1_avg_oee = sum(dc1_oee_values) / len(dc1_oee_values) if dc1_oee_values else 0
+        dc2_oee_values = [float(d.get('both_die_cut2_oee_pct', 0)) for d in weekly_data if d.get('both_die_cut2_oee_pct')]
+        dc2_avg_oee = sum(dc2_oee_values) / len(dc2_oee_values) if dc2_oee_values else 0
+        
+        dc1_volume_values = [float(d.get('both_die_cut1_lbs', 0)) for d in weekly_data if d.get('both_die_cut1_lbs')]
+        dc1_total_volume = sum(dc1_volume_values) if dc1_volume_values else 0
+        dc2_volume_values = [float(d.get('both_die_cut2_lbs', 0)) for d in weekly_data if d.get('both_die_cut2_lbs')]
+        dc2_total_volume = sum(dc2_volume_values) if dc2_volume_values else 0
+        
+        dc1_waste_values = [float(d.get('both_die_cut1_waste_pct', 0)) for d in weekly_data if d.get('both_die_cut1_waste_pct')]
+        dc1_avg_waste = sum(dc1_waste_values) / len(dc1_waste_values) if dc1_waste_values else 0
+        dc2_waste_values = [float(d.get('both_die_cut2_waste_pct', 0)) for d in weekly_data if d.get('both_die_cut2_waste_pct')]
+        dc2_avg_waste = sum(dc2_waste_values) / len(dc2_waste_values) if dc2_waste_values else 0
+        
+        # OEE Summary - Die Cut 1, Die Cut 2, then Overall
+        dc1_oee_status, _ = get_status_and_color(dc1_avg_oee, 'OEE')
+        kpi_table_data.append([
+            'OEE Average (Die Cut 1)',
+            '≥ 70%',
+            format_value(dc1_avg_oee, 'percentage'),
+            dc1_oee_status
+        ])
+        
+        dc2_oee_status, _ = get_status_and_color(dc2_avg_oee, 'OEE')
+        kpi_table_data.append([
+            'OEE Average (Die Cut 2)',
+            '≥ 70%',
+            format_value(dc2_avg_oee, 'percentage'),
+            dc2_oee_status
+        ])
+        
+        oee_status, _ = get_status_and_color(avg_oee, 'OEE')
+        kpi_table_data.append([
+            'OEE Average (Overall)',
+            '≥ 70%',
+            format_value(avg_oee, 'percentage'),
+            oee_status
+        ])
+        
+        # Volume Summary - Die Cut 1, Die Cut 2, then Overall
+        dc1_volume_status, _ = get_status_and_color(dc1_total_volume / 7, 'VOLUME')  # Daily average
+        kpi_table_data.append([
+            'Total Volume (Die Cut 1)',
+            '≥ 42,000 lbs/week',
+            format_value(dc1_total_volume, 'pounds'),
+            dc1_volume_status
+        ])
+        
+        dc2_volume_status, _ = get_status_and_color(dc2_total_volume / 7, 'VOLUME')  # Daily average
+        kpi_table_data.append([
+            'Total Volume (Die Cut 2)',
+            '≥ 42,000 lbs/week',
+            format_value(dc2_total_volume, 'pounds'),
+            dc2_volume_status
+        ])
+        
+        volume_status, _ = get_status_and_color(total_volume / 7, 'VOLUME')  # Daily average
+        kpi_table_data.append([
+            'Total Volume (Weekly)',
+            '≥ 84,000 lbs/week',
+            format_value(total_volume, 'pounds'),
+            volume_status
+        ])
+        
+        # Waste Summary - Die Cut 1, Die Cut 2, then Overall
+        dc1_waste_status, _ = get_status_and_color(dc1_avg_waste, 'WASTE')
+        kpi_table_data.append([
+            'Waste Average (Die Cut 1)',
+            '≤ 3.75%',
+            format_value(dc1_avg_waste, 'percentage'),
+            dc1_waste_status
+        ])
+        
+        dc2_waste_status, _ = get_status_and_color(dc2_avg_waste, 'WASTE')
+        kpi_table_data.append([
+            'Waste Average (Die Cut 2)',
+            '≤ 3.75%',
+            format_value(dc2_avg_waste, 'percentage'),
+            dc2_waste_status
+        ])
+        
+        waste_status, _ = get_status_and_color(avg_waste, 'WASTE')
+        kpi_table_data.append([
+            'Waste Average (Overall)',
+            '≤ 3.75%',
+            format_value(avg_waste, 'percentage'),
+            waste_status
+        ])
+        
+        # Create KPI summary table
+        kpi_table = Table(kpi_table_data, colWidths=[2.5*inch, 1.5*inch, 2*inch, 1.5*inch])
+        
+        kpi_table_style = [
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Data rows
+            ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+        ]
+        
+        # Add conditional formatting for KPI status colors
+        for i, row in enumerate(kpi_table_data[1:], 1):  # Skip header
+            if len(row) > 3:
+                if row[3] in ['ON TARGET', 'TARGET MET']:
+                    kpi_table_style.append(('BACKGROUND', (3, i), (3, i), colors.green))
+                    kpi_table_style.append(('TEXTCOLOR', (3, i), (3, i), colors.white))
+                elif row[3] == 'BELOW TARGET':
+                    kpi_table_style.append(('BACKGROUND', (3, i), (3, i), colors.red))
+                    kpi_table_style.append(('TEXTCOLOR', (3, i), (3, i), colors.white))
+        
+        kpi_table.setStyle(TableStyle(kpi_table_style))
+        elements.append(kpi_table)
+        
+        # Add page break before detailed breakdown sections
+        from reportlab.platypus import PageBreak
+        elements.append(PageBreak())
+        
+        # DIE CUT 1 DETAILED BREAKDOWN
+        die_cut_title_style = ParagraphStyle(
+            'DieCutTitle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=15,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        elements.append(Paragraph("DIE CUT 1 - DETAILED BREAKDOWN", die_cut_title_style))
+        
+        # Die Cut 1 breakdown table
+        dc1_table_data = [
+            ['Day', 'OEE %', 'Volume (lbs)', 'Waste %', 'Status']
+        ]
+        
+        # Process each day's Die Cut 1 data
+        dc1_oee_values = []
+        dc1_volume_values = []
+        dc1_waste_values = []
+        
+        for day_data in weekly_data:
+            day = day_data.get('day_of_week', 'N/A')
+            dc1_oee = day_data.get('both_die_cut1_oee_pct')
+            dc1_volume = day_data.get('both_die_cut1_lbs')
+            dc1_waste = day_data.get('both_die_cut1_waste_pct')
+            
+            # Collect values for summary calculation
+            if dc1_oee is not None:
+                dc1_oee_values.append(float(dc1_oee))
+            if dc1_volume is not None:
+                dc1_volume_values.append(float(dc1_volume))
+            if dc1_waste is not None:
+                dc1_waste_values.append(float(dc1_waste))
+            
+            # Determine status for Die Cut 1
+            dc1_status = 'GOOD'
+            if dc1_oee is not None and float(dc1_oee) < 70:
+                dc1_status = 'NEEDS ATTENTION'
+            if dc1_volume is not None and float(dc1_volume) < 6000:
+                dc1_status = 'NEEDS ATTENTION'
+            if dc1_waste is not None and float(dc1_waste) > 3.75:
+                dc1_status = 'NEEDS ATTENTION'
+            
+            dc1_table_data.append([
+                day,
+                format_value(dc1_oee, 'percentage'),
+                format_value(dc1_volume, 'pounds'),
+                format_value(dc1_waste, 'percentage'),
+                dc1_status
+            ])
+        
+        # Calculate Die Cut 1 weekly averages/totals
+        dc1_avg_oee = sum(dc1_oee_values) / len(dc1_oee_values) if dc1_oee_values else 0
+        dc1_total_volume = sum(dc1_volume_values) if dc1_volume_values else 0
+        dc1_avg_waste = sum(dc1_waste_values) / len(dc1_waste_values) if dc1_waste_values else 0
+        
+        # Add Die Cut 1 summary row
+        dc1_table_data.append(['', '', '', '', ''])  # Empty separator row
+        dc1_table_data.append([
+            'DIE CUT 1 SUMMARY',
+            format_value(dc1_avg_oee, 'percentage'),
+            format_value(dc1_total_volume, 'pounds'),
+            format_value(dc1_avg_waste, 'percentage'),
+            'SUMMARY'
+        ])
+        
+        # Create Die Cut 1 table
+        dc1_table = Table(dc1_table_data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+        
+        # Apply Die Cut 1 table styling
+        dc1_table_style = [
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Summary row
+            ('BACKGROUND', (0, -1), (-1, -1), colors.lightblue),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            
+            # Data rows
+            ('ALIGN', (1, 1), (-1, -2), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -3), [colors.white, colors.lightblue]),
+        ]
+        
+        # Add conditional formatting for Die Cut 1 status colors
+        for i, row in enumerate(dc1_table_data[1:-2], 1):  # Skip header and summary rows
+            if len(row) > 4:
+                if row[4] == 'GOOD':
+                    dc1_table_style.append(('BACKGROUND', (4, i), (4, i), colors.green))
+                    dc1_table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+                elif row[4] == 'NEEDS ATTENTION':
+                    dc1_table_style.append(('BACKGROUND', (4, i), (4, i), colors.red))
+                    dc1_table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+        
+        dc1_table.setStyle(TableStyle(dc1_table_style))
+        elements.append(dc1_table)
+        
+        elements.append(Spacer(1, 30))
+        
+        # DIE CUT 2 DETAILED BREAKDOWN
+        elements.append(Paragraph("DIE CUT 2 - DETAILED BREAKDOWN", die_cut_title_style))
+        
+        # Die Cut 2 breakdown table
+        dc2_table_data = [
+            ['Day', 'OEE %', 'Volume (lbs)', 'Waste %', 'Status']
+        ]
+        
+        # Process each day's Die Cut 2 data
+        dc2_oee_values = []
+        dc2_volume_values = []
+        dc2_waste_values = []
+        
+        for day_data in weekly_data:
+            day = day_data.get('day_of_week', 'N/A')
+            dc2_oee = day_data.get('both_die_cut2_oee_pct')
+            dc2_volume = day_data.get('both_die_cut2_lbs')
+            dc2_waste = day_data.get('both_die_cut2_waste_pct')
+            
+            # Collect values for summary calculation
+            if dc2_oee is not None:
+                dc2_oee_values.append(float(dc2_oee))
+            if dc2_volume is not None:
+                dc2_volume_values.append(float(dc2_volume))
+            if dc2_waste is not None:
+                dc2_waste_values.append(float(dc2_waste))
+            
+            # Determine status for Die Cut 2
+            dc2_status = 'GOOD'
+            if dc2_oee is not None and float(dc2_oee) < 70:
+                dc2_status = 'NEEDS ATTENTION'
+            if dc2_volume is not None and float(dc2_volume) < 6000:
+                dc2_status = 'NEEDS ATTENTION'
+            if dc2_waste is not None and float(dc2_waste) > 3.75:
+                dc2_status = 'NEEDS ATTENTION'
+            
+            dc2_table_data.append([
+                day,
+                format_value(dc2_oee, 'percentage'),
+                format_value(dc2_volume, 'pounds'),
+                format_value(dc2_waste, 'percentage'),
+                dc2_status
+            ])
+        
+        # Calculate Die Cut 2 weekly averages/totals
+        dc2_avg_oee = sum(dc2_oee_values) / len(dc2_oee_values) if dc2_oee_values else 0
+        dc2_total_volume = sum(dc2_volume_values) if dc2_volume_values else 0
+        dc2_avg_waste = sum(dc2_waste_values) / len(dc2_waste_values) if dc2_waste_values else 0
+        
+        # Add Die Cut 2 summary row
+        dc2_table_data.append(['', '', '', '', ''])  # Empty separator row
+        dc2_table_data.append([
+            'DIE CUT 2 SUMMARY',
+            format_value(dc2_avg_oee, 'percentage'),
+            format_value(dc2_total_volume, 'pounds'),
+            format_value(dc2_avg_waste, 'percentage'),
+            'SUMMARY'
+        ])
+        
+        # Create Die Cut 2 table
+        dc2_table = Table(dc2_table_data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+        
+        # Apply Die Cut 2 table styling
+        dc2_table_style = [
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            
+            # Summary row
+            ('BACKGROUND', (0, -1), (-1, -1), colors.lightgreen),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            
+            # Data rows
+            ('ALIGN', (1, 1), (-1, -2), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -3), [colors.white, colors.lightgreen]),
+        ]
+        
+        # Add conditional formatting for Die Cut 2 status colors
+        for i, row in enumerate(dc2_table_data[1:-2], 1):  # Skip header and summary rows
+            if len(row) > 4:
+                if row[4] == 'GOOD':
+                    dc2_table_style.append(('BACKGROUND', (4, i), (4, i), colors.green))
+                    dc2_table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+                elif row[4] == 'NEEDS ATTENTION':
+                    dc2_table_style.append(('BACKGROUND', (4, i), (4, i), colors.red))
+                    dc2_table_style.append(('TEXTCOLOR', (4, i), (4, i), colors.white))
+        
+        dc2_table.setStyle(TableStyle(dc2_table_style))
+        elements.append(dc2_table)
+        
+        # Build PDF
+        doc.build(elements)
+        return temp_file.name
+        
+    except Exception as e:
+        logger.error(f"Error creating weekly summary PDF: {e}")
+        # Clean up temp file on error
+        try:
+            os.unlink(temp_file.name)
+        except:
+            pass
+        return None
 
 # Google Drive image upload function (keeping existing functionality)
 def upload_image_to_drive(image_file):
@@ -2062,7 +2930,574 @@ def api_users():
             return jsonify({
                 'success': False,
                 'message': f'Failed to create user: {str(e)}'
-            }), 500
+                    }), 500
+
+# Debug route to test API authentication and response format
+@app.route('/api/debug-auth', methods=['GET', 'POST'])
+@admin_required
+def debug_auth():
+    """Debug endpoint to test API authentication and response format"""
+    try:
+        return jsonify({
+            'success': True,
+            'message': 'Authentication working',
+            'user_id': session.get('user_id'),
+            'user_role': session.get('user_role'),
+            'is_admin': session.get('is_admin'),
+            'admin_verified': session.get('admin_verified'),
+            'verified': session.get('verified'),
+            'content_type': request.headers.get('Content-Type'),
+            'accept': request.headers.get('Accept')
+        })
+    except Exception as e:
+        logger.error(f"Debug auth error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# ========================================================
+# EMAIL MANAGEMENT API ENDPOINTS
+# ========================================================
+
+@app.route('/api/email-recipients', methods=['GET'])
+@admin_required
+def get_email_recipients():
+    """Get saved email recipients preferences."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Get users with their email preferences
+                cur.execute("""
+                    SELECT 
+                        u.id,
+                        u.email,
+                        u.first_name,
+                        u.last_name,
+                        COALESCE(enp.is_enabled, true) as email_notifications_enabled
+                    FROM users u
+                    LEFT JOIN email_notification_preferences enp 
+                        ON u.id = enp.user_id AND enp.preference_type = 'automatic'
+                    WHERE u.is_active = true
+                    ORDER BY u.first_name, u.last_name, u.email
+                """)
+                
+                users_preferences = cur.fetchall()
+                
+                return jsonify({
+                    "success": True,
+                    "users": [dict(user) for user in users_preferences]
+                })
+        
+    except Exception as e:
+        logger.error(f"Error getting email recipients: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to get email recipients: {str(e)}"
+        }), 500
+
+@app.route('/api/email-recipients', methods=['POST'])
+@admin_required
+def save_email_recipients():
+    """Save email notification preferences for users."""
+    try:
+        data = request.get_json()
+        preferences = data.get('preferences', [])
+        current_user_id = session.get('user_id')
+        
+        if not current_user_id:
+            return jsonify({
+                "success": False,
+                "message": "User not authenticated"
+            }), 401
+        
+        if not preferences:
+            return jsonify({
+                "success": False,
+                "message": "No preferences provided"
+            }), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Update or insert preferences for each user
+                for pref in preferences:
+                    user_id = pref.get('user_id')
+                    enabled = pref.get('enabled', False)
+                    
+                    if not user_id:
+                        continue
+                    
+                    cur.execute("""
+                        INSERT INTO email_notification_preferences 
+                        (user_id, is_enabled, preference_type, created_by)
+                        VALUES (%s, %s, 'automatic', %s)
+                        ON CONFLICT (user_id, preference_type) 
+                        DO UPDATE SET 
+                            is_enabled = %s,
+                            updated_at = CURRENT_TIMESTAMP,
+                            created_by = %s
+                    """, (user_id, enabled, current_user_id, enabled, current_user_id))
+                
+                conn.commit()
+                
+                enabled_count = sum(1 for pref in preferences if pref.get('enabled', False))
+                
+                return jsonify({
+                    "success": True,
+                    "message": f"Email preferences updated successfully ({enabled_count} users will receive notifications)"
+                })
+        
+    except Exception as e:
+        logger.error(f"Error saving email recipients: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to save email recipients: {str(e)}"
+        }), 500
+
+@app.route('/api/send-manual-email', methods=['POST'])
+@admin_required
+def send_manual_email_alert():
+    """Send manual email alert for specific day with PDF attachments."""
+    try:
+        logger.info(f"Manual email request received from user: {session.get('user_id')}")
+        logger.info(f"Request headers: {dict(request.headers)}")
+        logger.info(f"Session data: user_id={session.get('user_id')}, role={session.get('user_role')}")
+        
+        # Validate session first
+        if not session.get('user_id'):
+            logger.warning("No user_id in session for manual email request")
+            return jsonify({
+                "success": False,
+                "message": "Authentication required - no user session"
+            }), 401
+        
+        if session.get('user_role') != 'admin':
+            logger.warning(f"Non-admin user {session.get('user_id')} attempted manual email")
+            return jsonify({
+                "success": False,
+                "message": "Admin access required"
+            }), 403
+        
+        # Capture user_id from session before starting background thread
+        current_user_id = session.get('user_id')
+        
+        data = request.get_json()
+        if not data:
+            logger.warning("No JSON data received in manual email request")
+            return jsonify({
+                "success": False,
+                "message": "No data received - ensure Content-Type is application/json"
+            }), 400
+        
+        week_name = data.get('week_name')
+        day_of_week = data.get('day_of_week')
+        recipient_ids = data.get('recipient_ids', [])
+        include_daily_pdf = data.get('include_daily_pdf', True)
+        include_weekly_pdf = data.get('include_weekly_pdf', True)
+        
+        logger.info(f"Manual email parameters: week={week_name}, day={day_of_week}, recipients={len(recipient_ids)}")
+        
+        if not week_name or not day_of_week:
+            return jsonify({
+                "success": False,
+                "message": "Week name and day of week are required"
+            }), 400
+            
+        if not recipient_ids:
+            return jsonify({
+                "success": False,
+                "message": "At least one recipient must be selected"
+            }), 400
+        
+        # Get the metrics data for the specified day
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        ws.id, ws.week_name, ws.day_of_week, ws.created_at as submitted_at,
+                        ws.submitted_by,
+                        -- First shift data
+                        fs.die_cut1_oee_pct as first_die_cut1_oee_pct,
+                        fs.die_cut2_oee_pct as first_die_cut2_oee_pct,
+                        fs.die_cut1_lbs as first_die_cut1_pounds,
+                        fs.die_cut2_lbs as first_die_cut2_pounds,
+                        fs.die_cut1_waste_lb as first_die_cut1_waste_lbs,
+                        fs.die_cut2_waste_lb as first_die_cut2_waste_lbs,
+                        -- Second shift data
+                        ss.die_cut1_oee_pct as second_die_cut1_oee_pct,
+                        ss.die_cut2_oee_pct as second_die_cut2_oee_pct,
+                        ss.die_cut1_lbs as second_die_cut1_pounds,
+                        ss.die_cut2_lbs as second_die_cut2_pounds,
+                        ss.die_cut1_waste_lb as second_die_cut1_waste_lbs,
+                        ss.die_cut2_waste_lb as second_die_cut2_waste_lbs
+                    FROM week_submissions ws
+                    LEFT JOIN first_shift_metrics fs ON ws.id = fs.week_submission_id
+                    LEFT JOIN second_shift_metrics ss ON ws.id = ss.week_submission_id
+                    WHERE ws.week_name = %s AND ws.day_of_week = %s
+                    ORDER BY ws.created_at DESC
+                    LIMIT 1
+                """, (week_name, day_of_week))
+                metrics_data = cur.fetchone()
+        
+        if not metrics_data:
+            return jsonify({
+                "success": False,
+                "message": f"No metrics data found for {week_name} - {day_of_week}"
+            }), 404
+        
+        # Get recipient details including names for personalization
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                placeholders = ','.join(['%s'] * len(recipient_ids))
+                cur.execute(f"""
+                    SELECT id, email, first_name, last_name FROM users 
+                    WHERE id IN ({placeholders}) AND is_active = true
+                """, recipient_ids)
+                recipient_users = cur.fetchall()
+        
+        if not recipient_users:
+            return jsonify({
+                "success": False,
+                "message": "No valid recipients found"
+            }), 400
+        
+        # Convert metrics_data to the format expected by email function
+        email_metrics_data = {
+            'first_shift': {
+                'first_die_cut1_oee_pct': metrics_data.get('first_die_cut1_oee_pct'),
+                'first_die_cut2_oee_pct': metrics_data.get('first_die_cut2_oee_pct'),
+                'first_die_cut1_pounds': metrics_data.get('first_die_cut1_pounds'),
+                'first_die_cut2_pounds': metrics_data.get('first_die_cut2_pounds'),
+                'first_die_cut1_waste_lbs': metrics_data.get('first_die_cut1_waste_lbs'),
+                'first_die_cut2_waste_lbs': metrics_data.get('first_die_cut2_waste_lbs')
+            },
+            'second_shift': {
+                'second_die_cut1_oee_pct': metrics_data.get('second_die_cut1_oee_pct'),
+                'second_die_cut2_oee_pct': metrics_data.get('second_die_cut2_oee_pct'),
+                'second_die_cut1_pounds': metrics_data.get('second_die_cut1_pounds'),
+                'second_die_cut2_pounds': metrics_data.get('second_die_cut2_pounds'),
+                'second_die_cut1_waste_lbs': metrics_data.get('second_die_cut1_waste_lbs'),
+                'second_die_cut2_waste_lbs': metrics_data.get('second_die_cut2_waste_lbs')
+            }
+        }
+        
+        # Create email content with simplified format
+        subject = "Daily and Weekly Bakery Metrics"
+        
+        # Send email with PDF attachments
+        def send_email():
+            daily_pdf_path = None
+            weekly_pdf_path = None
+            
+            try:
+                with app.app_context():
+                    # Create PDF attachments if requested
+                    if include_daily_pdf:
+                        daily_pdf_path = create_daily_metrics_pdf(week_name, day_of_week)
+                    if include_weekly_pdf:
+                        weekly_pdf_path = create_weekly_summary_pdf(week_name)
+                    
+                    # Send personalized emails to each recipient
+                    for user in recipient_users:
+                        # Get user's full name or use first name as fallback
+                        first_name = user.get('first_name', '').strip()
+                        last_name = user.get('last_name', '').strip()
+                        
+                        if first_name:
+                            recipient_name = first_name
+                        elif first_name and last_name:
+                            recipient_name = f"{first_name} {last_name}".strip()
+                        else:
+                            # Fallback to extracting name from email if no name is available
+                            email_name = user['email'].split('@')[0].replace('.', ' ').replace('_', ' ').title()
+                            recipient_name = email_name
+                        
+                        # Create personalized email content
+                        html_content = create_simple_metrics_email_html(recipient_name)
+                        
+                        # Create email message for this specific recipient
+                        msg = Message(
+                            subject=subject,
+                            recipients=[user['email']],
+                            html=html_content,
+                            sender=app.config['MAIL_DEFAULT_SENDER']
+                        )
+                        
+                        # Attach PDFs if they were created successfully
+                        if daily_pdf_path and os.path.exists(daily_pdf_path):
+                            with open(daily_pdf_path, 'rb') as f:
+                                msg.attach(
+                                    filename=f"Daily_Metrics_{week_name}_{day_of_week}.pdf",
+                                    content_type="application/pdf",
+                                    data=f.read()
+                                )
+                            logger.info(f"Attached daily metrics PDF for {week_name} {day_of_week}")
+                        
+                        if weekly_pdf_path and os.path.exists(weekly_pdf_path):
+                            with open(weekly_pdf_path, 'rb') as f:
+                                msg.attach(
+                                    filename=f"Weekly_Summary_{week_name}.pdf",
+                                    content_type="application/pdf",
+                                    data=f.read()
+                                )
+                            logger.info(f"Attached weekly summary PDF for {week_name}")
+                        
+                        # Send email to this recipient
+                        mail.send(msg)
+                        logger.info(f"Manual email alert sent to {user['email']} (as {recipient_name})")
+                    
+                    logger.info(f"Manual email alert sent successfully to {len(recipient_users)} recipients")
+                    
+                    # Log the email activity
+                    with get_db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                INSERT INTO email_activity_log 
+                                (type, week_name, day_of_week, recipient_count, status, sent_at, sent_by)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """, (
+                                'manual', week_name, day_of_week, len(recipient_users), 
+                                'sent', datetime.now(), current_user_id
+                            ))
+                        conn.commit()
+                    
+            except Exception as e:
+                logger.error(f"Failed to send manual email alert: {e}")
+                # Log the failed attempt
+                try:
+                    with get_db_connection() as conn:
+                        with conn.cursor() as cur:
+                            cur.execute("""
+                                INSERT INTO email_activity_log 
+                                (type, week_name, day_of_week, recipient_count, status, sent_at, sent_by, error_message)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            """, (
+                                'manual', week_name, day_of_week, len(recipient_users), 
+                                'failed', datetime.now(), current_user_id, str(e)
+                            ))
+                        conn.commit()
+                except:
+                    pass
+            finally:
+                # Clean up temporary PDF files
+                for pdf_path in [daily_pdf_path, weekly_pdf_path]:
+                    if pdf_path and os.path.exists(pdf_path):
+                        try:
+                            os.unlink(pdf_path)
+                        except Exception as e:
+                            logger.warning(f"Failed to clean up PDF file {pdf_path}: {e}")
+        
+        # Start email sending in a separate thread
+        thread = threading.Thread(target=send_email)
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Email alert initiated for {len(recipient_users)} recipients"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error sending manual email alert: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to send email alert: {str(e)}"
+        }), 500
+
+@app.route('/api/email-activity-log', methods=['GET'])
+@admin_required
+def get_email_activity_log():
+    """Get email activity log with pagination."""
+    try:
+        # Get pagination parameters
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+        offset = (page - 1) * per_page
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Get total count
+                cur.execute("SELECT COUNT(*) as total FROM email_activity_log")
+                total_result = cur.fetchone()
+                total_count = total_result['total'] if total_result else 0
+                
+                # Get paginated activities with user names
+                cur.execute("""
+                    SELECT 
+                        eal.id,
+                        eal.type as email_type,
+                        eal.recipient_count as recipients_count,
+                        eal.week_name,
+                        eal.day_of_week,
+                        eal.sent_at as sent_date,
+                        eal.status,
+                        eal.error_message,
+                        eal.sent_by,
+                        u.first_name,
+                        u.last_name,
+                        u.email as sent_by_email
+                    FROM email_activity_log eal
+                    LEFT JOIN users u ON eal.sent_by = u.id
+                    ORDER BY eal.sent_at DESC
+                    LIMIT %s OFFSET %s
+                """, (per_page, offset))
+                
+                activities = cur.fetchall()
+                
+                # Convert to list of dictionaries with proper formatting
+                activity_list = []
+                for activity in activities:
+                    # Format recipients display (since we don't have recipients_list, show count)
+                    recipients_display = f"{activity['recipients_count']} recipients"
+                    
+                    # Format date/time
+                    sent_date_formatted = activity['sent_date'].strftime('%Y-%m-%d %H:%M:%S') if activity['sent_date'] else 'N/A'
+                    
+                    # Determine type display
+                    type_display = {
+                        'automatic': 'Automatic',
+                        'manual': 'Manual',
+                        'test': 'Test'
+                    }.get(activity['email_type'], activity['email_type'])
+                    
+                    # Status styling
+                    status_class = {
+                        'sent': 'success',
+                        'failed': 'error',
+                        'pending': 'warning'
+                    }.get(activity['status'], 'default')
+                    
+                    # Format sent by name
+                    sent_by_name = 'System'
+                    if activity['first_name'] and activity['last_name']:
+                        sent_by_name = f"{activity['first_name']} {activity['last_name']}"
+                    elif activity['first_name']:
+                        sent_by_name = activity['first_name']
+                    
+                    # Format week display
+                    week_display = activity['week_name'] or 'N/A'
+                    if activity['day_of_week']:
+                        week_display += f" - {activity['day_of_week']}"
+                    
+                    activity_list.append({
+                        'id': str(activity['id']),
+                        'type': type_display,
+                        'type_raw': activity['email_type'],
+                        'recipients': recipients_display,
+                        'recipients_count': activity['recipients_count'],
+                        'week_name': week_display,
+                        'sent_date': sent_date_formatted,
+                        'sent_date_raw': activity['sent_date'].isoformat() if activity['sent_date'] else None,
+                        'status': activity['status'],
+                        'status_class': status_class,
+                        'error_message': activity['error_message'],
+                        'sent_by_name': sent_by_name,
+                        'sent_by_email': activity['sent_by_email']
+                    })
+                
+                # Calculate pagination info
+                total_pages = (total_count + per_page - 1) // per_page
+                has_next = page < total_pages
+                has_prev = page > 1
+                
+                return jsonify({
+                    "success": True,
+                    "activities": activity_list,
+                    "pagination": {
+                        "page": page,
+                        "per_page": per_page,
+                        "total": total_count,
+                        "total_pages": total_pages,
+                        "has_next": has_next,
+                        "has_prev": has_prev
+                    }
+                })
+        
+    except Exception as e:
+        logger.error(f"Error getting email activity log: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to get email activity log: {str(e)}"
+        }), 500
+
+@app.route('/api/setup-email-activity-log', methods=['POST'])
+@admin_required
+def setup_email_activity_log():
+    """Set up the email activity log table and populate with sample data."""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Create the email_activity_log table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS email_activity_log (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        email_type VARCHAR(20) NOT NULL CHECK (email_type IN ('automatic', 'manual', 'test')),
+                        recipients_count INTEGER NOT NULL DEFAULT 0,
+                        recipients_list TEXT[], -- Array of email addresses
+                        week_name VARCHAR(100), -- For automatic emails, e.g., "Week of 2024-01-01"
+                        sent_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+                        error_message TEXT, -- If status is 'failed'
+                        email_subject TEXT,
+                        pdf_attachments TEXT[], -- Array of PDF file paths/names
+                        sent_by UUID REFERENCES users(id), -- Who initiated the email (NULL for automatic)
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                # Check if table has any data
+                cur.execute("SELECT COUNT(*) FROM email_activity_log")
+                count = cur.fetchone()[0]
+                
+                if count == 0:
+                    # Get a sample user ID for testing
+                    cur.execute("SELECT id FROM users WHERE is_active = true LIMIT 1")
+                    user_result = cur.fetchone()
+                    user_id = user_result[0] if user_result else None
+                    
+                    # Insert sample data
+                    sample_data = [
+                        ('automatic', 3, ['user1@example.com', 'user2@example.com', 'user3@example.com'], 
+                         'Week of 2024-01-08', 'sent', None, 'Weekly Bakery Metrics Report - Week of 2024-01-08', 
+                         ['weekly_report_2024-01-08.pdf'], None),
+                        ('manual', 2, ['admin@bakery.com', 'manager@bakery.com'], 
+                         None, 'sent', None, 'Monthly Performance Review', 
+                         ['monthly_review.pdf'], user_id),
+                        ('automatic', 4, ['user1@example.com', 'user2@example.com', 'user3@example.com', 'user4@example.com'], 
+                         'Week of 2024-01-01', 'sent', None, 'Weekly Bakery Metrics Report - Week of 2024-01-01', 
+                         ['weekly_report_2024-01-01.pdf'], None),
+                        ('manual', 1, ['test@bakery.com'], 
+                         None, 'failed', 'SMTP connection timeout', 'Test Email Notification', 
+                         [], user_id),
+                        ('test', 1, ['admin@bakery.com'], 
+                         None, 'sent', None, 'Email System Test', 
+                         [], user_id)
+                    ]
+                    
+                    for data_row in sample_data:
+                        cur.execute("""
+                            INSERT INTO email_activity_log 
+                            (email_type, recipients_count, recipients_list, week_name, status, 
+                             error_message, email_subject, pdf_attachments, sent_by) 
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, data_row)
+                
+                conn.commit()
+                
+                return jsonify({
+                    "success": True,
+                    "message": "Email activity log table created successfully",
+                    "table_created": True,
+                    "sample_data_added": count == 0
+                })
+        
+    except Exception as e:
+        logger.error(f"Error setting up email activity log: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to set up email activity log: {str(e)}"
+        }), 500
 
 @app.route('/api/remove-user', methods=['POST'])
 @admin_required
@@ -9252,6 +10687,72 @@ def get_public_faqs():
 
 # ========================================================
 # ANNOUNCEMENTS API ENDPOINTS
+
+@app.route('/api/global-announcements', methods=['GET'])
+@login_required
+def get_global_announcements():
+    """API endpoint to retrieve active global announcements for display on login/dashboard"""
+    try:
+        logger.info("Global announcements API call for logged-in user")
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Get only active global announcements that haven't expired
+                query = """
+                    SELECT
+                        id, title, content, announcement_type, priority, icon,
+                        color_scheme, author, created_at
+                    FROM announcements
+                    WHERE is_active = TRUE 
+                    AND is_global_announcement = TRUE
+                    AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+                    ORDER BY
+                        CASE priority
+                            WHEN 'critical' THEN 1
+                            WHEN 'high' THEN 2
+                            WHEN 'medium' THEN 3
+                            WHEN 'low' THEN 4
+                        END ASC,
+                        created_at DESC
+                    LIMIT 10
+                """
+                
+                logger.info("Executing global announcements query")
+                cur.execute(query)
+                announcements = cur.fetchall()
+                
+                # Format announcements for frontend
+                formatted_announcements = []
+                for announcement in announcements:
+                    formatted_announcements.append({
+                        'id': str(announcement['id']),
+                        'title': announcement['title'],
+                        'content': announcement['content'],
+                        'type': announcement['announcement_type'] or 'info',
+                        'priority': announcement['priority'],
+                        'icon': announcement['icon'] or 'megaphone',
+                        'color_scheme': announcement['color_scheme'] or 'blue',
+                        'author': announcement['author'] or 'System',
+                        'created_at': announcement['created_at'].strftime('%Y-%m-%d %H:%M:%S') if announcement['created_at'] else '',
+                        'display_date': announcement['created_at'].strftime('%B %d, %Y at %I:%M %p') if announcement['created_at'] else 'Unknown'
+                    })
+                
+                logger.info(f"Retrieved {len(formatted_announcements)} global announcements")
+                
+                return jsonify({
+                    'success': True,
+                    'announcements': formatted_announcements,
+                    'count': len(formatted_announcements)
+                })
+                
+    except Exception as e:
+        logger.error(f"Get global announcements error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to retrieve global announcements',
+            'announcements': [],
+            'count': 0
+        }), 500
 # ========================================================
 
 @app.route('/api/announcements', methods=['GET'])
@@ -9274,7 +10775,8 @@ def get_announcements():
                     SELECT
                         id, title, content, announcement_type, priority, icon,
                         color_scheme, is_active, is_featured, author,
-                        created_at, updated_at, expires_at, view_count
+                        created_at, updated_at, expires_at, view_count,
+                        is_global_announcement
                     FROM announcements
                 """
                 
@@ -9348,6 +10850,7 @@ def get_announcements():
                         'color_scheme': announcement['color_scheme'] or 'blue',
                         'is_active': announcement['is_active'],
                         'is_featured': announcement['is_featured'],
+                        'is_global_announcement': announcement.get('is_global_announcement', False),
                         'is_expired': is_expired,
                         'author': announcement['author'] or 'System',
                         'view_count': announcement['view_count'] or 0,
@@ -9436,6 +10939,7 @@ def create_announcement():
         color_scheme = _safe_str('color_scheme', 'blue').lower()
         is_active = _parse_bool('active', 'is_active', True)
         is_featured = _parse_bool('featured', 'is_featured', False)
+        is_global_announcement = _parse_bool('is_global_announcement', 'global_announcement', False)
         expires_at = _safe_str('expires_at', '')
         
         # Validate field lengths
@@ -9497,16 +11001,16 @@ def create_announcement():
                 cur.execute("""
                     INSERT INTO announcements (
                         title, content, announcement_type, priority, icon,
-                        color_scheme, is_active, is_featured, author,
+                        color_scheme, is_active, is_featured, is_global_announcement, author,
                         expires_at, created_at, updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                     )
                     RETURNING id
                 """, (
                     title, content, announcement_type, priority, icon,
-                    color_scheme, is_active, is_featured, user_name,
+                    color_scheme, is_active, is_featured, is_global_announcement, user_name,
                     expires_datetime
                 ))
                 
@@ -9567,6 +11071,7 @@ def update_announcement(announcement_id):
         color_scheme = data.get('color_scheme', 'blue').strip()
         is_active = bool(data.get('active', True))
         is_featured = bool(data.get('featured', False))
+        is_global_announcement = bool(data.get('is_global_announcement', False))
         expires_at = data.get('expires_at', '').strip()
         
         # Validate field lengths and enum values (same as create)
@@ -9600,12 +11105,12 @@ def update_announcement(announcement_id):
                     UPDATE announcements SET
                         title = %s, content = %s, announcement_type = %s,
                         priority = %s, icon = %s, color_scheme = %s,
-                        is_active = %s, is_featured = %s, expires_at = %s,
+                        is_active = %s, is_featured = %s, is_global_announcement = %s, expires_at = %s,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                 """, (
                     title, content, announcement_type, priority, icon,
-                    color_scheme, is_active, is_featured, expires_datetime,
+                    color_scheme, is_active, is_featured, is_global_announcement, expires_datetime,
                     announcement_id
                 ))
                 
@@ -9690,6 +11195,81 @@ def delete_announcement(announcement_id):
         return jsonify({
             'success': False,
             'message': 'Failed to delete announcement'
+        }), 500
+
+@app.route('/api/announcements/<announcement_id>/toggle-global', methods=['POST'])
+@admin_required
+def toggle_global_announcement(announcement_id):
+    """API endpoint to toggle the global announcement status"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'No data provided'
+            }), 400
+        
+        # Get the desired global status from request
+        is_global = bool(data.get('is_global', False))
+        
+        # Get user information
+        user_id = session.get('user_id')
+        user_name = session.get('user_full_name', 'Admin User')
+        user_email = session.get('email', '')
+        
+        logger.info(f"Toggle global announcement {announcement_id} to {is_global} by {user_name}")
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Check if announcement exists and get current info
+                cur.execute("SELECT id, title, is_global_announcement FROM announcements WHERE id = %s", (announcement_id,))
+                announcement = cur.fetchone()
+                
+                if not announcement:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Announcement not found'
+                    }), 404
+                
+                current_global_status = announcement[2] if len(announcement) > 2 else False
+                
+                # Update the global announcement status
+                cur.execute("""
+                    UPDATE announcements 
+                    SET is_global_announcement = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (is_global, announcement_id))
+                
+                if cur.rowcount == 0:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Failed to update announcement'
+                    }), 500
+                
+                conn.commit()
+                
+                # Log the toggle action
+                log_submission(
+                    user_id, user_name, user_email,
+                    'announcement_toggle_global',
+                    f'Announcement "{announcement[1]}" global status changed from {current_global_status} to {is_global}'
+                )
+                
+                status_text = "enabled" if is_global else "disabled"
+                logger.info(f"Global announcement {status_text} for: {announcement[1]}")
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Global announcement {status_text} successfully',
+                    'is_global': is_global
+                })
+                
+    except Exception as e:
+        logger.error(f"Toggle global announcement error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to toggle global announcement status'
         }), 500
 
 @app.route('/api/public/announcements', methods=['GET'])
@@ -10818,13 +12398,15 @@ def get_user_status():
                     
                     return jsonify({
                         'success': True,
-                        'password_change_required': user.get('password_change_required', False) if user else False
+                        'password_change_required': user.get('password_change_required', False) if user else False,
+                        'user_id': user_id
                     })
                 else:
                     # Column doesn't exist yet
                     return jsonify({
                         'success': True,
-                        'password_change_required': False
+                        'password_change_required': False,
+                        'user_id': user_id
                     })
                     
     except Exception as e:
@@ -11074,4 +12656,4 @@ def get_week_average():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)

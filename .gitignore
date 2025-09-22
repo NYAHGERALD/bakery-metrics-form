@@ -167,6 +167,7 @@ profile_dropdown_test.html
 uploads/
 static/uploads/
 media/
+start_app.sh
 
 # -------------------------
 # Documentation files (auto-generated)

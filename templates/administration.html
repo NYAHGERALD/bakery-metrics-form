@@ -7,6 +7,7 @@
     <title>Admin Dashboard - Bakery Analytics</title>
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="{{ url_for('static', filename='global-announcements.js') }}"></script>
     <style>
         /* Custom animations and glassmorphism effects */
         .glass-card {
@@ -861,7 +862,7 @@
                         <a href="#reviews" onclick="showSection('reviews')" id="nav-reviews"
                             class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="star" class="mr-3 h-5 w-5"></i>
-                            Reviews Management
+                            Reviews Management 
                         </a>
 
                         <a href="#support" onclick="showSection('support')" id="nav-support"
@@ -876,6 +877,12 @@
                             class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="help-circle" class="mr-3 h-5 w-5"></i>
                             FAQ Management
+                        </a>
+
+                        <a href="#email-management" onclick="showSection('email-management')" id="nav-email-management"
+                            class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
+                            <i data-lucide="mail" class="mr-3 h-5 w-5"></i>
+                            Email Management
                         </a>
 
                         <a href="#contact-details" onclick="showSection('contact-details')" id="nav-contact-details"
@@ -2319,6 +2326,179 @@
                     </div>
                 </div>
 
+                <!-- Email Management Section -->
+                <div id="email-management-section" class="section">
+                    <div class="space-y-6">
+                        <!-- Email Management Header -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                        <div class="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+                                            <i data-lucide="mail" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        Email Alert Management
+                                    </h2>
+                                    <p class="text-gray-600 mt-2">Manage email recipients and send manual alerts with PDF attachments</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Recipients Management -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                                Email Recipients
+                            </h3>
+                            
+                            <!-- Recipients List -->
+                            <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">Current Email Recipients</h4>
+                                <div id="emailRecipientsList" class="space-y-2">
+                                    <!-- Recipients will be loaded here -->
+                                    <div class="text-sm text-gray-500 italic">Loading recipients...</div>
+                                </div>
+                            </div>
+
+                            <!-- Recipient Selection -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 mb-3">Select Recipients for Alerts</h4>
+                                    <div id="recipientCheckboxes" class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                                        <!-- User checkboxes will be loaded here -->
+                                        <div class="text-sm text-gray-500 italic">Loading users...</div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-700 mb-3">Quick Actions</h4>
+                                    <div class="space-y-3">
+                                        <button onclick="selectAllRecipients()" 
+                                                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                            Select All
+                                        </button>
+                                        <button onclick="deselectAllRecipients()" 
+                                                class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+                                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                            Deselect All
+                                        </button>
+                                        <button onclick="saveRecipientSelection()" 
+                                                class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                                            <i data-lucide="save" class="w-4 h-4"></i>
+                                            Save Selection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Email Trigger -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                <i data-lucide="send" class="w-5 h-5 text-purple-600"></i>
+                                Manual Email Trigger
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Day Selection -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Week</label>
+                                        <select id="emailWeekSelect" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                            <option value="">Select a week...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Day</label>
+                                        <select id="emailDaySelect" 
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                            <option value="">Select a day...</option>
+                                            <option value="Monday">Monday</option>
+                                            <option value="Tuesday">Tuesday</option>
+                                            <option value="Wednesday">Wednesday</option>
+                                            <option value="Thursday">Thursday</option>
+                                            <option value="Friday">Friday</option>
+                                            <option value="Saturday">Saturday</option>
+                                            <option value="Sunday">Sunday</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Send Options -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Options</label>
+                                        <div class="space-y-3">
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="includeDailyPDF" checked 
+                                                       class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">Include Daily Metrics PDF</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="includeWeeklyPDF" checked 
+                                                       class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">Include Weekly Summary PDF</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <button onclick="sendManualEmail()" 
+                                            class="w-full px-6 py-3 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center justify-center gap-2">
+                                        <i data-lucide="send" class="w-5 h-5"></i>
+                                        Send Email Alert
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Email Preview -->
+                            <div id="emailPreview" class="mt-6 p-4 bg-gray-50 rounded-xl hidden">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Email Preview</h4>
+                                <div id="emailPreviewContent" class="text-sm text-gray-600">
+                                    <!-- Preview content will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Status & Logs -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-5 h-5 text-green-600"></i>
+                                Email Activity Log
+                            </h3>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipients</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Week/Day</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="emailActivityLog" class="bg-white divide-y divide-gray-200">
+                                        <!-- Email activity logs will be loaded here -->
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center italic">
+                                                No email activity yet
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Email Activity Log Pagination -->
+                            <div id="emailLogPagination" class="mt-4 px-6 py-3 bg-gray-50 rounded-b-lg">
+                                <!-- Pagination controls will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
            
         </main>
@@ -3107,6 +3287,7 @@
                 'reviews': 'Reviews Management',
                 'support': 'Support Tickets',
                 'faq': 'FAQ Management',
+                'email-management': 'Email Management',
                 'contact-details': 'Contact Details',
                 'legal-documents': 'Legal Documents'
             };
@@ -3118,6 +3299,7 @@
                 'reviews': 'Monitor and manage customer reviews',
                 'support': 'Handle customer support tickets',
                 'faq': 'Manage frequently asked questions',
+                'email-management': 'Manage email alerts and PDF attachments',
                 'contact-details': 'Manage contact information and support channels',
                 'legal-documents': 'Manage privacy policy, terms of service, and compliance documents'
             };
@@ -3157,6 +3339,11 @@
                         break;
                     case 'faq':
                         await loadFAQs();
+                        break;
+                    case 'email-management':
+                        await loadEmailRecipients();
+                        await loadEmailWeeks();
+                        await loadEmailActivityLog();
                         break;
                     case 'contact-details':
                         await loadContactList();
@@ -4172,7 +4359,12 @@
                 return;
             }
 
-            container.innerHTML = announcements.map(announcement => `
+            // Debug: Log the first announcement to see its structure
+            console.log('🔍 DEBUG: First announcement data:', announcements[0]);
+            console.log('🔍 DEBUG: is_global_announcement value:', announcements[0]?.is_global_announcement);
+
+            container.innerHTML = announcements.map(announcement => {
+                return `
                 <div class="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
@@ -4218,6 +4410,22 @@
                             <span class="px-2 py-1 text-xs font-medium rounded-full ${announcement.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
                                 ${announcement.is_active ? 'Active' : 'Inactive'}
                             </span>
+                            
+                            <!-- Global Announcement Toggle -->
+                            <div class="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="globe" class="w-4 h-4 text-blue-600"></i>
+                                    <label class="text-sm font-medium text-blue-900">Global:</label>
+                                </div>
+                                <button onclick="toggleGlobalAnnouncement('${announcement.id}', ${!announcement.is_global_announcement})" 
+                                        class="px-4 py-2 text-sm font-bold rounded-lg border-2 transition-all hover:shadow-md transform hover:scale-105 ${announcement.is_global_announcement ? 'bg-green-500 text-white border-green-600 hover:bg-green-600' : 'bg-gray-300 text-gray-700 border-gray-400 hover:bg-gray-400'}">
+                                    ${announcement.is_global_announcement ? '✅ ON' : '❌ OFF'}
+                                </button>
+                                <span class="text-sm font-medium ${announcement.is_global_announcement ? 'text-green-700' : 'text-gray-600'}">
+                                    ${announcement.is_global_announcement ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </div>
+                            
                             <button onclick="viewAnnouncement('${announcement.id}')"
                                 class="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors" title="View">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
@@ -4229,28 +4437,22 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             lucide.createIcons();
         }
 
         // View announcement function
         function viewAnnouncement(id) {
-            console.log('Searching for announcement with ID:', id);
-            console.log('Available announcements:', allAnnouncements);
-            
             const announcement = allAnnouncements.find(a => {
-                console.log('Comparing:', a.id, 'with', id);
                 return String(a.id) === String(id);
             });
             
             if (!announcement) {
-                console.error('Announcement not found for ID:', id);
                 showError('Announcement not found');
                 return;
             }
-
-            console.log('Found announcement:', announcement);
 
             // Populate modal with announcement data
             document.getElementById('viewAnnouncementTitle').textContent = announcement.title || '';
@@ -4270,13 +4472,8 @@
             }
 
             // Show modal
-            console.log('About to show modal...');
             const modal = document.getElementById('viewAnnouncementModal');
-            console.log('Modal element found:', modal);
-            console.log('Modal classes before:', modal.className);
             modal.classList.remove('hidden');
-            console.log('Modal classes after:', modal.className);
-            console.log('Modal should now be visible');
         }
 
         function closeViewAnnouncementModal() {
@@ -6052,6 +6249,64 @@
             });
         }
 
+        // Toggle global announcement function
+        async function toggleGlobalAnnouncement(id, isGlobal) {
+            console.log('🔧 toggleGlobalAnnouncement called:', { id, isGlobal });
+            
+            // Find the button element
+            const button = document.querySelector(`button[onclick*="toggleGlobalAnnouncement('${id}',"]`);
+            const originalText = button ? button.textContent : '';
+            
+            // Show loading state
+            if (button) {
+                button.disabled = true;
+                button.textContent = '⏳ Updating...';
+            }
+            
+            try {
+                const res = await fetch(`/api/announcements/${id}/toggle-global`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_global: isGlobal })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showSuccess(`Announcement ${isGlobal ? 'enabled' : 'disabled'} as global announcement!`);
+                    
+                    // Update the announcement in our local array
+                    const announcement = allAnnouncements.find(a => String(a.id) === String(id));
+                    if (announcement) {
+                        announcement.is_global_announcement = isGlobal;
+                    }
+                    
+                    // Refresh the announcements display
+                    loadAnnouncements();
+                } else {
+                    throw new Error(data.message || 'Failed to toggle global announcement');
+                }
+            } catch (error) {
+                console.error('Error toggling global announcement:', error);
+                showError(`Failed to toggle global announcement: ${error.message}`);
+                
+                // Revert button state on error
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
+
+        // Debug: Test function availability
+        console.log('🔧 toggleGlobalAnnouncement function defined:', typeof toggleGlobalAnnouncement);
+
         // Search and filter functionality
         // Announcement search functionality
         document.getElementById('announcementSearch')?.addEventListener('input', function () {
@@ -6684,6 +6939,294 @@
             } catch (error) {
                 console.error(`Error saving ${type} document:`, error);
                 showError(`Failed to save ${type} policy: ${error.message}`);
+            }
+        }
+
+        // Email Management Functions
+        async function loadEmailRecipients() {
+            try {
+                const response = await fetch('/api/email-recipients');
+                const data = await response.json();
+                
+                console.log('Email Recipients API Response:', data); // Debug log
+                
+                if (data.success && data.users) {
+                    const recipientsList = document.getElementById('emailRecipientsList');
+                    const checkboxContainer = document.getElementById('recipientCheckboxes');
+                    
+                    // Update recipients list display
+                    recipientsList.innerHTML = data.users.map(user => {
+                        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+                        const isEnabled = user.email_notifications_enabled;
+                        return `
+                        <div class="flex items-center justify-between bg-white p-2 rounded-lg border">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="user" class="w-4 h-4 text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-900">${fullName}</span>
+                                    <div class="text-xs text-gray-500">${user.email}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 text-xs ${isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'} rounded-full">
+                                    ${isEnabled ? 'Notifications On' : 'Notifications Off'}
+                                </span>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                    
+                    // Update checkboxes with current preferences
+                    checkboxContainer.innerHTML = data.users.map(user => {
+                        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+                        const isEnabled = user.email_notifications_enabled;
+                        return `
+                        <label class="flex items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input type="checkbox" value="${user.id}" class="recipient-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" ${isEnabled ? 'checked' : ''}>
+                            <div class="ml-3 flex items-center gap-2">
+                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="user" class="w-3 h-3 text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${fullName}</div>
+                                    <div class="text-xs text-gray-500">${user.email}</div>
+                                </div>
+                            </div>
+                        </label>
+                        `;
+                    }).join('');
+                    
+                    lucide.createIcons();
+                } else {
+                    console.error('No users found in email recipients API response:', data);
+                    showError('No email recipients data received from server');
+                }
+            } catch (error) {
+                console.error('Error loading email recipients:', error);
+                showError('Failed to load email recipients: ' + error.message);
+            }
+        }
+
+        async function loadEmailWeeks() {
+            try {
+                const response = await fetch('/api/weeks');
+                const data = await response.json();
+                
+                if (data.success && data.weeks) {
+                    const weekSelect = document.getElementById('emailWeekSelect');
+                    weekSelect.innerHTML = '<option value="">Select a week...</option>' + 
+                        data.weeks.map(week => `<option value="${week.week_name}">${week.week_name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading weeks:', error);
+                showError('Failed to load weeks');
+            }
+        }
+
+        function selectAllRecipients() {
+            const checkboxes = document.querySelectorAll('.recipient-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+
+        function deselectAllRecipients() {
+            const checkboxes = document.querySelectorAll('.recipient-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+
+        async function saveRecipientSelection() {
+            const checkboxes = document.querySelectorAll('.recipient-checkbox');
+            const preferences = Array.from(checkboxes).map(checkbox => ({
+                user_id: checkbox.value,
+                enabled: checkbox.checked
+            }));
+            
+            try {
+                const response = await fetch('/api/email-recipients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preferences: preferences })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Email preferences saved successfully!');
+                    // Reload the recipients to show updated status
+                    await loadEmailRecipients();
+                } else {
+                    throw new Error(data.message || 'Failed to save email preferences');
+                }
+            } catch (error) {
+                console.error('Error saving email preferences:', error);
+                showError('Failed to save email preferences: ' + error.message);
+            }
+        }
+
+        async function sendManualEmail() {
+            const week = document.getElementById('emailWeekSelect').value;
+            const day = document.getElementById('emailDaySelect').value;
+            const includeDailyPDF = document.getElementById('includeDailyPDF').checked;
+            const includeWeeklyPDF = document.getElementById('includeWeeklyPDF').checked;
+            
+            if (!week || !day) {
+                showError('Please select both week and day');
+                return;
+            }
+            
+            const selectedRecipients = Array.from(document.querySelectorAll('.recipient-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (selectedRecipients.length === 0) {
+                showError('Please select at least one recipient');
+                return;
+            }
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i data-lucide="loader" class="w-5 h-5 mr-2 animate-spin"></i>Sending...';
+            
+            try {
+                const response = await fetch('/api/send-manual-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        week_name: week,
+                        day_of_week: day,
+                        recipient_ids: selectedRecipients,
+                        include_daily_pdf: includeDailyPDF,
+                        include_weekly_pdf: includeWeeklyPDF
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(`Email alert sent successfully to ${selectedRecipients.length} recipients!`);
+                    loadEmailActivityLog(); // Refresh the activity log
+                } else {
+                    throw new Error(data.message || 'Failed to send email alert');
+                }
+            } catch (error) {
+                console.error('Error sending manual email:', error);
+                showError('Failed to send email alert: ' + error.message);
+            } finally {
+                // Restore button
+                button.disabled = false;
+                button.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        }
+
+        let currentEmailLogPage = 1;
+        const emailLogPerPage = 5;
+
+        async function loadEmailActivityLog(page = 1) {
+            try {
+                const response = await fetch(`/api/email-activity-log?page=${page}&per_page=${emailLogPerPage}`);
+                const data = await response.json();
+                
+                if (data.success && data.activities) {
+                    const logContainer = document.getElementById('emailActivityLog');
+                    
+                    if (data.activities.length === 0) {
+                        logContainer.innerHTML = `
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-sm text-gray-500 text-center italic">
+                                    No email activity yet
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        logContainer.innerHTML = data.activities.map(activity => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${activity.sent_date}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(activity.type_raw)}">
+                                        ${activity.type}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${activity.recipients_count} recipients
+                                    <div class="text-xs text-gray-500 truncate max-w-xs" title="${activity.recipients}">
+                                        ${activity.recipients}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${activity.week_name}
+                                    ${activity.sent_by_name ? `<div class="text-xs text-gray-500">by ${activity.sent_by_name}</div>` : ''}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(activity.status)}">
+                                        ${activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                    </span>
+                                    ${activity.error_message ? `<div class="text-xs text-red-500 mt-1" title="${activity.error_message}">Error: ${activity.error_message.substring(0, 30)}...</div>` : ''}
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                    
+                    // Update pagination
+                    updateEmailLogPagination(data.pagination);
+                    currentEmailLogPage = page;
+                }
+            } catch (error) {
+                console.error('Error loading email activity log:', error);
+                const logContainer = document.getElementById('emailActivityLog');
+                logContainer.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-sm text-red-500 text-center">
+                            Error loading email activity log
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                'automatic': 'bg-blue-100 text-blue-800',
+                'manual': 'bg-purple-100 text-purple-800',
+                'test': 'bg-gray-100 text-gray-800'
+            };
+            return colors[type] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'sent': 'bg-green-100 text-green-800',
+                'failed': 'bg-red-100 text-red-800',
+                'pending': 'bg-yellow-100 text-yellow-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function updateEmailLogPagination(pagination) {
+            // Update pagination info and controls if they exist
+            const paginationContainer = document.getElementById('emailLogPagination');
+            if (paginationContainer) {
+                paginationContainer.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing page ${pagination.page} of ${pagination.total_pages} (${pagination.total} total records)
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="loadEmailActivityLog(${pagination.page - 1})" 
+                                    ${!pagination.has_prev ? 'disabled' : ''} 
+                                    class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Previous
+                            </button>
+                            <button onclick="loadEmailActivityLog(${pagination.page + 1})" 
+                                    ${!pagination.has_next ? 'disabled' : ''} 
+                                    class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                `;
             }
         }
     </script>
