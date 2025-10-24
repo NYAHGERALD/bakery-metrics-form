@@ -58,7 +58,7 @@ DATABASE_CONFIG = {
     'password': os.getenv('DB_PASSWORD', ''),
     'port': os.getenv('DB_PORT', ''),
     'connect_timeout': 10,  # 10 second timeout
-    'sslmode': 'require'
+    'sslmode': 'require'  # Use 'disable' for localhost, 'require' for production
 }
 
 # Google Drive Configuration (for image uploads)
@@ -82,12 +82,34 @@ def get_db_connection():
             conn.close()
 
 def init_database():
-    """Initialize database connection on startup."""
+    """Initialize database connection and create tables on startup."""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT 1")
-        logger.info("Database connection successful")
+                
+                # Create production_reports table if it doesn't exist
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS production_reports (
+                        id SERIAL PRIMARY KEY,
+                        date DATE NOT NULL,
+                        submitted_by VARCHAR(255) NOT NULL,
+                        day_of_week VARCHAR(20) NOT NULL,
+                        shift VARCHAR(20) NOT NULL,
+                        item_no VARCHAR(100) NOT NULL,
+                        cases_scheduled INTEGER NOT NULL,
+                        cases_produced INTEGER NOT NULL,
+                        start_time TIME NOT NULL,
+                        end_time TIME NOT NULL,
+                        waste_lbs DECIMAL(10,2) NOT NULL,
+                        std DECIMAL(10,2) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                conn.commit()
+                
+        logger.info("Database connection successful and tables initialized")
     except Exception as e:
         logger.error(f"Failed to connect to database: {e}")
         raise
@@ -114,8 +136,10 @@ def login_required(f):
                     'error': 'not_authenticated'
                 }), 401
             else:
+                # Store the intended destination for redirect after login
+                session['next_url'] = request.url
                 flash("Please log in to access this page.", "warning")
-                return redirect(url_for('home'))
+                return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -1840,6 +1864,12 @@ def login():
         return redirect(url_for('first_time_password_setup'))
 
     flash(f"Welcome back, {user['first_name']}!", "success")
+    
+    # Check if there's a next_url to redirect to after login
+    next_url = session.pop('next_url', None)
+    if next_url and next_url != url_for('login'):
+        return redirect(next_url)
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -2007,6 +2037,99 @@ def administration():
 @add_cache_control_headers
 def dashboard():
     return render_template('dashboard.html', user_full_name=session.get('user_full_name', 'User'))
+
+
+@app.route('/production-dashboard')
+def production_dashboard():
+    """Production dashboard - accessible without login for demonstration purposes"""
+    return render_template('production-dash.html', user_full_name=session.get('user_full_name', 'Demo User'))
+
+
+@app.route('/sidebar-test')
+def sidebar_test():
+    """Test route for sidebar functionality"""
+    return render_template('sidebar_test.html')
+
+
+@app.route('/submit-report', methods=['GET', 'POST'])
+def submit_report():
+    """Submit production report - accessible without login for demonstration purposes"""
+    if request.method == 'POST':
+        try:
+            # Extract form data
+            date = request.form.get('date')
+            submitted_by = request.form.get('submitted_by', '').strip()
+            day_of_week = request.form.get('day_of_week')
+            shift = request.form.get('shift')
+            item_no = request.form.get('item_no', '').strip()
+            cases_scheduled = request.form.get('cases_scheduled')
+            cases_produced = request.form.get('cases_produced')
+            start_time = request.form.get('start_time')
+            end_time = request.form.get('end_time')
+            waste_lbs = request.form.get('waste_lbs')
+            std = request.form.get('std')
+
+            # Validate required fields
+            required_fields = {
+                'date': date,
+                'submitted_by': submitted_by,
+                'day_of_week': day_of_week,
+                'shift': shift,
+                'item_no': item_no,
+                'cases_scheduled': cases_scheduled,
+                'cases_produced': cases_produced,
+                'start_time': start_time,
+                'end_time': end_time,
+                'waste_lbs': waste_lbs,
+                'std': std
+            }
+
+            missing_fields = [field for field, value in required_fields.items() if not value]
+            
+            if missing_fields:
+                flash(f"Missing required fields: {', '.join(missing_fields)}", "error")
+                return render_template('Submit-report.html', 
+                                     user_full_name=session.get('user_full_name', 'Demo User'),
+                                     current_date=datetime.now().strftime('%Y-%m-%d'),
+                                     form_data=request.form)
+
+            # Store the submission in database
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO production_reports 
+                        (date, submitted_by, day_of_week, shift, item_no, cases_scheduled, 
+                         cases_produced, start_time, end_time, waste_lbs, std, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    """, (date, submitted_by, day_of_week, shift, item_no, cases_scheduled,
+                          cases_produced, start_time, end_time, waste_lbs, std))
+                    conn.commit()
+
+            # Log the submission
+            log_submission(
+                user_id=session.get('user_id'),
+                user_name=submitted_by,
+                user_email=session.get('user_email', ''),
+                submission_type='production_report',
+                message=f"Production report submitted for {date} - {shift} shift",
+                success=True
+            )
+
+            flash("Production report submitted successfully!", "success")
+            return redirect(url_for('submit_report'))
+
+        except Exception as e:
+            logger.error(f"Error submitting production report: {e}")
+            flash("An error occurred while submitting the report. Please try again.", "error")
+            return render_template('Submit-report.html', 
+                                 user_full_name=session.get('user_full_name', 'Demo User'),
+                                 current_date=datetime.now().strftime('%Y-%m-%d'),
+                                 form_data=request.form)
+
+    # GET request - display the form
+    return render_template('Submit-report.html', 
+                         user_full_name=session.get('user_full_name', 'Demo User'),
+                         current_date=datetime.now().strftime('%Y-%m-%d'))
 
 
 @app.route('/user-management')
@@ -10064,7 +10187,8 @@ try:
     logger.info("Flask app initialized successfully")
 except Exception as e:
     logger.error(f"Failed to initialize database: {e}")
-    exit(1)
+    logger.warning("App will continue running with limited functionality - database unavailable")
+    # Don't exit - allow app to run for frontend demonstration
 
 app.config['APP_START_TIME'] = time.time()
 
@@ -12655,5 +12779,5 @@ def get_week_average():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5001))
+    port = int(os.environ.get('PORT', 5005))
     app.run(host='0.0.0.0', port=port, debug=False)

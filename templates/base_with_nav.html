@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{% block title %}Production Management - Don Miguel{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}?v={{ range(1000,9999) | random }}" rel="stylesheet" />
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Ensure sidebar transitions work properly */
+        #sidebar-menu {
+            transform: translateX(-100%);
+            transition: transform 300ms ease-in-out;
+        }
+        
+        #sidebar-menu.sidebar-open {
+            transform: translateX(0) !important;
+        }
+        
+        #sidebar-overlay {
+            opacity: 0;
+            transition: opacity 300ms ease-in-out;
+        }
+        
+        #sidebar-overlay.overlay-visible {
+            opacity: 1 !important;
+        }
+        
+        /* Debug styles */
+        .debug-border {
+            border: 2px solid red !important;
+        }
+    </style>
+    {% block custom_styles %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navbar -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 relative z-40">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Hamburger Menu Button (All Screen Sizes) -->
+                    <button id="sidebar-menu-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 mr-3 transition-colors">
+                        <span class="sr-only">Open navigation menu</span>
+                        <!-- Hamburger icon -->
+                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- X icon -->
+                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <h1 class="text-lg font-semibold text-gray-900">{% block page_title %}Production Management{% endblock %}</h1>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">{{ user_full_name or 'Elena Rodriguez' }}</span>
+                    <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm font-medium">{{ (user_full_name or 'Elena Rodriguez')[:2].upper() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-black bg-opacity-50 hidden transition-opacity duration-300">
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar-menu" class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out" style="transform: translateX(-100%);">
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-blue-50">
+            <h2 class="text-lg font-semibold text-gray-900">Navigation Menu</h2>
+            <button id="close-sidebar-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors">
+                <span class="sr-only">Close menu</span>
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Sidebar Navigation Links -->
+        <div class="flex-1 px-4 py-6 space-y-2">
+            <a href="/submit-report" class="group flex items-center px-4 py-3 text-base font-medium {% if request.endpoint == 'submit_report' %}text-blue-600 bg-blue-50 rounded-lg border-l-4 border-blue-600{% else %}text-gray-600 rounded-lg hover:text-gray-900 hover:bg-blue-50 transition-colors duration-200{% endif %}">
+                <svg class="mr-3 h-5 w-5 {% if request.endpoint == 'submit_report' %}text-blue-600{% else %}text-gray-400 group-hover:text-blue-500{% endif %}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Submit Report
+            </a>
+            
+            <a href="/production-dashboard" class="group flex items-center px-4 py-3 text-base font-medium {% if request.endpoint == 'production_dashboard' %}text-blue-600 bg-blue-50 rounded-lg border-l-4 border-blue-600{% else %}text-gray-600 rounded-lg hover:text-gray-900 hover:bg-blue-50 transition-colors duration-200{% endif %}">
+                <svg class="mr-3 h-5 w-5 {% if request.endpoint == 'production_dashboard' %}text-blue-600{% else %}text-gray-400 group-hover:text-blue-500{% endif %}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                View Dashboard
+            </a>
+            
+            <a href="#" class="group flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg hover:text-gray-900 hover:bg-blue-50 transition-colors duration-200">
+                <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Add Downtime
+            </a>
+            
+            <a href="#" class="group flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg hover:text-gray-900 hover:bg-blue-50 transition-colors duration-200">
+                <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Bakery
+            </a>
+            
+            <a href="#" class="group flex items-center px-4 py-3 text-base font-medium text-gray-600 rounded-lg hover:text-gray-900 hover:bg-blue-50 transition-colors duration-200">
+                <svg class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Help Center
+            </a>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="border-t border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span class="text-white text-sm font-medium">{{ (user_full_name or 'Elena Rodriguez')[:2].upper() }}</span>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">{{ user_full_name or 'Elena Rodriguez' }}</p>
+                    <p class="text-xs text-gray-500">Production Manager</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Block -->
+    {% block content %}{% endblock %}
+
+    <!-- Base Sidebar JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sidebar JavaScript loaded');
+            
+            // Sidebar functionality
+            const sidebarMenuBtn = document.getElementById('sidebar-menu-btn');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            // Debug: Check if all elements are found
+            console.log('Elements found:', {
+                sidebarMenuBtn: !!sidebarMenuBtn,
+                closeSidebarBtn: !!closeSidebarBtn,
+                sidebarMenu: !!sidebarMenu,
+                sidebarOverlay: !!sidebarOverlay,
+                hamburgerIcon: !!hamburgerIcon,
+                closeIcon: !!closeIcon
+            });
+
+            if (!sidebarMenuBtn || !closeSidebarBtn || !sidebarMenu || !sidebarOverlay) {
+                console.error('Some sidebar elements not found');
+                return;
+            }
+
+            // Function to open sidebar
+            function openSidebar() {
+                console.log('Opening sidebar');
+                // Use both Tailwind and custom classes for better compatibility
+                sidebarMenu.classList.remove('-translate-x-full');
+                sidebarMenu.classList.add('sidebar-open');
+                sidebarMenu.style.transform = 'translateX(0)';
+                
+                sidebarOverlay.classList.remove('hidden');
+                sidebarOverlay.classList.add('overlay-visible');
+                sidebarOverlay.style.display = 'block';
+                
+                if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+                if (closeIcon) closeIcon.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Function to close sidebar
+            function closeSidebar() {
+                console.log('Closing sidebar');
+                // Use both Tailwind and custom classes for better compatibility
+                sidebarMenu.classList.add('-translate-x-full');
+                sidebarMenu.classList.remove('sidebar-open');
+                sidebarMenu.style.transform = 'translateX(-100%)';
+                
+                sidebarOverlay.classList.add('hidden');
+                sidebarOverlay.classList.remove('overlay-visible');
+                sidebarOverlay.style.display = 'none';
+                
+                if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
+                if (closeIcon) closeIcon.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Toggle sidebar when menu button is clicked
+            sidebarMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Hamburger menu clicked');
+                openSidebar();
+            });
+
+            // Close sidebar when close button is clicked
+            closeSidebarBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Close button clicked');
+                closeSidebar();
+            });
+
+            // Close sidebar when clicking on overlay
+            sidebarOverlay.addEventListener('click', function(e) {
+                console.log('Overlay clicked');
+                closeSidebar();
+            });
+
+            // Close sidebar when pressing Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    console.log('Escape key pressed');
+                    closeSidebar();
+                }
+            });
+
+            // Prevent clicks inside sidebar from closing it
+            sidebarMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

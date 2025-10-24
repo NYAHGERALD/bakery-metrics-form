@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Bakery Table Analytics Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<style>
+    /* Vertical separators using Tailwind color values */
+    table td:nth-child(1) { border-right: 2px solid #4b5563; } /* border-gray-600 */
+    table td:nth-child(8) { border-right: 2px solid #4b5563; } /* border-gray-600 */
+    table td:nth-child(15) { border-right: 2px solid #4b5563; } /* border-gray-600 */
+    /* Light borders for other columns */
+    table td:not(:nth-child(1)):not(:nth-child(8)):not(:nth-child(15)):not(:last-child) { border-right: 1px solid #d1d5db; } /* border-gray-300 */
+</style>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen"></body>
+    {% extends "dashboard.html" %}
+    {% block content %}
+
+    <div class="bg-gray-50 min-h-screen">
+        <!-- Main Content - Full Width -->
+        <main class="w-full">
+            <div class="p-6">
+                <!-- Header Section -->
+                <div class="bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-semibold text-gray-900">PRODUCTION SUMMARY REPORT</h2>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-500">Revised: 9/17/25</span>
+                                <div class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    DON MIGUEL
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reported by:</label>
+                                <input type="text" value="Elena Rodriguez" class="bg-white border border-gray-500 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50 hover:scale-105 w-full px-3 py-2 rounded-md text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date:</label>
+                                <input type="date" value="2025-09-23" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-blue-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Shift:</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-blue-50">
+                                    <option selected>First</option>
+                                    <option>Second</option>
+                                    <option>Third</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Day:</label>
+                                <input type="text" value="Tuesday" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-blue-50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Production Data Table -->
+                <div class="bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Comprehensive Production Details</h3>
+                        <p class="text-sm text-gray-600 mt-1">Complete production metrics by location with all 18 key performance indicators</p>
+                    </div>
+                    <div class="overflow-x-auto table-container shadow-inner">
+                        <table class="w-full text-xs">
+                            <thead class="bg-blue-100">
+                                <tr class="text-xs text-gray-700 uppercase tracking-wider">
+                                    <th class="px-2 py-3 text-left min-w-[120px] border-r-2 border-gray-600">Location</th>
+                                    <th class="px-2 py-3 text-center min-w-[80px] border-r border-gray-300">Item No.</th>
+                                    <th class="px-2 py-3 text-left min-w-[200px] border-r border-gray-300">Desc.</th>
+                                    <th class="px-2 py-3 text-center min-w-[90px] border-r border-gray-300">Cs Scheduled</th>
+                                    <th class="px-2 py-3 text-center min-w-[90px] border-r border-gray-300">Cs Produced</th>
+                                    <th class="px-2 py-3 text-center min-w-[90px] border-r border-gray-300">Lbs Scheduled</th>
+                                    <th class="px-2 py-3 text-center min-w-[90px] border-r border-gray-300">Lbs Produced</th>
+                                    <th class="px-2 py-3 text-center min-w-[80px] border-r-2 border-gray-600">Attainment</th>
+                                    <th class="px-2 py-3 text-center min-w-[100px] border-r border-gray-300">Scheduled Start Time</th>
+                                    <th class="px-2 py-3 text-center min-w-[100px] border-r border-gray-300">Start Time Actual</th>
+                                    <th class="px-2 py-3 text-center min-w-[80px] border-r border-gray-300">End Time</th>
+                                    <th class="px-2 py-3 text-center min-w-[80px] border-r border-gray-300">Total Time (min)</th>
+                                    <th class="px-2 py-3 text-center min-w-[90px] border-r border-gray-300">Min Late Start</th>
+                                    <th class="px-2 py-3 text-center min-w-[80px] border-r border-gray-300">Waste (lbs)</th>
+                                    <th class="px-2 py-3 text-center min-w-[70px] border-r-2 border-gray-600">Waste %</th>
+                                    <th class="px-2 py-3 text-center min-w-[70px]">HC STD</th>
+                                    <th class="px-2 py-3 text-center min-w-[60px]">STD</th>
+                                    <th class="px-2 py-3 text-center min-w-[70px]">HC %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 1. Kitchen (standalone) -->
+                                <tr class="hover:bg-gray-50 border-t-2 border-gray-900">
+                                    <td class="px-2 py-3 font-medium">Kitchen</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3">-</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center font-semibold">0.00%</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center font-semibold">0.00%</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                    <td class="px-2 py-3 text-center">-</td>
+                                </tr>
+
+                                <!-- 2. Line 1 Group (merged cells) -->
+                                <!-- Line 1: Assembly Row -->
+                                <tr class="hover:bg-gray-50 border-t-2 border-gray-900">
+                                    <td class="px-2 py-3 font-medium" style="vertical-align: middle;">Line 1: Assembly</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">67632</td>
+                                    <td class="px-2 py-3" rowspan="2" style="vertical-align: middle;">5.25LB 7-11 BF MINI TACO</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50" rowspan="2" style="vertical-align: middle;">6,624</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">7,401</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">45,276</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">38,855</td>
+                                    <td class="px-2 py-3 text-center font-semibold" rowspan="2" style="vertical-align: middle;">85.8%</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">3:45 PM</td>
+                                    <td class="px-2 py-3 text-center">510</td>
+                                    <td class="px-2 py-3 text-center">0</td>
+                                    <td class="px-2 py-3 text-center">1,174</td>
+                                    <td class="px-2 py-3 text-center">3.02%</td>
+                                    <td class="px-2 py-3 text-center">13</td>
+                                    <td class="px-2 py-3 text-center">17</td>
+                                    <td class="px-2 py-3 text-center font-semibold">131%</td>
+                                </tr>
+
+                                <!-- Line 1: Pack Off Row -->
+                                <tr class="hover:bg-gray-50 border-t border-gray-300">
+                                    <td class="px-2 py-3 font-medium" style="vertical-align: middle;">Line 1: Pack Off</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:45 AM</td>
+                                    <td class="px-2 py-3 text-center">8:00 AM</td>
+                                    <td class="px-2 py-3 text-center">4:20 PM</td>
+                                    <td class="px-2 py-3 text-center">500</td>
+                                    <td class="px-2 py-3 text-center">15</td>
+                                    <td class="px-2 py-3 text-center">65</td>
+                                    <td class="px-2 py-3 text-center">0.17%</td>
+                                    <td class="px-2 py-3 text-center">12</td>
+                                    <td class="px-2 py-3 text-center">11</td>
+                                    <td class="px-2 py-3 text-center font-semibold">92%</td>
+                                </tr>
+
+                                <!-- 4. Dark line before Line 2: Assembly (start of Line 2 group) -->
+                                <!-- Line 2: Assembly Row -->
+                                <tr class="hover:bg-gray-50 border-t-2 border-gray-900">
+                                    <td class="px-2 py-3 font-medium">Line 2: Assembly</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">118144</td>
+                                    <td class="px-2 py-3" rowspan="2" style="vertical-align: middle;">10.56/ 7 OUNCES MINI TACOS</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50" rowspan="2" style="vertical-align: middle;">945</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">820</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">23,153</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">20,090</td>
+                                    <td class="px-2 py-3 text-center font-semibold" rowspan="2" style="vertical-align: middle;">86.8%</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">3:44 PM</td>
+                                    <td class="px-2 py-3 text-center">509</td>
+                                    <td class="px-2 py-3 text-center">0</td>
+                                    <td class="px-2 py-3 text-center">765</td>
+                                    <td class="px-2 py-3 text-center">3.81%</td>
+                                    <td class="px-2 py-3 text-center">7</td>
+                                    <td class="px-2 py-3 text-center">10</td>
+                                    <td class="px-2 py-3 text-center font-semibold">143%</td>
+                                </tr>
+
+                                <!-- 5. Thin line between Line 2: Assembly and Line 2: Pack Off -->
+                                <tr class="hover:bg-gray-50 border-t border-gray-300">
+                                    <td class="px-2 py-3 font-medium">Line 2: Pack Off</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:45 AM</td>
+                                    <td class="px-2 py-3 text-center">8:00 AM</td>
+                                    <td class="px-2 py-3 text-center">4:20 PM</td>
+                                    <td class="px-2 py-3 text-center">500</td>
+                                    <td class="px-2 py-3 text-center">15</td>
+                                    <td class="px-2 py-3 text-center">55</td>
+                                    <td class="px-2 py-3 text-center">0.27%</td>
+                                    <td class="px-2 py-3 text-center">8</td>
+                                    <td class="px-2 py-3 text-center">15</td>
+                                    <td class="px-2 py-3 text-center font-semibold">188%</td>
+                                </tr>
+
+                                <!-- 6. Dark line before Line 3: Assembly (start of Line 3 group) -->
+                                <!-- Line 3: Assembly Row -->
+                                <tr class="hover:bg-gray-50 border-t-2 border-gray-900">
+                                    <td class="px-2 py-3 font-medium">Line 3: Assembly</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">65689</td>
+                                    <td class="px-2 py-3" rowspan="2" style="vertical-align: middle;">24-4OZ MNSTR CHK CHS TACO NO FG</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50" rowspan="2" style="vertical-align: middle;">6,172</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">5,727</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">37,032</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">34,362</td>
+                                    <td class="px-2 py-3 text-center font-semibold" rowspan="2" style="vertical-align: middle;">92.8%</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">7:15 AM</td>
+                                    <td class="px-2 py-3 text-center">3:23 PM</td>
+                                    <td class="px-2 py-3 text-center">488</td>
+                                    <td class="px-2 py-3 text-center">0</td>
+                                    <td class="px-2 py-3 text-center">66</td>
+                                    <td class="px-2 py-3 text-center">0.19%</td>
+                                    <td class="px-2 py-3 text-center">20</td>
+                                    <td class="px-2 py-3 text-center">16</td>
+                                    <td class="px-2 py-3 text-center font-semibold">80%</td>
+                                </tr>
+
+                                <!-- 7. Thin line between Line 3: Assembly and Line 3: Pack Off -->
+                                <tr class="hover:bg-gray-50 border-t border-gray-300">
+                                    <td class="px-2 py-3 font-medium">Line 3: Pack Off</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:45 AM</td>
+                                    <td class="px-2 py-3 text-center">8:00 AM</td>
+                                    <td class="px-2 py-3 text-center">4:15 PM</td>
+                                    <td class="px-2 py-3 text-center">495</td>
+                                    <td class="px-2 py-3 text-center">15</td>
+                                    <td class="px-2 py-3 text-center">73</td>
+                                    <td class="px-2 py-3 text-center">1.08%</td>
+                                    <td class="px-2 py-3 text-center">13</td>
+                                    <td class="px-2 py-3 text-center">14</td>
+                                    <td class="px-2 py-3 text-center font-semibold">108%</td>
+                                </tr>
+
+                                <!-- 8. Dark line before Line 5: Assembly (start of Line 5 group) -->
+                                <!-- Line 5: Assembly Row -->
+                                <tr class="hover:bg-gray-50 border-t-2 border-gray-900">
+                                    <td class="px-2 py-3 font-medium">Line 5: Assembly</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">65902</td>
+                                    <td class="px-2 py-3" rowspan="2" style="vertical-align: middle;">12.7 EGG & SAUSAGE BURRITO</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50" rowspan="2" style="vertical-align: middle;">5,540</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">5,301</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">29,085</td>
+                                    <td class="px-2 py-3 text-center" rowspan="2" style="vertical-align: middle;">27,830</td>
+                                    <td class="px-2 py-3 text-center font-semibold" rowspan="2" style="vertical-align: middle;">95.7%</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:00 AM</td>
+                                    <td class="px-2 py-3 text-center">7:00 AM</td>
+                                    <td class="px-2 py-3 text-center">3:10 PM</td>
+                                    <td class="px-2 py-3 text-center">490</td>
+                                    <td class="px-2 py-3 text-center">0</td>
+                                    <td class="px-2 py-3 text-center">173</td>
+                                    <td class="px-2 py-3 text-center">0.62%</td>
+                                    <td class="px-2 py-3 text-center">23</td>
+                                    <td class="px-2 py-3 text-center">25</td>
+                                    <td class="px-2 py-3 text-center font-semibold">109%</td>
+                                </tr>
+
+                                <!-- 9. Thin line between Line 5: Assembly and Line 5: Pack Off -->
+                                <tr class="hover:bg-gray-50 border-t border-gray-300">
+                                    <td class="px-2 py-3 font-medium">Line 5: Pack Off</td>
+                                    <td class="px-2 py-3 text-center border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">7:30 AM</td>
+                                    <td class="px-2 py-3 text-center">7:45 AM</td>
+                                    <td class="px-2 py-3 text-center">4:00 PM</td>
+                                    <td class="px-2 py-3 text-center">495</td>
+                                    <td class="px-2 py-3 text-center">15</td>
+                                    <td class="px-2 py-3 text-center">242</td>
+                                    <td class="px-2 py-3 text-center">0.87%</td>
+                                    <td class="px-2 py-3 text-center">14</td>
+                                    <td class="px-2 py-3 text-center">18</td>
+                                    <td class="px-2 py-3 text-center font-semibold">129%</td>
+                                </tr>
+                            </tbody>
+                            <!-- 10. Dark line before Shift Totals -->
+                            <tfoot class="font-bold">
+                                <tr class="border-t-2 border-gray-900">
+                                    <td class="px-2 py-4 text-lg">Shift Totals:</td>
+                                    <td class="px-2 py-4 text-center">-</td>
+                                    <td class="px-2 py-4">All Production Lines Combined</td>
+                                    <td class="px-2 py-4 text-center text-lg">21,281</td>
+                                    <td class="px-2 py-4 text-center text-lg">19,249</td>
+                                    <td class="px-2 py-4 text-center text-lg">134,546</td>
+                                    <td class="px-2 py-4 text-center text-lg">121,138</td>
+                                    <td class="px-2 py-4 text-center font-semibold text-lg">90%</td>
+                                    <td class="px-2 py-4 text-center">-</td>
+                                    <td class="px-2 py-4 text-center">-</td>
+                                    <td class="px-2 py-4 text-center">-</td>
+                                    <td class="px-2 py-4 text-center">3,987</td>
+                                    <td class="px-2 py-4 text-center">2,912</td>
+                                    <td class="px-2 py-4 text-center text-lg">2.40%</td>
+                                    <td class="px-2 py-4 text-center">130</td>
+                                    <td class="px-2 py-4 text-center">116</td>
+                                    <td class="px-2 py-4 text-center font-semibold text-lg">124%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Downtime Notes -->
+                <div class="bg-white rounded-lg shadow-lg border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Downtime (30 min) & Other Notes</h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <!-- Line Selection Dropdown -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Production Line:</label>
+                            <select id="lineSelector" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="line1">Line 1</option>
+                                <option value="line2">Line 2</option>
+                                <option value="line3">Line 3</option>
+                                <option value="line5">Line 5</option>
+                            </select>
+                        </div>
+
+                        <!-- Single Large Downtime Text Area -->
+                        <div class="border border-gray-200 rounded-md shadow-sm">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                                <span id="selectedLineTitle" class="font-medium text-sm">Line 1 Downtime Notes:</span>
+                                <span class="text-xs text-gray-500">Selected Line Details</span>
+                            </div>
+                            <div class="p-4 border border-gray-300 cursor-pointer transition-all duration-200 ease-in-out hover:bg-gray-50">
+                                <textarea 
+                                    id="downtimeTextarea" 
+                                    class="w-full h-32 border-none resize-none focus:outline-none bg-transparent text-sm leading-relaxed" 
+                                    placeholder="Enter downtime notes for the selected line...">Side A starts 8:23 electrical issues on trash fer / folding conveyors</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+<script>
+    // Downtime data for each line
+    const downtimeData = {
+        line1: "Side A starts 8:23 electrical issues on trash fer / folding conveyors",
+        line2: "10:44 AM-11:38 AM(54 mins)Maintenece making adjustments on chain of masa sheeter 2",
+        line3: "",
+        line5: "Side A didn't run no equipment available. Robby 7 was down screen blocked."
+    };
+
+        // Make editable fields interactive and handle line selection
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar Menu Functionality
+            const sidebarMenuBtn = document.getElementById('sidebar-menu-btn');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            // Function to open sidebar
+            function openSidebar() {
+                sidebarOverlay.classList.remove('hidden');
+                sidebarMenu.classList.remove('-translate-x-full');
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                // Prevent body scroll when sidebar is open
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Function to close sidebar
+            function closeSidebar() {
+                sidebarOverlay.classList.add('hidden');
+                sidebarMenu.classList.add('-translate-x-full');
+                hamburgerIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
+
+            // Open sidebar when hamburger button is clicked
+            sidebarMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isSidebarOpen = !sidebarMenu.classList.contains('-translate-x-full');
+                
+                if (isSidebarOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+
+            // Close sidebar when close button is clicked
+            closeSidebarBtn.addEventListener('click', function() {
+                closeSidebar();
+            });
+
+            // Close sidebar when clicking on overlay
+            sidebarOverlay.addEventListener('click', function() {
+                closeSidebar();
+            });
+
+            // Close sidebar when pressing Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeSidebar();
+                }
+            });
+
+            // Prevent clicks inside sidebar from closing it
+            sidebarMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            // Handle line selector dropdown
+            const lineSelector = document.getElementById('lineSelector');
+            const selectedLineTitle = document.getElementById('selectedLineTitle');
+            const downtimeTextarea = document.getElementById('downtimeTextarea');
+
+            // Function to update the display based on selected line
+            function updateLineDisplay() {
+                const selectedLine = lineSelector.value;
+                const lineNames = {
+                    line1: 'Line 1',
+                    line2: 'Line 2', 
+                    line3: 'Line 3',
+                    line5: 'Line 5'
+                };
+                
+                selectedLineTitle.textContent = `${lineNames[selectedLine]} Downtime Notes:`;
+                downtimeTextarea.value = downtimeData[selectedLine];
+                downtimeTextarea.placeholder = `Enter downtime notes for ${lineNames[selectedLine]}...`;
+            }
+
+            // Listen for dropdown changes
+            lineSelector.addEventListener('change', updateLineDisplay);
+
+            // Save textarea changes back to data object
+            downtimeTextarea.addEventListener('input', function() {
+                const selectedLine = lineSelector.value;
+                downtimeData[selectedLine] = this.value;
+            });
+
+        // Initialize with first line
+        updateLineDisplay();
+
+        // Make other editable fields interactive
+        document.querySelectorAll('td[class*="border border-gray-300 cursor-pointer"], input[class*="cursor-pointer"], textarea').forEach(field => {
+            field.addEventListener('click', function() {
+                this.style.backgroundColor = '#f9f9f9';
+                this.style.borderColor = '#6b7280';
+            });
+            
+            field.addEventListener('focus', function() {
+                this.style.backgroundColor = '#f3f4f6';
+                this.style.transform = 'scale(1.02)';
+            });
+            
+            field.addEventListener('blur', function() {
+                this.style.backgroundColor = '#ffffff';
+                this.style.transform = 'scale(1)';
+            });
+        });
+    });
+</script>
+{% endblock %}
+</body>
+</html>

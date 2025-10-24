@@ -1,0 +1,701 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<!-- Additional Scripts for Submit Report page -->
+<link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Auto-save Indicator -->
+<div id="autoSaveIndicator" class="fixed top-24 right-5 bg-emerald-500 text-white px-4 py-2 rounded-full text-sm opacity-0 transition-opacity duration-300 z-[1000] flex items-center gap-2">
+    <i data-lucide="save" class="w-4 h-4"></i> Changes saved
+</div>
+
+<!-- Submit Report Content -->
+<div class="p-4 md:p-6 lg:p-8 min-h-screen">
+    <!-- Page Header -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 mb-6 animate-[fadeIn_0.5s_ease-out] overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-400/5 to-transparent rounded-full -translate-y-12 translate-x-12"></div>
+        
+        <div class="relative z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                <div class="mb-3 lg:mb-0">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1 bg-gradient-to-r from-blue-800 to-purple-800 bg-clip-text text-transparent">
+                        Production Summary Submission
+                    </h1>
+                    <p class="text-sm text-gray-600">Complete production data entry with advanced features and real-time validation</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Progress Tracker -->
+    <div class="sticky top-20 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm mb-6">
+        <div class="px-6 py-3">
+            <div class="flex flex-wrap gap-2 justify-center lg:justify-start">
+                <div class="progress-step flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md transition-all duration-300 active" id="progressStep1">
+                    <div class="step-number w-6 h-6 rounded-full flex items-center justify-center font-semibold text-xs bg-white text-blue-900 transition-all duration-300" id="stepIndicator1">1</div>
+                    <div class="text-xs font-semibold text-gray-700">Basic Information</div>
+                </div>
+                <div class="progress-step flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md transition-all duration-300" id="progressStep2">
+                    <div class="step-number w-6 h-6 rounded-full flex items-center justify-center font-semibold text-xs bg-white/20 text-gray-600 transition-all duration-300" id="stepIndicator2">2</div>
+                    <div class="text-xs font-semibold text-gray-700">Production Details</div>
+                </div>
+                <div class="progress-step flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md transition-all duration-300" id="progressStep3">
+                    <div class="step-number w-6 h-6 rounded-full flex items-center justify-center font-semibold text-xs bg-white/20 text-gray-600 transition-all duration-300" id="stepIndicator3">3</div>
+                    <div class="text-xs font-semibold text-gray-700">Review & Submit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Container -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-8 animate-[fadeIn_0.5s_ease-out] overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/5 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+        
+        <!-- Form -->
+        <form id="productionForm" method="POST" action="/submit-report" class="relative z-10">
+            {{ csrf_token() if csrf_token }}
+
+            <!-- Page 1: Basic Information -->
+            <div class="form-section block animate-[slideIn_0.5s_ease-out]" id="page1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <div class="relative mb-3">
+                        <label for="section_type" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4"></i> Choose a Section
+                        </label>
+                        <select id="section_type" name="section_type" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required>
+                            <option value="">Choose a Section</option>
+                            <option value="Production">Production</option>
+                            <option value="Change Overs">Change Overs</option>
+                            <option value="Rework">Rework</option>
+                        </select>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="date" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4"></i> Production Date
+                        </label>
+                        <input type="date" id="date" name="date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required value="{{ current_date or '' }}">
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="submitted_by" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> Submitted By
+                        </label>
+                        <input type="text" id="submitted_by" name="submitted_by" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required value="{{ user_full_name or 'Demo User' }}" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="day_of_week" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="calendar-days" class="w-4 h-4"></i> Day of Week
+                        </label>
+                        <select id="day_of_week" name="day_of_week" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required>
+                            <option value="">Select Day</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </select>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="shift" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4"></i> Production Shift
+                        </label>
+                        <select id="shift" name="shift" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required>
+                            <option value="">Select Shift</option>
+                            <option value="First">First Shift</option>
+                            <option value="Second">Second Shift</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-gray-200">
+                    <div></div>
+                    <button type="button" id="nextBtn1" class="px-8 py-4 rounded-xl font-semibold text-base cursor-pointer transition-all duration-300 inline-flex items-center justify-center gap-2 border-0 relative overflow-hidden bg-gradient-to-br from-blue-900 to-blue-600 text-white shadow-lg hover:-translate-y-0.5 hover:shadow-xl before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full">
+                        Continue to Production Details
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 2: Production Details -->
+            <div class="form-section hidden" id="page2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    <div class="relative mb-3">
+                        <label for="item_no" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="scan-line" class="w-4 h-4"></i> Item Number
+                        </label>
+                        <input type="text" id="item_no" name="item_no" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required placeholder="Enter SKU or item number">
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="cases_scheduled" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i> Cases Scheduled
+                        </label>
+                        <input type="number" id="cases_scheduled" name="cases_scheduled" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required min="0" step="1" placeholder="Planned production quantity">
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="cases_produced" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="package" class="w-4 h-4"></i> Cases Produced
+                        </label>
+                        <input type="number" id="cases_produced" name="cases_produced" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required min="0" step="1" placeholder="Actual production quantity">
+                        <div id="efficiencyDisplay" class="mt-2 text-sm text-gray-600 flex items-center gap-1"></div>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="start_time" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i> Production Start Time
+                        </label>
+                        <input type="time" id="start_time" name="start_time" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="end_time" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="stop-circle" class="w-4 h-4"></i> Production End Time
+                        </label>
+                        <input type="time" id="end_time" name="end_time" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required>
+                        <div id="durationDisplay" class="mt-2 text-sm text-gray-600 flex items-center gap-1"></div>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="waste_lbs" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Waste (lbs)
+                        </label>
+                        <input type="number" id="waste_lbs" name="waste_lbs" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required min="0" step="0.1" placeholder="Total waste in pounds">
+                        <div id="wastePercentage" class="mt-2 text-sm text-gray-600 flex items-center gap-1"></div>
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="std" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="ruler" class="w-4 h-4"></i> Standard (STD)
+                        </label>
+                        <input type="number" id="std" name="std" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" required min="0" step="0.1" placeholder="Production standard value">
+                    </div>
+
+                    <div class="relative mb-3">
+                        <label for="line_speed" class="block font-semibold text-gray-900 mb-1 text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="gauge" class="w-4 h-4"></i> Line Speed (Optional)
+                        </label>
+                        <input type="number" id="line_speed" name="line_speed" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base transition-all duration-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] focus:-translate-y-0.5" min="0" step="0.1" placeholder="Production line speed">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-gray-200">
+                    <button type="button" id="prevBtn2" class="px-8 py-4 rounded-xl font-semibold text-base cursor-pointer transition-all duration-300 inline-flex items-center justify-center gap-2 border-0 relative overflow-hidden bg-gray-600 text-white shadow-md hover:-translate-y-0.5 hover:shadow-lg before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        Back to Basic Info
+                    </button>
+                    <button type="button" id="nextBtn2" class="px-8 py-4 rounded-xl font-semibold text-base cursor-pointer transition-all duration-300 inline-flex items-center justify-center gap-2 border-0 relative overflow-hidden bg-gradient-to-br from-blue-900 to-blue-600 text-white shadow-lg hover:-translate-y-0.5 hover:shadow-xl before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full">
+                        Review Submission
+                        <i data-lucide="eye" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 3: Review & Submit -->
+            <div class="form-section hidden" id="page3">
+                <h2 class="text-3xl font-bold mb-8 text-blue-900 flex items-center gap-2">
+                    <i data-lucide="clipboard-check" class="w-8 h-8"></i> Review Your Submission
+                </h2>
+
+                <div id="reviewContent" class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 mb-8 border border-gray-200">
+                    <!-- Review content will be populated by JavaScript -->
+                </div>
+
+                <div class="flex justify-between items-center mt-6 pt-4 border-t-2 border-gray-200">
+                    <button type="button" id="prevBtn3" class="px-8 py-4 rounded-xl font-semibold text-base cursor-pointer transition-all duration-300 inline-flex items-center justify-center gap-2 border-0 relative overflow-hidden bg-gray-600 text-white shadow-md hover:-translate-y-0.5 hover:shadow-lg before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        Back to Edit
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-8 py-4 rounded-xl font-semibold text-base cursor-pointer transition-all duration-300 inline-flex items-center justify-center gap-2 border-0 relative overflow-hidden bg-gradient-to-br from-emerald-600 to-green-500 text-white shadow-lg hover:-translate-y-0.5 hover:shadow-xl before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-500 hover:before:left-full">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        Submit Production Report
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Advanced Production Form Management System
+    class ProductionFormManager {
+        constructor() {
+            this.currentPage = 1;
+            this.totalPages = 3;
+            this.formData = {};
+            this.autoSaveInterval = null;
+            this.validationRules = {};
+
+            this.init();
+        }
+
+        init() {
+            this.setupEventListeners();
+            this.initializeDefaults();
+            this.startAutoSave();
+            this.loadSavedData();
+            this.setupRealtimeCalculations();
+        }
+
+        setupEventListeners() {
+            document.getElementById('nextBtn1')?.addEventListener('click', () => this.nextPage());
+            document.getElementById('nextBtn2')?.addEventListener('click', () => this.nextPage());
+            document.getElementById('prevBtn2')?.addEventListener('click', () => this.prevPage());
+            document.getElementById('prevBtn3')?.addEventListener('click', () => this.prevPage());
+            document.getElementById('productionForm')?.addEventListener('submit', (e) => this.handleSubmit(e));
+            this.setupInputListeners();
+        }
+
+        setupInputListeners() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    this.validateField(input);
+                    this.updateCalculations();
+                    this.saveFormData();
+                });
+
+                input.addEventListener('blur', () => {
+                    this.validateField(input);
+                });
+            });
+        }
+
+        initializeDefaults() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateField = document.getElementById('date');
+            if (dateField && !dateField.value) dateField.value = today;
+
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const currentDay = days[new Date().getDay()];
+            const dayField = document.getElementById('day_of_week');
+            if (dayField && currentDay !== 'Sunday' && !dayField.value) {
+                dayField.value = currentDay;
+            }
+
+            const hour = new Date().getHours();
+            const shiftField = document.getElementById('shift');
+            if (shiftField && !shiftField.value) {
+                if (hour >= 6 && hour < 14) shiftField.value = 'First';
+                else if (hour >= 14 && hour < 22) shiftField.value = 'Second';
+                else shiftField.value = 'Third';
+            }
+        }
+
+        nextPage() {
+            if (this.validateCurrentPage()) {
+                if (this.currentPage === 2) {
+                    this.generateReviewPage();
+                }
+
+                this.currentPage++;
+                this.updatePageDisplay();
+                this.updateProgressIndicators();
+            }
+        }
+
+        prevPage() {
+            this.currentPage--;
+            this.updatePageDisplay();
+            this.updateProgressIndicators();
+        }
+
+        updatePageDisplay() {
+            for (let i = 1; i <= this.totalPages; i++) {
+                const page = document.getElementById(`page${i}`);
+                if (page) {
+                    page.classList.toggle('hidden', i !== this.currentPage);
+                    page.classList.toggle('block', i === this.currentPage);
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        updateProgressIndicators() {
+            for (let i = 1; i <= this.totalPages; i++) {
+                const step = document.getElementById(`progressStep${i}`);
+                const indicator = document.getElementById(`stepIndicator${i}`);
+                
+                if (step && indicator) {
+                    step.classList.remove('bg-white/10', 'bg-white/20', 'bg-emerald-500');
+                    indicator.classList.remove('bg-white/20', 'bg-white', 'bg-white/90', 'text-gray-600', 'text-blue-900', 'text-emerald-600');
+
+                    if (i === this.currentPage) {
+                        step.classList.add('bg-white/20');
+                        indicator.classList.add('bg-white', 'text-blue-900');
+                    } else if (i < this.currentPage) {
+                        step.classList.add('bg-emerald-500');
+                        indicator.classList.add('bg-white/90', 'text-emerald-600');
+                        indicator.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i>';
+                    } else {
+                        step.classList.add('bg-white/10');
+                        indicator.classList.add('bg-white/20', 'text-gray-600');
+                        indicator.textContent = i;
+                    }
+                }
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        validateCurrentPage() {
+            let isValid = true;
+            let requiredFields = [];
+
+            if (this.currentPage === 1) {
+                requiredFields = ['section_type', 'date', 'submitted_by', 'day_of_week', 'shift'];
+            } else if (this.currentPage === 2) {
+                requiredFields = ['item_no', 'cases_scheduled', 'cases_produced', 'start_time', 'end_time', 'waste_lbs', 'std'];
+            }
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !field.value.trim()) {
+                    this.showFieldError(field, 'This field is required');
+                    isValid = false;
+                } else if (field) {
+                    this.clearFieldError(field);
+                }
+            });
+
+            if (this.currentPage === 2) {
+                const startTime = document.getElementById('start_time')?.value;
+                const endTime = document.getElementById('end_time')?.value;
+
+                if (startTime && endTime && startTime >= endTime) {
+                    const endField = document.getElementById('end_time');
+                    this.showFieldError(endField, 'End time must be after start time');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                this.showNotification('Please correct the highlighted errors before proceeding.', 'error');
+            }
+
+            return isValid;
+        }
+
+        validateField(field) {
+            if (field.required && !field.value.trim()) {
+                this.showFieldError(field, 'This field is required');
+                return false;
+            } else {
+                this.clearFieldError(field);
+                return true;
+            }
+        }
+
+        showFieldError(field, message) {
+            field.classList.add('border-red-500', 'shadow-[0_0_0_4px_rgba(239,68,68,0.1)]');
+            
+            const existingError = field.parentElement.querySelector('.error-message');
+            if (existingError) existingError.remove();
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+            errorDiv.textContent = message;
+            field.parentElement.appendChild(errorDiv);
+        }
+
+        clearFieldError(field) {
+            field.classList.remove('border-red-500', 'shadow-[0_0_0_4px_rgba(239,68,68,0.1)]');
+            const errorMessage = field.parentElement.querySelector('.error-message');
+            if (errorMessage) errorMessage.remove();
+        }
+
+        setupRealtimeCalculations() {
+            const casesScheduled = document.getElementById('cases_scheduled');
+            const casesProduced = document.getElementById('cases_produced');
+
+            if (casesScheduled && casesProduced) {
+                [casesScheduled, casesProduced].forEach(field => {
+                    field.addEventListener('input', () => this.updateEfficiencyDisplay());
+                });
+            }
+
+            const startTime = document.getElementById('start_time');
+            const endTime = document.getElementById('end_time');
+
+            if (startTime && endTime) {
+                [startTime, endTime].forEach(field => {
+                    field.addEventListener('input', () => this.updateDurationDisplay());
+                });
+            }
+
+            const wasteField = document.getElementById('waste_lbs');
+            if (wasteField) {
+                wasteField.addEventListener('input', () => this.updateWastePercentage());
+            }
+        }
+
+        updateCalculations() {
+            this.updateEfficiencyDisplay();
+            this.updateDurationDisplay();
+            this.updateWastePercentage();
+        }
+
+        updateEfficiencyDisplay() {
+            const scheduled = parseFloat(document.getElementById('cases_scheduled')?.value) || 0;
+            const produced = parseFloat(document.getElementById('cases_produced')?.value) || 0;
+            const display = document.getElementById('efficiencyDisplay');
+
+            if (display && scheduled > 0) {
+                const efficiency = ((produced / scheduled) * 100).toFixed(1);
+                const colorClass = efficiency >= 100 ? 'text-emerald-600' : efficiency >= 90 ? 'text-amber-600' : 'text-red-500';
+                display.className = `mt-2 text-sm ${colorClass} flex items-center gap-1`;
+                display.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4"></i> Efficiency: ${efficiency}%`;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        updateDurationDisplay() {
+            const startTime = document.getElementById('start_time')?.value;
+            const endTime = document.getElementById('end_time')?.value;
+            const display = document.getElementById('durationDisplay');
+
+            if (display && startTime && endTime) {
+                const start = new Date(`2000-01-01 ${startTime}`);
+                const end = new Date(`2000-01-01 ${endTime}`);
+
+                if (end > start) {
+                    const duration = (end - start) / (1000 * 60);
+                    const hours = Math.floor(duration / 60);
+                    const minutes = Math.floor(duration % 60);
+                    display.className = 'mt-2 text-sm text-gray-600 flex items-center gap-1';
+                    display.innerHTML = `<i data-lucide="clock" class="w-4 h-4"></i> Duration: ${hours}h ${minutes}m`;
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }
+            }
+        }
+
+        updateWastePercentage() {
+            const waste = parseFloat(document.getElementById('waste_lbs')?.value) || 0;
+            const produced = parseFloat(document.getElementById('cases_produced')?.value) || 0;
+            const display = document.getElementById('wastePercentage');
+
+            if (display && produced > 0) {
+                const avgCaseWeight = 25;
+                const totalWeight = produced * avgCaseWeight;
+                const wastePercent = ((waste / totalWeight) * 100).toFixed(2);
+                const colorClass = wastePercent <= 3.75 ? 'text-emerald-600' : 'text-red-500';
+                display.className = `mt-2 text-sm ${colorClass} flex items-center gap-1`;
+                display.innerHTML = `<i data-lucide="percent" class="w-4 h-4"></i> Waste: ${wastePercent}%`;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        generateReviewPage() {
+            const reviewContent = document.getElementById('reviewContent');
+            if (!reviewContent) return;
+
+            const formData = this.collectFormData();
+
+            reviewContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl border-l-4 border-blue-900">
+                        <h3 class="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="info" class="w-5 h-5"></i> Basic Information
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-700"><strong>Date:</strong> ${formData.date || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Submitted by:</strong> ${formData.submitted_by || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Day:</strong> ${formData.day_of_week || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Shift:</strong> ${formData.shift || 'Not specified'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl border-l-4 border-emerald-600">
+                        <h3 class="font-bold text-emerald-600 mb-4 flex items-center gap-2">
+                            <i data-lucide="settings" class="w-5 h-5"></i> Production Details
+                        </h3>
+                        <div class="space-y-2">
+                            <p class="text-gray-700"><strong>Item Number:</strong> ${formData.item_no || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Cases Scheduled:</strong> ${formData.cases_scheduled || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Cases Produced:</strong> ${formData.cases_produced || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Production Time:</strong> ${formData.start_time || 'Not specified'} - ${formData.end_time || 'Not specified'}</p>
+                            <p class="text-gray-700"><strong>Waste:</strong> ${formData.waste_lbs || 'Not specified'} lbs</p>
+                            <p class="text-gray-700"><strong>STD:</strong> ${formData.std || 'Not specified'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl mt-6">
+                    <h3 class="font-bold text-blue-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-5 h-5"></i> Calculated Metrics
+                    </h3>
+                    <div id="calculatedMetrics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+                </div>
+            `;
+
+            this.updateCalculatedMetrics();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        updateCalculatedMetrics() {
+            const metricsContainer = document.getElementById('calculatedMetrics');
+            if (!metricsContainer) return;
+
+            const formData = this.collectFormData();
+            const scheduled = parseFloat(formData.cases_scheduled) || 0;
+            const produced = parseFloat(formData.cases_produced) || 0;
+
+            let metrics = '';
+
+            if (scheduled > 0 && produced > 0) {
+                const efficiency = ((produced / scheduled) * 100).toFixed(1);
+                const efficiencyColor = efficiency >= 100 ? 'text-emerald-600' : efficiency >= 90 ? 'text-amber-600' : 'text-red-500';
+
+                metrics += `
+                    <div class="text-center p-4 bg-white rounded-lg">
+                        <div class="text-2xl font-bold ${efficiencyColor}">${efficiency}%</div>
+                        <div class="text-sm text-gray-500">Production Efficiency</div>
+                    </div>
+                `;
+            }
+
+            if (formData.start_time && formData.end_time) {
+                const start = new Date(`2000-01-01 ${formData.start_time}`);
+                const end = new Date(`2000-01-01 ${formData.end_time}`);
+
+                if (end > start) {
+                    const duration = (end - start) / (1000 * 60);
+                    const hours = Math.floor(duration / 60);
+                    const minutes = Math.floor(duration % 60);
+
+                    metrics += `
+                        <div class="text-center p-4 bg-white rounded-lg">
+                            <div class="text-2xl font-bold text-blue-900">${hours}h ${minutes}m</div>
+                            <div class="text-sm text-gray-500">Production Time</div>
+                        </div>
+                    `;
+                }
+            }
+
+            metricsContainer.innerHTML = metrics;
+        }
+
+        collectFormData() {
+            const formData = {};
+            const inputs = document.querySelectorAll('input, select');
+
+            inputs.forEach(input => {
+                formData[input.name || input.id] = input.value;
+            });
+
+            return formData;
+        }
+
+        saveFormData() {
+            const formData = this.collectFormData();
+            try {
+                const savedData = {};
+                Object.keys(formData).forEach(key => {
+                    savedData[key] = formData[key];
+                });
+                sessionStorage.setItem('productionFormData', JSON.stringify(savedData));
+                this.showAutoSaveIndicator();
+            } catch (e) {
+                console.warn('Could not save form data:', e);
+            }
+        }
+
+        loadSavedData() {
+            try {
+                const savedData = sessionStorage.getItem('productionFormData');
+                if (savedData) {
+                    const formData = JSON.parse(savedData);
+                    Object.keys(formData).forEach(key => {
+                        const field = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+                        if (field && formData[key]) {
+                            field.value = formData[key];
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load saved form data:', e);
+            }
+        }
+
+        showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            if (indicator) {
+                indicator.classList.remove('opacity-0');
+                indicator.classList.add('opacity-100');
+                setTimeout(() => {
+                    indicator.classList.remove('opacity-100');
+                    indicator.classList.add('opacity-0');
+                }, 2000);
+            }
+        }
+
+        startAutoSave() {
+            this.autoSaveInterval = setInterval(() => {
+                this.saveFormData();
+            }, 30000);
+        }
+
+        showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-24 right-5 ${type === 'error' ? 'bg-red-500' : 'bg-blue-600'} text-white px-6 py-4 rounded-lg shadow-lg z-[1001] opacity-0 translate-x-full transition-all duration-300`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.remove('opacity-0', 'translate-x-full');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
+
+        handleSubmit(e) {
+            if (!this.validateCurrentPage()) {
+                e.preventDefault();
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <div class="inline-block w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Submitting Report...
+                `;
+            }
+
+            sessionStorage.removeItem('productionFormData');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        window.formManager = new ProductionFormManager();
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>
+
+{% endblock %}

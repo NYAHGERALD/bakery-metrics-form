@@ -132,6 +132,25 @@
     </script>
 
     <style>
+        /* Sidebar transition styles */
+        #sidebar {
+            transform: translateX(-100%);
+            transition: transform 300ms ease-in-out;
+        }
+        
+        #sidebar.sidebar-open {
+            transform: translateX(0) !important;
+        }
+        
+        #sidebar-overlay {
+            opacity: 0;
+            transition: opacity 300ms ease-in-out;
+        }
+        
+        #sidebar-overlay.overlay-visible {
+            opacity: 1 !important;
+        }
+        
         .glass-effect {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(15px);
@@ -466,77 +485,20 @@
             .tooltip-container::before {
                 display: none !important;
             }
-            
-            /* Ensure mobile sidebar animations are smooth */
-            #mobileSidebar {
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            
-            #mobileSidebar .nav-link-mobile {
-                transform: translateX(-20px);
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            
-            #mobileSidebar:not(.-translate-x-full) .nav-link-mobile {
-                transform: translateX(0);
-            }
         }
 
         /* Improved focus states for accessibility */
-        .nav-link:focus,
-        .nav-link-mobile:focus {
+        .nav-link:focus {
             outline: 2px solid rgba(59, 130, 246, 0.5);
             outline-offset: 2px;
         }
 
         /* Smooth transitions for all interactive elements */
-        .nav-link i,
-        .nav-link-mobile i {
+        .nav-link i {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Management trigger mobile - same styling as nav-link-mobile but no navigation behavior */
-        .management-trigger-mobile {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            color: #cbd5e1;
-            font-weight: 500;
-            border-radius: 0.75rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            width: 100%;
-        }
 
-        .management-trigger-mobile:hover {
-            background-color: rgba(51, 65, 85, 0.5);
-            transform: translateX(4px);
-        }
-
-        .management-trigger-mobile.active {
-            background-color: rgba(6, 182, 212, 0.1);
-            color: #22d3ee;
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
-        }
-
-        .management-trigger-mobile.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 60%;
-            background: linear-gradient(180deg, #22d3ee 0%, #06b6d4 100%);
-            border-radius: 0 2px 2px 0;
-        }
-
-        .management-trigger-mobile i {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
 
         /* Settings Toggle Switches */
         .toggle-switch {
@@ -604,288 +566,35 @@
         }
 
         /* Custom scrollbar for sidebar */
-        #sidebar .overflow-y-auto::-webkit-scrollbar,
-        #mobileSidebar .overflow-y-auto::-webkit-scrollbar {
+        #sidebar .overflow-y-auto::-webkit-scrollbar {
             width: 4px;
         }
 
-        #sidebar .overflow-y-auto::-webkit-scrollbar-track,
-        #mobileSidebar .overflow-y-auto::-webkit-scrollbar-track {
+        #sidebar .overflow-y-auto::-webkit-scrollbar-track {
             background: rgba(148, 163, 184, 0.1);
             border-radius: 2px;
         }
 
-        #sidebar .overflow-y-auto::-webkit-scrollbar-thumb,
-        #mobileSidebar .overflow-y-auto::-webkit-scrollbar-thumb {
+        #sidebar .overflow-y-auto::-webkit-scrollbar-thumb {
             background: rgba(148, 163, 184, 0.3);
             border-radius: 2px;
         }
 
-        #sidebar .overflow-y-auto::-webkit-scrollbar-thumb:hover,
-        #mobileSidebar .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        #sidebar .overflow-y-auto::-webkit-scrollbar-thumb:hover {
             background: rgba(148, 163, 184, 0.5);
         }
 
-        /* Ensure sidebar content fits properly */
-        #sidebar {
-            height: 100vh;
-            max-height: 100vh;
-        }
 
-        #mobileSidebar {
-            height: 100vh;
-            max-height: 100vh;
-        }
 
-        /* Secondary Sidebar Styles */
-        .secondary-sidebar {
-            position: fixed;
-            left: 320px; /* Width of main sidebar */
-            top: 0;
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 49;
-            transform: translateX(-100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            visibility: hidden;
-            opacity: 0;
-        }
 
-        .secondary-sidebar.open {
-            transform: translateX(0);
-            visibility: visible;
-            opacity: 1;
-        }
 
-        .secondary-sidebar-mobile {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 51;
-            transform: translateX(-100%);
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0.25s;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            visibility: hidden;
-            opacity: 0;
-        }
 
-        .secondary-sidebar-mobile.open {
-            transform: translateX(0);
-            visibility: visible;
-            opacity: 1;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0s linear 0s;
-        }
 
-        /* Tablet secondary sidebar - positioned next to main sidebar */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .secondary-sidebar-mobile {
-                left: 320px;
-                width: calc(100vw - 320px);
-                max-width: 300px;
-            }
-            
-            .secondary-sidebar-mobile.open {
-                transform: translateX(0);
-            }
-        }
 
-        /* Mobile phone secondary sidebar - full screen overlay */
-        @media (max-width: 767px) {
-            .secondary-sidebar-mobile {
-                left: 0;
-                width: 100vw;
-                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-                backdrop-filter: blur(10px);
-                transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0s linear 0.2s;
-            }
-            
-            .secondary-sidebar-mobile.open {
-                transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, visibility 0s linear 0s;
-            }
-            
-            .secondary-sidebar-mobile .p-6 {
-                padding: 1.5rem 1rem;
-            }
-            
-            .secondary-sidebar-mobile .space-y-3 > * {
-                margin-bottom: 0.5rem;
-            }
-            
-            .secondary-sidebar-mobile .secondary-nav-link {
-                padding: 1rem;
-                font-size: 1.1rem;
-            }
-        }
 
-        /* Grouped button styles */
-        .grouped-nav-trigger {
-            position: relative;
-        }
 
-        .grouped-nav-trigger::after {
-            content: '';
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-left: 4px solid #94a3b8;
-            border-top: 3px solid transparent;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .grouped-nav-trigger.active::after {
-            border-left-color: #60a5fa;
-            transform: translateY(-50%) rotate(90deg);
-        }
-
-        .grouped-nav-trigger:hover::after {
-            border-left-color: #60a5fa;
-        }
-
-        /* Secondary sidebar navigation links */
-        .secondary-nav-link {
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px;
-        }
-
-        .secondary-nav-link:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(147, 51, 234, 0.15) 100%);
-            transform: translateX(4px);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
-        }
-
-        .secondary-nav-link.active {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(147, 51, 234, 0.25) 100%);
-            color: #93c5fd !important;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            transform: translateX(6px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .secondary-nav-link.active::before {
-            content: '';
-            position: absolute;
-            left: -1px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 60%;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-radius: 0 2px 2px 0;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        }
-
-        /* Animation delays for secondary sidebar items */
-        .secondary-sidebar .secondary-nav-link:nth-child(1) { animation-delay: 0.1s; }
-        .secondary-sidebar .secondary-nav-link:nth-child(2) { animation-delay: 0.2s; }
-        .secondary-sidebar .secondary-nav-link:nth-child(3) { animation-delay: 0.3s; }
-
-        .secondary-sidebar.open .secondary-nav-link {
-            animation: slide-in-scale 0.4s ease-out forwards;
-        }
-
-        /* Mobile responsive adjustments */
-        @media (max-width: 1024px) {
-            .secondary-sidebar {
-                display: none;
-            }
-        }
         
-        /* Enhanced touch targets for mobile */
-        @media (max-width: 767px) {
-            .secondary-sidebar-mobile .secondary-nav-link {
-                padding: 1.25rem 1rem;
-                min-height: 60px;
-                font-size: 1.1rem;
-                border-radius: 16px;
-                margin-bottom: 0.75rem;
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: transparent;
-            }
-            
-            .secondary-sidebar-mobile .secondary-nav-link:active {
-                transform: scale(0.98);
-                transition: transform 0.1s ease;
-            }
-            
-            .secondary-sidebar-mobile .secondary-nav-link i {
-                width: 1.5rem;
-                height: 1.5rem;
-            }
-            
-            .secondary-sidebar-mobile h3 {
-                font-size: 1.25rem;
-            }
-            
-            .nav-link-mobile {
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: transparent;
-            }
-            
-            .nav-link-mobile:active {
-                transform: scale(0.98);
-                transition: transform 0.1s ease;
-            }
-            
-            .grouped-nav-trigger {
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: transparent;
-            }
-            
-            .grouped-nav-trigger:active {
-                transform: scale(0.98);
-                transition: transform 0.1s ease;
-            }
-        }
-        
-        /* Tablet adjustments */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .secondary-sidebar-mobile .secondary-nav-link {
-                padding: 1rem;
-                font-size: 1rem;
-            }
-        }
-        
-        /* Add swipe gesture support */
-        .secondary-sidebar-mobile {
-            touch-action: pan-x;
-        }
-        
-        /* Overlay for mobile secondary sidebar */
-        .secondary-sidebar-mobile::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .secondary-sidebar-mobile.open::before {
-            opacity: 1;
-        }
-        
-        @media (min-width: 768px) {
-            .secondary-sidebar-mobile::before {
-                display: none;
-            }
-        }
+
 
         /* Enhanced Performance Targets Progress Bars */
         #performanceTargetsCard .w-full.bg-gray-200 {
@@ -953,93 +662,11 @@
             animation: spin 1s linear infinite;
         }
 
-        /* Enhanced Quick Overview Styles */
-        #sidebarQuickStats {
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        #sidebarQuickStats:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-        }
-
-        /* Quick Overview Item Hover Effects */
-        #sidebarQuickStats .group:hover {
-            transform: translateX(4px);
-            background: rgba(51, 65, 85, 0.6);
-        }
-
-        #sidebarQuickStats .group:hover i {
-            transform: scale(1.1);
-        }
-
         /* Performance Bar Animation */
-        #performanceBar {
-            background-size: 200% 100%;
-            animation: performance-flow 3s ease-in-out infinite;
-        }
-
         @keyframes performance-flow {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-
-        /* Pulsing Dots Animation */
-        .animate-pulse-dot {
-            animation: pulse-dot 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { 
-                opacity: 1; 
-                transform: scale(1);
-                box-shadow: 0 0 0 0 currentColor;
-            }
-            50% { 
-                opacity: 0.7; 
-                transform: scale(1.2);
-                box-shadow: 0 0 0 4px transparent;
-            }
-        }
-
-        /* Status Indicators */
-        .status-indicator {
-            position: relative;
-        }
-
-        .status-indicator::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, currentColor, transparent, currentColor);
-            animation: rotate-indicator 2s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes rotate-indicator {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Gradient Text Effects */
-        .gradient-text {
-            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Overview Card Stagger Animation */
-        #sidebarQuickStats .space-y-5 > div {
-            animation: slide-in-scale 0.6s ease-out;
-        }
-
-        #sidebarQuickStats .space-y-5 > div:nth-child(1) { animation-delay: 0.1s; }
-        #sidebarQuickStats .space-y-5 > div:nth-child(2) { animation-delay: 0.2s; }
-        #sidebarQuickStats .space-y-5 > div:nth-child(3) { animation-delay: 0.3s; }
-        #sidebarQuickStats .space-y-5 > div:nth-child(4) { animation-delay: 0.4s; }
 
         @keyframes slide-in-scale {
             0% {
@@ -1086,444 +713,190 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="flex h-screen">
-        <!-- Desktop Sidebar -->
-        <aside id="sidebar" class="hidden lg:flex flex-col w-80 sidebar-gradient shadow-2xl relative overflow-hidden">
-            <!-- Decorative elements -->
-            <div
-                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-400/20 to-transparent rounded-full -translate-y-16 translate-x-16">
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-300" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+    
+    <!-- Left-sliding Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-80 bg-gradient-to-b from-white via-gray-50/80 to-blue-50/50 backdrop-blur-xl shadow-2xl border-r border-gradient-to-b from-blue-200/30 to-purple-200/20 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out" style="transform: translateX(-100%);">
+        <!-- Enhanced Sidebar Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gradient-to-r from-blue-200/30 to-purple-200/30 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50">
+            <div class="flex items-center">
+                <div class="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl mr-3 shadow-lg">
+                    <i data-lucide="navigation" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-900 bg-gradient-to-r from-blue-800 to-purple-800 bg-clip-text text-transparent">Bakery Navigation</h2>
             </div>
-            <div
-                class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/20 to-transparent rounded-full translate-y-12 -translate-x-12">
-            </div>
+            <button id="closeSidebar" class="group inline-flex items-center justify-center p-2 rounded-xl text-gray-400 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-pink-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 transition-all duration-300 hover:scale-110 hover:rotate-90">
+                <span class="sr-only">Close menu</span>
+                <i data-lucide="x" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+            </button>
+        </div>
 
-            <div class="flex-1 flex flex-col h-full overflow-hidden">
-                <div class="p-8 relative z-10 flex-shrink-0">
-                    <!-- Logo Section -->
-                    <div class="flex items-center space-x-4 mb-8 animate-slide-in-left">
-                        <div class="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg floating-icon">
-                            <i data-lucide="layout-dashboard" class="w-8 h-8 text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-white">Bakery</h1>
-                        </div>
+        <!-- Enhanced Sidebar Navigation Links -->
+        <div class="flex-1 px-4 py-6 space-y-3 bg-gradient-to-b from-gray-50/50 to-white">
+            <!-- Dashboard Link -->
+             
+             <a href="/production-dashboard" data-page="dashboard" id="dashboard-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500 hover:to-indigo-500 text-gray-700 hover:text-white border border-blue-200/50 hover:border-blue-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-blue-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="home" class="w-5 h-5 text-blue-600 group-hover:text-white transition-colors duration-300"></i>
                     </div>
+                    <span class="font-bold">Production</span>
                 </div>
-
-                <!-- Scrollable Content Area -->
-                <div class="flex-1 px-8 pb-8 relative z-10">
-
-                <!-- Navigation -->
-                <nav class="space-y-2">
-                    <div class="relative group animate-slide-in-left tooltip-container" style="animation-delay: 0.1s"
-                        data-tooltip="Main dashboard with key performance metrics">
-                        <a href="/dashboard" data-page="dashboard" id="dashboard-nav"
-                            class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
-                            <i data-lucide="home" class="w-5 h-5 transition-all duration-300"></i>
-                            <span class="font-semibold">Dashboard</span>
-                            <div class="loading-indicator opacity-0 ml-auto">
-                                <div class="w-4 h-4 border-2 border-slate-400 border-t-blue-400 rounded-full animate-spin"></div>
-                            </div>
-                        </a>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            <a href="/dashboard" data-page="dashboard" id="dashboard-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-blue-500/10 to-indigo-500/10 hover:from-blue-500 hover:to-indigo-500 text-gray-700 hover:text-white border border-blue-200/50 hover:border-blue-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-blue-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="home" class="w-5 h-5 text-blue-600 group-hover:text-white transition-colors duration-300"></i>
                     </div>
-
-                    <div class="relative group animate-slide-in-left tooltip-container" style="animation-delay: 0.2s"
-                        data-tooltip="View detailed analytics and reports">
-                        <a href="/report" data-page="report" id="report-nav"
-                            class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
-                            <span class="font-semibold">Bakery Metrics</span>
-                        </a>
-                    </div>
-
-                    <div class="relative group animate-slide-in-left tooltip-container" style="animation-delay: 0.3s"
-                        data-tooltip="Submit new operational data and metrics">
-                        <a href="/form" data-page="form" id="form-nav"
-                            class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
-                            <i data-lucide="file-text" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
-                            <span class="font-semibold">Submit Data</span>
-                        </a>
-                    </div>
-
-                    <!-- Desktop Sidebar - Enhanced Machine Issues Button -->
-                    <div class="relative group animate-slide-in-left tooltip-container" style="animation-delay: 0.4s"
-                        data-tooltip="Report and track operational issues">
-                        <a href="/issues" data-page="issues" id="issues-nav"
-                            class="nav-link flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group">
-                            <i data-lucide="alert-triangle"
-                                class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
-                            <span class="font-semibold">Report Machine Issues</span>
-                        </a>
-                    </div>
-
-                    <!-- Grouped Navigation Trigger -->
-                    <div class="relative group animate-slide-in-left tooltip-container" style="animation-delay: 0.5s"
-                        data-tooltip="Inventory management and support tools">
-                        <button type="button" id="managementMenuTrigger"
-                            class="nav-link grouped-nav-trigger flex items-center space-x-4 px-4 py-3 rounded-2xl text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all duration-300 group w-full">
-                            <i data-lucide="layers" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
-                            <span class="font-semibold">Management</span>
-                        </button>
-                    </div>
-
-                </nav>
-
-                <!-- Enhanced Quick Overview -->
-                <div id="sidebarQuickStats" class="mt-10 p-6 glass-dark rounded-2xl animate-slide-in-left border border-slate-600/30 relative overflow-hidden"
-                    style="animation-delay: 0.6s">
-                    <!-- Background decorative elements -->
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-cyan-400/10 to-transparent rounded-full -translate-y-8 translate-x-8"></div>
-                    <div class="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-tr from-purple-400/10 to-transparent rounded-full translate-y-6 -translate-x-6"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-sm font-bold text-white">Quick Overview</h3>
-                            <div class="flex items-center space-x-1">
-                                <div class="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
-                                <div class="w-1 h-1 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-                                <div class="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-5">
-                            <!-- System Status -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-cyan-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg">
-                                        <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">System Status</span>
-                                        <div class="text-xs text-slate-500">Operational Health</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
-                                    <span class="text-xs font-bold text-emerald-400">Online</span>
-                                </div>
-                            </div>
-
-                            <!-- Data Sync -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-purple-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg">
-                                        <i data-lucide="refresh-cw" class="w-4 h-4 text-purple-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Data Sync</span>
-                                        <div class="text-xs text-slate-500">Last Updated</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold text-purple-400" id="lastSyncTime">Just now</span>
-                            </div>
-
-                            <!-- Active Users -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-orange-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-lg">
-                                        <i data-lucide="users" class="w-4 h-4 text-orange-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Active Users</span>
-                                        <div class="text-xs text-slate-500">Current Session</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold text-orange-400" id="activeUsersCount">1</span>
-                            </div>
-
-                            <!-- Database Status -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-green-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg">
-                                        <i data-lucide="database" class="w-4 h-4 text-green-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Database</span>
-                                        <div class="text-xs text-slate-500">Connection Status</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                                    <span class="text-xs font-bold text-green-400" id="dbStatus">Connected</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Performance Indicator -->
-                        <div class="mt-6 pt-4 border-t border-slate-600/30">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-medium text-slate-300">System Performance</span>
-                                <span class="text-xs font-bold text-cyan-400" id="performanceScore">98%</span>
-                            </div>
-                            <div class="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
-                                <div id="performanceBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-2 rounded-full transition-all duration-1000 ease-out shadow-lg shadow-cyan-400/30" style="width: 98%"></div>
-                            </div>
-                        </div>
-                    </div>
+                    <span class="font-bold">Dashboard</span>
                 </div>
-                </div> <!-- End of scrollable content area -->
-            </div> <!-- End of flex container -->
-        </aside>
-
-        <!-- Desktop Secondary Sidebar -->
-        <aside id="secondarySidebar" class="secondary-sidebar hidden lg:block">
-            <div class="p-6 h-full">
-                <div class="mb-6">
-                    <h3 class="text-lg font-bold text-white mb-2">Management Tools</h3>
-                    <p class="text-slate-400 text-sm">Inventory and support options</p>
-                </div>
-                
-                <nav class="space-y-3">
-                    <a href="/inventory" data-page="inventory" id="inventory-nav"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="package" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Inventory</span>
-                    </a>
-                    
-                    <a href="/inventory-overview" data-page="inventory-overview" id="inventory-overview-nav"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="trending-up" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Inventory Tracking</span>
-                    </a>
-                    </a>
-                    
-                    <a href="/help" data-page="help" id="help-nav"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="help-circle" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Help Center</span>
-                    </a>
-                    
-                </nav>
-            </div>
-        </aside>
-
-        <!-- Mobile Sidebar Overlay -->
-        <div id="mobileSidebarOverlay"
-            class="fixed inset-0 bg-gradient-to-br from-blue-500/15 to-indigo-600/25 backdrop-blur-sm z-40 lg:hidden hidden"></div>
-
-        <!-- Mobile Sidebar -->
-        <aside id="mobileSidebar"
-            class="fixed inset-y-0 left-0 w-80 sidebar-gradient shadow-2xl z-50 lg:hidden transform -translate-x-full transition-transform duration-300">
-            <div class="p-6 h-full overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                            <i data-lucide="layout-dashboard" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-bold text-white">Bakery</h1>
-                        </div>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            
+            <!-- Bakery Metrics Link -->
+            <a href="/report" data-page="report" id="report-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500 hover:to-teal-500 text-gray-700 hover:text-white border border-emerald-200/50 hover:border-emerald-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-emerald-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-600 group-hover:text-white transition-colors duration-300"></i>
                     </div>
-                    <button id="closeMobileSidebar" class="p-2 hover:bg-slate-700 rounded-lg transition-colors">
-                        <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
-                    </button>
+                    <span class="font-bold">Bakery Metrics</span>
                 </div>
-
-                <nav class="space-y-2">
-                    <a href="/dashboard" data-page="dashboard" id="dashboard-nav-mobile"
-                        class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="home" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Dashboard</span>
-                    </a>
-                    <a href="/report" data-page="report" id="report-nav-mobile"
-                        class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Bakery Metrics</span>
-                    </a>
-                    <a href="/form" data-page="form" id="form-nav-mobile"
-                        class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="file-text" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Submit Data</span>
-                    </a>
-                    <!-- Mobile Sidebar - Enhanced Machine Issues Button -->
-                    <a href="/issues" data-page="issues" id="issues-nav-mobile"
-                        class="nav-link-mobile flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="alert-triangle" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Report Machine Issues</span>
-                    </a>
-                    
-                    <!-- Mobile Grouped Navigation Trigger -->
-                    <button type="button" id="managementMenuTriggerMobile"
-                        class="management-trigger-mobile grouped-nav-trigger flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300 w-full">
-                        <i data-lucide="layers" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Management</span>
-                    </button>
-                </nav>
-
-                <!-- Mobile Quick Overview Section -->
-                <div id="mobileQuickStats" class="mt-8 p-5 glass-dark rounded-2xl border border-slate-600/30 relative overflow-hidden">
-                    <!-- Background decorative elements -->
-                    <div class="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-cyan-400/10 to-transparent rounded-full -translate-y-6 translate-x-6"></div>
-                    <div class="absolute bottom-0 left-0 w-10 h-10 bg-gradient-to-tr from-purple-400/10 to-transparent rounded-full translate-y-5 -translate-x-5"></div>
-                    
-                    <div class="relative z-10">
-                        <div class="flex items-center justify-between mb-5">
-                            <h3 class="text-sm font-bold text-white">Quick Overview</h3>
-                            <div class="flex items-center space-x-1">
-                                <div class="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
-                                <div class="w-1 h-1 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-                                <div class="w-1 h-1 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <!-- System Status -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-cyan-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-1.5 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg">
-                                        <i data-lucide="server" class="w-3.5 h-3.5 text-cyan-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">System Status</span>
-                                        <div class="text-xs text-slate-500">Operational Health</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
-                                    <span class="text-xs font-bold text-emerald-400">Online</span>
-                                </div>
-                            </div>
-
-                            <!-- Data Sync -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-purple-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-1.5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg">
-                                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-purple-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Data Sync</span>
-                                        <div class="text-xs text-slate-500">Last Updated</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold text-purple-400" id="mobileLastSyncTime">Just now</span>
-                            </div>
-
-                            <!-- Active Users -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-orange-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-1.5 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-lg">
-                                        <i data-lucide="users" class="w-3.5 h-3.5 text-orange-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Active Users</span>
-                                        <div class="text-xs text-slate-500">Current Session</div>
-                                    </div>
-                                </div>
-                                <span class="text-xs font-bold text-orange-400" id="mobileActiveUsersCount">1</span>
-                            </div>
-
-                            <!-- Database Status -->
-                            <div class="flex justify-between items-center p-3 bg-slate-800/40 backdrop-blur-sm rounded-xl border border-slate-600/20 hover:border-green-400/30 transition-all duration-300 group">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-1.5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg">
-                                        <i data-lucide="database" class="w-3.5 h-3.5 text-green-400"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium text-slate-300">Database</span>
-                                        <div class="text-xs text-slate-500">Connection Status</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                                    <span class="text-xs font-bold text-green-400" id="mobileDbStatus">Connected</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Performance Indicator -->
-                        <div class="mt-5 pt-4 border-t border-slate-600/30">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-medium text-slate-300">System Performance</span>
-                                <span class="text-xs font-bold text-cyan-400" id="mobilePerformanceScore">98%</span>
-                            </div>
-                            <div class="w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
-                                <div id="mobilePerformanceBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-1.5 rounded-full transition-all duration-1000 ease-out shadow-lg shadow-cyan-400/30" style="width: 98%"></div>
-                            </div>
-                        </div>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            
+            <!-- Submit Data Link -->
+            <a href="/form" data-page="form" id="form-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500 hover:to-pink-500 text-gray-700 hover:text-white border border-purple-200/50 hover:border-purple-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-purple-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="file-text" class="w-5 h-5 text-purple-600 group-hover:text-white transition-colors duration-300"></i>
                     </div>
+                    <span class="font-bold">Submit Data</span>
                 </div>
-            </div>
-        </aside>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
 
-        <!-- Mobile Secondary Sidebar -->
-        <aside id="secondarySidebarMobile" class="secondary-sidebar-mobile lg:hidden">
-            <div class="p-6 h-full overflow-y-auto">
-                <!-- Mobile Header with Close Button -->
-                <div class="flex items-center justify-between mb-6 lg:hidden">
-                    <div class="flex items-center space-x-3">
-                        <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                            <i data-lucide="package" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Management Tools</h3>
+            <a href="/submit-report" data-page="form" id="form-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500 hover:to-pink-500 text-gray-700 hover:text-white border border-purple-200/50 hover:border-purple-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-purple-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="file-text" class="w-5 h-5 text-purple-600 group-hover:text-white transition-colors duration-300"></i>
                     </div>
-                    <button id="closeSecondaryMobile" class="p-2 hover:bg-slate-700/50 rounded-xl transition-colors">
-                        <i data-lucide="x" class="w-5 h-5 text-slate-400"></i>
-                    </button>
+                    <span class="font-bold">Submit Report</span>
                 </div>
-                
-                <!-- Desktop Header (hidden on mobile) -->
-                <div class="mb-6 hidden lg:block">
-                    <h3 class="text-lg font-bold text-white mb-2">Management Tools</h3>
-                    <p class="text-slate-400 text-sm">Inventory and support options</p>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+           
+            <!-- Report Issues Link -->
+            <a href="/issues" data-page="issues" id="issues-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 hover:from-orange-500 hover:to-red-500 text-gray-700 hover:text-white border border-orange-200/50 hover:border-orange-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-orange-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600 group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <span class="font-bold">Report Issues</span>
                 </div>
-                
-                <nav class="space-y-3">
-                    <a href="/inventory" data-page="inventory" id="inventory-nav-mobile"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="package" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Inventory</span>
-                    </a>
-                    
-                    <a href="/inventory-overview" data-page="inventory-overview" id="inventory-overview-nav-mobile"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="trending-up" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Inventory Tracking</span>
-                    </a>
-                    
-                    <a href="/help" data-page="help" id="help-nav-mobile"
-                        class="secondary-nav-link flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-700/50 transition-all duration-300">
-                        <i data-lucide="help-circle" class="w-5 h-5 transition-all duration-300"></i>
-                        <span class="font-medium">Help Center</span>
-                    </a>
-                </nav>
-                
-                <!-- Mobile-only bottom spacing -->
-                <div class="block lg:hidden mt-8 pt-4 border-t border-slate-700/50">
-                    <p class="text-xs text-slate-500 text-center">Swipe left or tap ✕ to close</p>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            
+            <!-- Inventory Link -->
+            <a href="/inventory" data-page="inventory" id="inventory-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500 hover:to-blue-500 text-gray-700 hover:text-white border border-cyan-200/50 hover:border-cyan-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-cyan-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="package" class="w-5 h-5 text-cyan-600 group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <span class="font-bold">Inventory</span>
                 </div>
-            </div>
-        </aside>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            
+            <!-- Inventory Tracking Link -->
+            <a href="/inventory-overview" data-page="inventory-overview" id="inventory-overview-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500 hover:to-purple-500 text-gray-700 hover:text-white border border-indigo-200/50 hover:border-indigo-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-indigo-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="trending-up" class="w-5 h-5 text-indigo-600 group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <span class="font-bold">Inventory Tracking</span>
+                </div>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+            
+            <!-- Help Center Link -->
+            <a href="/help" data-page="help" id="help-nav" 
+               class="group relative flex items-center px-5 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover:scale-105 hover:translate-x-2 overflow-hidden shadow-sm hover:shadow-lg bg-gradient-to-r from-amber-500/10 to-yellow-500/10 hover:from-amber-500 hover:to-yellow-500 text-gray-700 hover:text-white border border-amber-200/50 hover:border-amber-400">
+                <!-- Shimmer effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <div class="relative flex items-center">
+                    <div class="p-2 bg-amber-100 group-hover:bg-white/20 rounded-xl mr-4 transition-colors duration-300 group-hover:scale-110">
+                        <i data-lucide="help-circle" class="w-5 h-5 text-amber-600 group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <span class="font-bold">Help Center</span>
+                </div>
+                <!-- Glow effect -->
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
+            </a>
+        </div>
+    </aside>
 
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="w-full h-screen flex flex-col overflow-hidden">
             <!-- Header -->
-            <header class="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-30">
-                <div class="flex items-center justify-between px-6 py-4">
+            <header class="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
+                <div class="flex items-center justify-between px-6 py-1">
                     <!-- Left Section -->
                     <div class="flex items-center space-x-4 animate-slide-in-left">
-                        <button id="mobileMenuBtn" class="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                        <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
                             <i data-lucide="menu" class="w-5 h-5 text-gray-600"></i>
                         </button>
                         <div>
                             <h1
                                 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                                Dashboard Overview</h1>
-                            <p class="text-sm text-gray-500 font-medium">Real-time bakery performance metrics</p>
+                                DASHMET</h1>
                         </div>
                     </div>
 
                     <!-- Center Section - Live Clock -->
                     <div id="headerClock" class="hidden md:flex flex-col items-center animate-scale-in">
                         <div
-                            class="flex items-center space-x-1 text-xl font-mono font-bold text-gray-900 bg-white/50 px-4 py-2 rounded-xl backdrop-blur-sm border border-gray-200">
+                            class="flex items-center space-x-1 text-base font-mono font-bold text-gray-900 bg-white/50 px-3 py-1 rounded-lg backdrop-blur-sm border border-gray-200">
                             <span id="hour">--</span>
                             <span class="blink">:</span>
                             <span id="minute">--</span>
                             <span class="blink">:</span>
                             <span id="second">--</span>
-                            <span id="ampm" class="ml-1 text-sm">--</span>
+                            <span id="ampm" class="ml-1 text-xs">--</span>
                         </div>
-                        <div id="clockDate" class="text-xs text-gray-500 mt-1">Loading...</div>
+                        <div id="clockDate" class="text-xs text-gray-500">Loading...</div>
                     </div>
 
                     <!-- Right Section -->
@@ -1865,21 +1238,68 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div id="actionsRow" class="flex flex-wrap gap-4 animate-slide-up">
+                    <div id="actionsRow" class="flex flex-wrap gap-6 animate-slide-up">
+                        <!-- Export Report Button -->
                         <a id="exportButton" href="/report"
-                            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
-                            <i data-lucide="download" class="w-5 h-5 mr-3"></i>
-                            Export Report
+                            class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-105 hover:rotate-1 shadow-xl hover:shadow-2xl font-semibold text-lg">
+                            <!-- Animated background effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <!-- Shimmer effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <!-- Content -->
+                            <div class="relative flex items-center">
+                                <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                    <i data-lucide="download" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                                </div>
+                                <div class="flex flex-col items-start">
+                                    <span class="text-base font-bold">Export Report</span>
+                                    <span class="text-xs opacity-80 group-hover:opacity-100">Generate PDF analytics</span>
+                                </div>
+                            </div>
+                            <!-- Glow effect -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                         </a>
+
+                        <!-- Submit Metrics Button -->
                         <a id="submitButton" href="/form"
-                            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
-                            <i data-lucide="plus" class="w-5 h-5 mr-3"></i>
-                            Submit Metrics
+                            class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-105 hover:rotate-1 shadow-xl hover:shadow-2xl font-semibold text-lg">
+                            <!-- Animated background effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-700 via-emerald-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <!-- Shimmer effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <!-- Content -->
+                            <div class="relative flex items-center">
+                                <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                    <i data-lucide="plus" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                                </div>
+                                <div class="flex flex-col items-start">
+                                    <span class="text-base font-bold">Submit Metrics</span>
+                                    <span class="text-xs opacity-80 group-hover:opacity-100">Add new data entry</span>
+                                </div>
+                            </div>
+                            <!-- Glow effect -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                         </a>
+
+                        <!-- Refresh Data Button -->
                         <button id="refreshDataBtn"
-                            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-semibold">
-                            <i data-lucide="refresh-cw" class="w-5 h-5 mr-3"></i>
-                            <span>Refresh Data</span>
+                            class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-slate-600 via-gray-600 to-zinc-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-105 hover:rotate-1 shadow-xl hover:shadow-2xl font-semibold text-lg">
+                            <!-- Animated background effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-slate-700 via-gray-700 to-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <!-- Shimmer effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <!-- Content -->
+                            <div class="relative flex items-center">
+                                <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                    <i data-lucide="refresh-cw" class="w-5 h-5 group-hover:animate-spin transition-transform duration-300"></i>
+                                </div>
+                                <div class="flex flex-col items-start">
+                                    <span class="text-base font-bold">Refresh Data</span>
+                                    <span class="text-xs opacity-80 group-hover:opacity-100">Update dashboard stats</span>
+                                </div>
+                            </div>
+                            <!-- Glow effect -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-slate-600 to-zinc-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                         </button>
                     </div>
 
@@ -2064,109 +1484,84 @@
                             </div>
                             <h3 class="text-lg font-bold text-gray-900 mb-6 relative z-10">Quick Actions</h3>
                             <div class="space-y-4 relative z-10">
+                                <!-- Enhanced New Report Button -->
                                 <a href="/report" id="quickNewReport"
-                                    class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-2xl transition-all duration-300 group cursor-pointer border border-blue-100 hover:border-blue-200">
-                                    <div class="flex items-center">
-                                        <i data-lucide="file-plus"
-                                            class="w-5 h-5 text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
-                                        <span class="text-sm font-semibold text-gray-900">New Report</span>
+                                    class="group relative w-full flex items-center justify-between p-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:rotate-1 shadow-lg hover:shadow-xl cursor-pointer">
+                                    <!-- Animated background effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <!-- Shimmer effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                    <!-- Content -->
+                                    <div class="relative flex items-center">
+                                        <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                            <i data-lucide="file-plus" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <span class="text-sm font-bold">View Analytics</span>
+                                            <span class="text-xs opacity-80 group-hover:opacity-100">Detailed performance metrics</span>
+                                        </div>
                                     </div>
-                                    <i data-lucide="chevron-right"
-                                        class="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"></i>
+                                    <i data-lucide="chevron-right" class="relative w-5 h-5 group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300"></i>
+                                    <!-- Glow effect -->
+                                    <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                                 </a>
+
+                                <!-- Enhanced Inventory Button -->
                                 <a href="/inventory" id="quickInventory"
-                                    class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 rounded-2xl transition-all duration-300 group cursor-pointer border border-green-100 hover:border-green-200">
-                                    <div class="flex items-center">
-                                        <i data-lucide="package"
-                                            class="w-5 h-5 text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
-                                        <span class="text-sm font-semibold text-gray-900">Inventory</span>
+                                    class="group relative w-full flex items-center justify-between p-5 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:rotate-1 shadow-lg hover:shadow-xl cursor-pointer">
+                                    <!-- Animated background effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <!-- Shimmer effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                    <!-- Content -->
+                                    <div class="relative flex items-center">
+                                        <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                            <i data-lucide="package" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <span class="text-sm font-bold">Manage Inventory</span>
+                                            <span class="text-xs opacity-80 group-hover:opacity-100">Track raw materials</span>
+                                        </div>
                                     </div>
-                                    <i data-lucide="chevron-right"
-                                        class="w-4 h-4 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all"></i>
+                                    <i data-lucide="chevron-right" class="relative w-5 h-5 group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300"></i>
+                                    <!-- Glow effect -->
+                                    <div class="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                                 </a>
+
+                                <!-- Enhanced Issue Report Button -->
                                 <a href="/form?report_type=issue" id="quickIssueReport"
-                                    class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 rounded-2xl transition-all duration-300 group cursor-pointer border border-orange-100 hover:border-orange-200">
-                                    <div class="flex items-center">
-                                        <i data-lucide="alert-triangle"
-                                            class="w-5 h-5 text-orange-600 mr-3 group-hover:scale-110 transition-transform"></i>
-                                        <span class="text-sm font-semibold text-gray-900">Issue Report</span>
+                                    class="group relative w-full flex items-center justify-between p-5 bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 text-white rounded-2xl overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:rotate-1 shadow-lg hover:shadow-xl cursor-pointer">
+                                    <!-- Animated background effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-orange-700 via-red-700 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                    <!-- Shimmer effect -->
+                                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                    <!-- Content -->
+                                    <div class="relative flex items-center">
+                                        <div class="p-2 bg-white/10 rounded-lg mr-4 group-hover:bg-white/20 transition-colors duration-300">
+                                            <i data-lucide="alert-triangle" class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <span class="text-sm font-bold">Report Issues</span>
+                                            <span class="text-xs opacity-80 group-hover:opacity-100">Equipment & quality issues</span>
+                                        </div>
                                     </div>
-                                    <i data-lucide="chevron-right"
-                                        class="w-4 h-4 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all"></i>
+                                    <i data-lucide="chevron-right" class="relative w-5 h-5 group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300"></i>
+                                    <!-- Glow effect -->
+                                    <div class="absolute -inset-1 bg-gradient-to-r from-orange-600 to-pink-600 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500"></div>
                                 </a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- System Information -->
-                    <div id="systemInfoCard"
-                        class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 rounded-3xl shadow-2xl p-8 text-white animate-fade-in overflow-hidden relative">
-                        <div
-                            class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-blue-500/20 to-transparent rounded-full -translate-y-20 translate-x-20">
-                        </div>
-                        <div
-                            class="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full translate-y-16 -translate-x-16">
-                        </div>
 
-                        <div class="mb-8 relative z-10">
-                            <h2 class="text-2xl font-bold text-white mb-2">System Status</h2>
-                            <p class="text-gray-300">Real-time operational metrics and health indicators</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-                            <div class="glass-dark rounded-2xl p-6">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm text-gray-300 mb-1">Data Sync</p>
-                                        <p id="dataSyncValue" class="text-xl font-bold">--</p>
-                                    </div>
-                                    <i data-lucide="database" class="w-8 h-8 text-blue-400 floating-icon"></i>
-                                </div>
-                            </div>
-                            <div class="glass-dark rounded-2xl p-6">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-sm text-gray-300 mb-1">Uptime</p>
-                                        <p id="systemUptimeValue" class="text-xl font-bold">--</p>
-                                    </div>
-                                    <i data-lucide="server" class="w-8 h-8 text-green-400 floating-icon"></i>
-                                </div>
-                            </div>
-                            <div class="glass-dark rounded-2xl p-6">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p id="recordsTodayLabel" class="text-sm text-gray-300 mb-1">Records Today</p>
-                                        <p id="recordsTodayValue" class="text-xl font-bold">--</p>
-                                    </div>
-                                    <i data-lucide="users" class="w-8 h-8 text-yellow-400 floating-icon"></i>
-                                </div>
-                            </div>
-                            <div class="glass-dark rounded-2xl p-6">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p id="lastUpdateLabel" class="text-sm text-gray-300 mb-1">Last Update</p>
-                                        <p id="lastUpdateValue" class="text-xl font-bold">--</p>
-                                    </div>
-                                    <i data-lucide="shield-check" class="w-8 h-8 text-purple-400 floating-icon"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 {% endblock %}
                 <!-- Footer - Sticky at bottom of main content area -->
                 <footer
-                    class="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                    class="sticky bottom-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
                     <div class="flex flex-col md:flex-row justify-between items-center">
                         <div class="text-sm text-gray-500 mb-2 md:mb-0">
-                            © <span id="year"></span> Bakery Metrics App. Created by Gerald Nyah. All rights reserved.
-                        </div>
-                        <div class="flex items-center space-x-6">
-                            <span class="text-xs text-gray-400 font-medium">Version 2.1.0</span>
-                            <div class="flex items-center text-xs text-gray-400">
-                                <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                                System Status: Healthy
-                            </div>
+                            © <span id="year"></span> Dashmet. Created by Gerald Nyah. All rights reserved.
                         </div>
                     </div>
                 </footer>
@@ -2209,326 +1604,34 @@
         // Set current year
         document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Mobile menu functionality
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileSidebar = document.getElementById('mobileSidebar');
-        const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-        const closeMobileSidebar = document.getElementById('closeMobileSidebar');
+        // Sidebar functionality will be handled by setupSidebar() function
 
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileSidebar.classList.remove('-translate-x-full');
-            mobileSidebarOverlay.classList.remove('hidden');
-        });
-
-        const closeMobileSidebarFunction = () => {
-            mobileSidebar.classList.add('-translate-x-full');
-            mobileSidebarOverlay.classList.add('hidden');
-            
-            // Also close mobile secondary sidebar when main sidebar closes
-            if (isMobileSecondarySidebarOpen && secondarySidebarMobile) {
-                secondarySidebarMobile.classList.remove('open');
-                managementMenuTriggerMobile.classList.remove('active');
-                isMobileSecondarySidebarOpen = false;
-            }
-        };
-
-        closeMobileSidebar.addEventListener('click', closeMobileSidebarFunction);
-        mobileSidebarOverlay.addEventListener('click', closeMobileSidebarFunction);
-
-        // Force close all sidebars function - override any conflicts
+        // Force close all sidebars function - updated for new sidebar system
         window.forceCloseAllSidebars = function() {
             console.log('forceCloseAllSidebars called'); // Debug
             
-            // Set a flag to prevent reopening
-            window.preventSidebarReopening = true;
+            // Force close the left-sliding sidebar
+            const sidebarEl = document.getElementById('sidebar');
+            const sidebarOverlayEl = document.getElementById('sidebar-overlay');
             
-            // Temporarily disable the management trigger to prevent reopening
-            const managementMenuTriggerMobileEl = document.getElementById('managementMenuTriggerMobile');
-            if (managementMenuTriggerMobileEl) {
-                managementMenuTriggerMobileEl.style.pointerEvents = 'none';
-                console.log('Disabled management trigger mobile'); // Debug
-            }
-            
-            // Force close mobile sidebar
-            const mobileSidebarEl = document.getElementById('mobileSidebar');
-            const mobileSidebarOverlayEl = document.getElementById('mobileSidebarOverlay');
-            if (mobileSidebarEl) {
-                mobileSidebarEl.classList.remove('-translate-x-0');
-                mobileSidebarEl.classList.add('-translate-x-full');
-                mobileSidebarEl.style.transform = 'translateX(-100%)'; // Force with inline style
-            }
-            if (mobileSidebarOverlayEl) {
-                mobileSidebarOverlayEl.classList.remove('block');
-                mobileSidebarOverlayEl.classList.add('hidden');
-                mobileSidebarOverlayEl.style.display = 'none'; // Force with inline style
+            if (sidebarEl) {
+                sidebarEl.classList.remove('sidebar-open');
+                sidebarEl.style.transform = 'translateX(-100%)'; // Force with inline style
             }
             
-            // Force close secondary sidebar
-            const secondarySidebarMobileEl = document.getElementById('secondarySidebarMobile');
-            if (secondarySidebarMobileEl) {
-                secondarySidebarMobileEl.classList.remove('open');
-                secondarySidebarMobileEl.style.transform = 'translateX(-100%)'; // Force with inline style
-                secondarySidebarMobileEl.style.visibility = 'hidden'; // Force with inline style
-                secondarySidebarMobileEl.style.opacity = '0'; // Force with inline style
-                console.log('Forced secondary sidebar closed with inline styles'); // Debug
-            }
-            if (managementMenuTriggerMobileEl) {
-                managementMenuTriggerMobileEl.classList.remove('active');
+            if (sidebarOverlayEl) {
+                sidebarOverlayEl.classList.remove('overlay-visible');
+                sidebarOverlayEl.classList.add('hidden');
+                sidebarOverlayEl.style.display = 'none'; // Force with inline style
             }
             
-            // Force close desktop secondary sidebar
-            const secondarySidebarEl = document.getElementById('secondarySidebar');
-            const managementMenuTriggerEl = document.getElementById('managementMenuTrigger');
-            if (secondarySidebarEl) {
-                secondarySidebarEl.classList.remove('open');
-            }
-            if (managementMenuTriggerEl) {
-                managementMenuTriggerEl.classList.remove('active');
-            }
+            // Restore body scroll
+            document.body.style.overflow = '';
             
-            // Update state variables IMMEDIATELY
-            if (typeof isMobileSecondarySidebarOpen !== 'undefined') {
-                isMobileSecondarySidebarOpen = false;
-                console.log('Set isMobileSecondarySidebarOpen to false'); // Debug
-            }
-            if (typeof isSecondarySidebarOpen !== 'undefined') {
-                isSecondarySidebarOpen = false;
-            }
-            
-            console.log('All sidebars forcefully closed'); // Debug
-            
-            // Re-enable the management trigger after a longer delay and clear the flag
-            setTimeout(function() {
-                if (managementMenuTriggerMobileEl) {
-                    managementMenuTriggerMobileEl.style.pointerEvents = '';
-                    console.log('Re-enabled management trigger mobile'); // Debug
-                }
-                // Clear the flag after navigation should be complete
-                setTimeout(function() {
-                    window.preventSidebarReopening = false;
-                    console.log('Cleared prevent reopening flag'); // Debug
-                }, 1000);
-            }, 500); // Wait longer before re-enabling
+            console.log('Sidebar forcefully closed'); // Debug
         };
 
-        // Secondary Sidebar Functionality
-        const managementMenuTrigger = document.getElementById('managementMenuTrigger');
-        const managementMenuTriggerMobile = document.getElementById('managementMenuTriggerMobile');
-        const secondarySidebar = document.getElementById('secondarySidebar');
-        const secondarySidebarMobile = document.getElementById('secondarySidebarMobile');
-        
-        let secondarySidebarTimeout;
-        let isSecondarySidebarOpen = false;
-        let isMobileSecondarySidebarOpen = false;
 
-        // Desktop Secondary Sidebar - Hover-based interaction
-        if (managementMenuTrigger && secondarySidebar) {
-            // Show on hover
-            managementMenuTrigger.addEventListener('mouseenter', () => {
-                clearTimeout(secondarySidebarTimeout);
-                secondarySidebar.classList.add('open');
-                managementMenuTrigger.classList.add('active');
-                isSecondarySidebarOpen = true;
-            });
-
-            // Hide when mouse leaves trigger (with delay to allow moving to secondary sidebar)
-            managementMenuTrigger.addEventListener('mouseleave', () => {
-                secondarySidebarTimeout = setTimeout(() => {
-                    if (!secondarySidebar.matches(':hover')) {
-                        secondarySidebar.classList.remove('open');
-                        managementMenuTrigger.classList.remove('active');
-                        isSecondarySidebarOpen = false;
-                    }
-                }, 300); // Increased delay for better UX
-            });
-
-            // Keep secondary sidebar open when hovering over it
-            secondarySidebar.addEventListener('mouseenter', () => {
-                clearTimeout(secondarySidebarTimeout);
-            });
-
-            // Hide when mouse leaves secondary sidebar
-            secondarySidebar.addEventListener('mouseleave', () => {
-                secondarySidebar.classList.remove('open');
-                managementMenuTrigger.classList.remove('active');
-                isSecondarySidebarOpen = false;
-            });
-        }
-
-        // Mobile Secondary Sidebar - Click-based interaction
-        if (managementMenuTriggerMobile && secondarySidebarMobile) {
-            // Enhanced touch feedback for mobile
-            managementMenuTriggerMobile.addEventListener('touchstart', (e) => {
-                managementMenuTriggerMobile.style.transform = 'scale(0.98)';
-                managementMenuTriggerMobile.style.transition = 'transform 0.1s ease';
-            }, { passive: true });
-            
-            managementMenuTriggerMobile.addEventListener('touchend', (e) => {
-                managementMenuTriggerMobile.style.transform = '';
-                managementMenuTriggerMobile.style.transition = '';
-            }, { passive: true });
-            
-            managementMenuTriggerMobile.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Check if the trigger is temporarily disabled (during force close)
-                if (managementMenuTriggerMobile.style.pointerEvents === 'none') {
-                    console.log('Management trigger click ignored - temporarily disabled'); // Debug
-                    return;
-                }
-                
-                // Check if we're preventing reopening
-                if (window.preventSidebarReopening) {
-                    console.log('Management trigger click ignored - reopening prevented'); // Debug
-                    return;
-                }
-                
-                console.log('Management trigger clicked, current state:', isMobileSecondarySidebarOpen); // Debug
-                
-                if (isMobileSecondarySidebarOpen) {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                    console.log('Secondary sidebar closed via management trigger'); // Debug
-                } else {
-                    // Open sidebar immediately - no delay
-                    managementMenuTriggerMobile.classList.add('active');
-                    secondarySidebarMobile.classList.add('open');
-                    isMobileSecondarySidebarOpen = true;
-                    console.log('Secondary sidebar opened via management trigger'); // Debug
-                }
-            });
-
-            // Close button for mobile secondary sidebar
-            const closeSecondaryMobile = document.getElementById('closeSecondaryMobile');
-            if (closeSecondaryMobile) {
-                closeSecondaryMobile.addEventListener('click', () => {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                });
-            }
-
-            // Enhanced touch and swipe support for mobile
-            let touchStartX = 0;
-            let touchStartY = 0;
-            let isSwiping = false;
-
-            secondarySidebarMobile.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-                isSwiping = false;
-            }, { passive: true });
-
-            secondarySidebarMobile.addEventListener('touchmove', (e) => {
-                if (!isMobileSecondarySidebarOpen) return;
-                
-                const touchCurrentX = e.touches[0].clientX;
-                const touchCurrentY = e.touches[0].clientY;
-                const deltaX = touchCurrentX - touchStartX;
-                const deltaY = Math.abs(touchCurrentY - touchStartY);
-                
-                // Only consider horizontal swipes
-                if (Math.abs(deltaX) > deltaY && Math.abs(deltaX) > 10) {
-                    isSwiping = true;
-                    
-                    // Swipe left to close (on mobile)
-                    if (deltaX < -50 && window.innerWidth < 768) {
-                        secondarySidebarMobile.style.transform = `translateX(${Math.max(deltaX, -100)}px)`;
-                    }
-                }
-            }, { passive: true });
-
-            secondarySidebarMobile.addEventListener('touchend', (e) => {
-                if (!isMobileSecondarySidebarOpen || !isSwiping) {
-                    secondarySidebarMobile.style.transform = '';
-                    return;
-                }
-                
-                const touchEndX = e.changedTouches[0].clientX;
-                const deltaX = touchEndX - touchStartX;
-                
-                // Close on significant left swipe (mobile only)
-                if (deltaX < -100 && window.innerWidth < 768) {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                }
-                
-                // Reset transform
-                secondarySidebarMobile.style.transform = '';
-                isSwiping = false;
-            }, { passive: true });
-
-            // Close when clicking outside (mobile)
-            document.addEventListener('click', (e) => {
-                // Don't interfere if management trigger is temporarily disabled (during force close)
-                if (managementMenuTriggerMobile.style.pointerEvents === 'none') {
-                    console.log('Global click handler ignored - force close in progress'); // Debug
-                    return;
-                }
-                
-                // Don't interfere if we're preventing reopening
-                if (window.preventSidebarReopening) {
-                    console.log('Global click handler ignored - reopening prevented'); // Debug
-                    return;
-                }
-                
-                if (isMobileSecondarySidebarOpen && 
-                    !managementMenuTriggerMobile.contains(e.target) && 
-                    !secondarySidebarMobile.contains(e.target) &&
-                    !e.target.closest('.secondary-nav-link')) {
-                    console.log('Global click - closing secondary sidebar'); // Debug
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                }
-            });
-
-            // Close when main mobile sidebar closes
-            mobileSidebarOverlay.addEventListener('click', () => {
-                if (isMobileSecondarySidebarOpen) {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                }
-            });
-        }
-
-        // Keyboard support for secondary sidebars
-        document.addEventListener('keydown', (e) => {
-            // Close secondary sidebar on Escape key
-            if (e.key === 'Escape') {
-                if (isMobileSecondarySidebarOpen && secondarySidebarMobile) {
-                    secondarySidebarMobile.classList.remove('open');
-                    managementMenuTriggerMobile.classList.remove('active');
-                    isMobileSecondarySidebarOpen = false;
-                }
-                if (isSecondarySidebarOpen && secondarySidebar) {
-                    secondarySidebar.classList.remove('open');
-                    managementMenuTrigger.classList.remove('active');
-                    isSecondarySidebarOpen = false;
-                }
-            }
-        });
-
-        // Handle window resize for responsive behavior
-        window.addEventListener('resize', () => {
-            // Close mobile secondary sidebar on desktop resize
-            if (window.innerWidth >= 1024 && isMobileSecondarySidebarOpen) {
-                secondarySidebarMobile.classList.remove('open');
-                managementMenuTriggerMobile.classList.remove('active');
-                isMobileSecondarySidebarOpen = false;
-            }
-            
-            // Close desktop secondary sidebar on mobile resize
-            if (window.innerWidth < 1024 && isSecondarySidebarOpen) {
-                secondarySidebar.classList.remove('open');
-                managementMenuTrigger.classList.remove('active');
-                isSecondarySidebarOpen = false;
-            }
-        });
 
         // Profile and Settings dropdowns - wrapped in DOMContentLoaded to ensure elements exist
         document.addEventListener('DOMContentLoaded', function() {
@@ -3892,16 +2995,12 @@
         // Enhanced Active navigation state management
         function setActiveNavigation() {
             const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link, .nav-link-mobile, .secondary-nav-link');
+            const navLinks = document.querySelectorAll('.nav-link, .nav-link-mobile');
 
             // Remove active class from all links
             navLinks.forEach(link => {
                 link.classList.remove('active');
             });
-
-            // Remove active state from grouped triggers
-            const groupedTriggers = document.querySelectorAll('.grouped-nav-trigger');
-            groupedTriggers.forEach(trigger => trigger.classList.remove('active'));
 
             // Map paths to page identifiers
             const pathMap = {
@@ -3920,28 +3019,6 @@
                 // Add active class to matching links
                 const activeLinks = document.querySelectorAll(`[data-page="${currentPage}"]`);
                 activeLinks.forEach(link => link.classList.add('active'));
-
-                // If the active page is in the secondary sidebar, show it and mark trigger as active
-                const secondaryPages = ['inventory', 'inventory-overview', 'help'];
-                if (secondaryPages.includes(currentPage)) {
-                    const managementTrigger = document.getElementById('managementMenuTrigger');
-                    const managementTriggerMobile = document.getElementById('managementMenuTriggerMobile');
-                    const secondarySidebar = document.getElementById('secondarySidebar');
-                    const secondarySidebarMobile = document.getElementById('secondarySidebarMobile');
-                    
-                    // Always mark triggers as active
-                    if (managementTrigger) managementTrigger.classList.add('active');
-                    if (managementTriggerMobile) managementTriggerMobile.classList.add('active');
-                    
-                    // Only auto-open secondary sidebar on desktop, NOT on mobile
-                    if (secondarySidebar && window.innerWidth >= 768) {
-                        secondarySidebar.classList.add('open');
-                    }
-                    // Do NOT auto-open mobile secondary sidebar
-                    // if (secondarySidebarMobile) secondarySidebarMobile.classList.add('open');
-                    
-                    console.log('setActiveNavigation: secondary page detected, auto-open disabled for mobile'); // Debug
-                }
             }
         }
 
@@ -3952,25 +3029,11 @@
             
             console.log('handleNavigation called for link:', link); // Debug
             console.log('Link classes:', link.classList.toString()); // Debug
-            console.log('Is secondary nav link:', link.classList.contains('secondary-nav-link')); // Debug
             
             // Don't handle if same page
             if (window.location.pathname === href) {
                 event.preventDefault();
                 return;
-            }
-
-            // If this is a secondary nav link, close all sidebars immediately
-            if (link.classList.contains('secondary-nav-link')) {
-                // Stop the event from bubbling to prevent other click handlers from interfering
-                event.stopPropagation();
-                
-                console.log('Secondary nav link clicked - using force close'); // Debug log
-                
-                // Use the force close function with a slight delay to override any conflicts
-                setTimeout(function() {
-                    window.forceCloseAllSidebars();
-                }, 10);
             }
 
             // Allow normal navigation to proceed immediately - no loading states
@@ -3991,49 +3054,96 @@
             }
         }
 
-        // Enhanced mobile sidebar management
-        function setupMobileSidebar() {
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            const mobileSidebar = document.getElementById('mobileSidebar');
-            const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
-            const closeMobileSidebar = document.getElementById('closeMobileSidebar');
+        // Simple left-sliding sidebar management
+        function setupSidebar() {
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const closeSidebar = document.getElementById('closeSidebar');
 
-            if (!mobileMenuBtn || !mobileSidebar || !mobileSidebarOverlay || !closeMobileSidebar) {
+            // Debug: Check if all elements are found
+            console.log('Sidebar elements found:', {
+                menuBtn: !!menuBtn,
+                sidebar: !!sidebar,
+                sidebarOverlay: !!sidebarOverlay,
+                closeSidebar: !!closeSidebar
+            });
+
+            if (!menuBtn || !sidebar || !sidebarOverlay) {
+                console.error('Some sidebar elements not found');
                 return;
             }
 
-            const openMobileSidebar = () => {
-                mobileSidebar.classList.remove('-translate-x-full');
-                mobileSidebarOverlay.classList.remove('hidden');
-                // Add subtle animation delay for nav items
-                const navItems = mobileSidebar.querySelectorAll('.nav-link-mobile');
-                navItems.forEach((item, index) => {
-                    item.style.transitionDelay = `${index * 0.05}s`;
-                    item.style.transform = 'translateX(0)';
-                });
+            const openSidebar = () => {
+                console.log('Opening sidebar...');
+                console.log('Sidebar element:', sidebar);
+                console.log('Overlay element:', sidebarOverlay);
+                
+                // Use both Tailwind and custom classes for better compatibility
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('sidebar-open');
+                sidebar.style.transform = 'translateX(0)';
+                
+                // Show overlay
+                sidebarOverlay.classList.remove('hidden');
+                sidebarOverlay.classList.add('overlay-visible');
+                sidebarOverlay.style.display = 'block';
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+                
+                console.log('Sidebar classes after open:', sidebar.className);
+                console.log('Overlay classes after open:', sidebarOverlay.className);
             };
 
-            const closeMobileSidebarFunction = () => {
-                mobileSidebar.classList.add('-translate-x-full');
-                mobileSidebarOverlay.classList.add('hidden');
-                // Reset nav items
-                const navItems = mobileSidebar.querySelectorAll('.nav-link-mobile');
-                navItems.forEach((item) => {
-                    item.style.transitionDelay = '';
-                    item.style.transform = '';
-                });
+            const closeSidebarFunction = () => {
+                console.log('Closing sidebar...');
+                
+                // Use both Tailwind and custom classes for better compatibility
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('sidebar-open');
+                sidebar.style.transform = 'translateX(-100%)';
+                
+                // Hide overlay
+                sidebarOverlay.classList.remove('overlay-visible');
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
+                
+                // Hide overlay after animation
+                setTimeout(() => {
+                    sidebarOverlay.classList.add('hidden');
+                    sidebarOverlay.style.display = 'none';
+                }, 300);
+                
+                console.log('Sidebar classes after close:', sidebar.className);
+                console.log('Overlay classes after close:', sidebarOverlay.className);
             };
 
-            mobileMenuBtn.addEventListener('click', openMobileSidebar);
-            closeMobileSidebar.addEventListener('click', closeMobileSidebarFunction);
-            mobileSidebarOverlay.addEventListener('click', closeMobileSidebarFunction);
+            // Event listeners
+            menuBtn.addEventListener('click', openSidebar);
+            
+            if (closeSidebar) {
+                closeSidebar.addEventListener('click', closeSidebarFunction);
+            }
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebarFunction);
+            }
 
-            // Close mobile sidebar on navigation
-            const mobileNavLinks = document.querySelectorAll('#mobileSidebar .nav-link-mobile');
-            mobileNavLinks.forEach(link => {
+            // Close sidebar on navigation
+            const allNavLinks = sidebar.querySelectorAll('a');
+            allNavLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    setTimeout(closeMobileSidebarFunction, 150);
+                    setTimeout(closeSidebarFunction, 150);
                 });
+            });
+
+            // Close sidebar when window is resized to large screen
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    closeSidebarFunction();
+                }
             });
         }
 
@@ -4071,34 +3181,13 @@
             setActiveNavigation();
             
             // Add navigation event listeners
-            const allNavLinks = document.querySelectorAll('.nav-link, .nav-link-mobile, .secondary-nav-link');
+            const allNavLinks = document.querySelectorAll('.nav-link, .nav-link-mobile');
             allNavLinks.forEach(link => {
                 link.addEventListener('click', handleNavigation);
             });
             
-            // Add SPECIFIC event listeners for secondary nav links to ensure they close sidebars
-            const secondaryNavLinks = document.querySelectorAll('.secondary-nav-link');
-            console.log('Found secondary nav links:', secondaryNavLinks.length); // Debug
-            secondaryNavLinks.forEach(link => {
-                console.log('Adding click listener to secondary nav link:', link); // Debug
-                link.addEventListener('click', function(event) {
-                    console.log('DIRECT secondary nav link clicked!'); // Debug
-                    event.stopPropagation();
-                    
-                    // Force close all sidebars immediately
-                    window.forceCloseAllSidebars();
-                    
-                    // Let the normal navigation proceed after a tiny delay
-                    setTimeout(function() {
-                        if (link.href && link.href !== '#') {
-                            window.location.href = link.href;
-                        }
-                    }, 50);
-                }, true); // Use capture phase to ensure this runs first
-            });
-            
-            // Set up mobile sidebar
-            setupMobileSidebar();
+            // Set up sidebar (unified desktop and mobile)
+            setupSidebar();
             
             // Set up tooltips
             setupTooltips();
@@ -4186,45 +3275,17 @@
                 }
             }
 
-            // Add subtle animation to indicate update
-            const quickStatsElement = document.getElementById('sidebarQuickStats');
-            if (quickStatsElement) {
-                quickStatsElement.style.transform = 'scale(1.01)';
-                setTimeout(() => {
-                    quickStatsElement.style.transform = 'scale(1)';
-                }, 200);
-            }
+            // Note: Quick stats element removed with sidebar redesign
         }
 
-        // Initialize Quick Overview animations
+        // Initialize Quick Overview animations (simplified - sidebar redesigned)
         function initializeQuickOverview() {
-            // Add staggered animation to overview items
-            const overviewItems = document.querySelectorAll('#sidebarQuickStats .space-y-5 > div');
-            overviewItems.forEach((item, index) => {
-                item.style.animationDelay = `${0.1 + (index * 0.1)}s`;
-                item.classList.add('animate-slide-in-left');
-            });
-
             // Initialize performance bar with gradient animation
             const performanceBar = document.getElementById('performanceBar');
             if (performanceBar) {
                 performanceBar.style.backgroundSize = '200% 100%';
                 performanceBar.style.animation = 'performance-flow 3s ease-in-out infinite';
             }
-
-            // Add hover effects to status indicators
-            const statusIndicators = document.querySelectorAll('#sidebarQuickStats .w-2.h-2');
-            statusIndicators.forEach(indicator => {
-                indicator.addEventListener('mouseenter', () => {
-                    indicator.style.transform = 'scale(1.5)';
-                    indicator.style.boxShadow = `0 0 15px ${indicator.style.backgroundColor || 'currentColor'}`;
-                });
-                
-                indicator.addEventListener('mouseleave', () => {
-                    indicator.style.transform = 'scale(1)';
-                    indicator.style.boxShadow = '';
-                });
-            });
         }
 
         // Check system health (could integrate with real monitoring)
@@ -4232,7 +3293,6 @@
             // Simulate system health check
             const dbStatus = document.getElementById('dbStatus');
             const mobileDbStatus = document.getElementById('mobileDbStatus');
-            const systemStatusIndicators = document.querySelectorAll('#sidebarQuickStats .animate-pulse');
             
             // Simulate occasional connectivity check
             const isHealthy = Math.random() > 0.05; // 95% uptime simulation
