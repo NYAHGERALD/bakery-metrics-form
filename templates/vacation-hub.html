@@ -199,7 +199,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
 
@@ -452,18 +452,18 @@
     </div>
 
     <!-- Vacation Details Modal -->
-    <div id="vacationDetailsModal" class="fixed inset-0 bg-blue-50/80 backdrop-blur-sm z-50 flex items-center justify-center hidden" onclick="event.target === this && closeVacationDetailsModal()">
-        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-slate-900">Vacation Request Details</h3>
-                <button type="button" onclick="closeVacationDetailsModal()" class="text-slate-400 hover:text-slate-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="vacationDetailsModal" class="fixed inset-0 bg-blue-50/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-2 sm:p-4" onclick="event.target === this && closeVacationDetailsModal()">
+        <div class="bg-white rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-auto shadow-xl max-h-[95vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4 sm:mb-6 sticky top-0 bg-white pb-2 border-b sm:border-0 sm:pb-0">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900">Vacation Request Details</h3>
+                <button type="button" onclick="closeVacationDetailsModal()" class="text-slate-400 hover:text-slate-600 flex-shrink-0 ml-2">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
             
-            <div id="vacationDetailsContent" class="space-y-4">
+            <div id="vacationDetailsContent" class="space-y-3 sm:space-y-4">
                 <!-- Content will be populated dynamically -->
                 <div class="flex items-center justify-center py-8">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -3560,106 +3560,111 @@
                     // Build the content
                     content.innerHTML = `
                         <!-- Employee Info -->
-                        <div class="bg-slate-50 rounded-lg p-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg font-semibold">
+                        <div class="bg-slate-50 rounded-lg p-3 sm:p-4">
+                            <div class="flex items-center gap-3 sm:gap-4">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-base sm:text-lg font-semibold flex-shrink-0">
                                     ${vac.firstname.charAt(0)}${vac.lastname.charAt(0)}
                                 </div>
-                                <div>
-                                    <h4 class="font-semibold text-slate-900">${vac.firstname} ${vac.lastname}</h4>
-                                    <p class="text-sm text-slate-600">${vac.department || 'N/A'} • ${vac.role || 'Employee'}</p>
-                                    ${vac.email ? `<p class="text-sm text-slate-500">${vac.email}</p>` : ''}
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-slate-900 text-sm sm:text-base truncate">${vac.firstname} ${vac.lastname}</h4>
+                                    <p class="text-xs sm:text-sm text-slate-600 truncate">${vac.department || 'N/A'} • ${vac.role || 'Employee'}</p>
+                                    ${vac.email ? `<p class="text-xs sm:text-sm text-slate-500 truncate">${vac.email}</p>` : ''}
                                 </div>
-                                <span class="ml-auto inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                                <span class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${statusClass} flex-shrink-0">
                                     ${vac.status.charAt(0).toUpperCase() + vac.status.slice(1)}
                                 </span>
                             </div>
                         </div>
                         
                         <!-- Vacation Details -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="border border-slate-200 rounded-lg p-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div class="border border-slate-200 rounded-lg p-3 sm:p-4">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <h5 class="font-semibold text-slate-700">Start Date</h5>
+                                    <h5 class="font-semibold text-slate-700 text-xs sm:text-sm">Start Date</h5>
                                 </div>
-                                <p class="text-slate-900">${formatDate(startDate)}</p>
+                                <p class="text-slate-900 text-sm sm:text-base">${formatDate(startDate)}</p>
                             </div>
                             
-                            <div class="border border-slate-200 rounded-lg p-4">
+                            <div class="border border-slate-200 rounded-lg p-3 sm:p-4">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <h5 class="font-semibold text-slate-700">End Date</h5>
+                                    <h5 class="font-semibold text-slate-700 text-xs sm:text-sm">End Date</h5>
                                 </div>
-                                <p class="text-slate-900">${formatDate(endDate)}</p>
+                                <p class="text-slate-900 text-sm sm:text-base">${formatDate(endDate)}</p>
                             </div>
                             
-                            <div class="border border-slate-200 rounded-lg p-4">
+                            <div class="border border-slate-200 rounded-lg p-3 sm:p-4">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <h5 class="font-semibold text-slate-700">Duration</h5>
+                                    <h5 class="font-semibold text-slate-700 text-xs sm:text-sm">Duration</h5>
                                 </div>
-                                <p class="text-slate-900">${vac.duration_days || 0} day${vac.duration_days !== 1 ? 's' : ''}</p>
+                                <p class="text-slate-900 text-sm sm:text-base">${vac.duration_days || 0} day${vac.duration_days !== 1 ? 's' : ''}</p>
                             </div>
                             
-                            <div class="border border-slate-200 rounded-lg p-4">
+                            <div class="border border-slate-200 rounded-lg p-3 sm:p-4">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                     </svg>
-                                    <h5 class="font-semibold text-slate-700">Leave Type</h5>
+                                    <h5 class="font-semibold text-slate-700 text-xs sm:text-sm">Leave Type</h5>
                                 </div>
-                                <p class="text-slate-900">${leaveTypeDisplay}</p>
+                                <p class="text-slate-900 text-sm sm:text-base">${leaveTypeDisplay}</p>
                             </div>
                         </div>
                         
                         ${vac.reason ? `
-                        <div class="border border-slate-200 rounded-lg p-4">
+                        <div class="border border-slate-200 rounded-lg p-3 sm:p-4">
                             <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                <h5 class="font-semibold text-slate-700">Reason</h5>
+                                <h5 class="font-semibold text-slate-700 text-xs sm:text-sm">Reason</h5>
                             </div>
-                            <p class="text-slate-600">${vac.reason}</p>
+                            <p class="text-slate-600 text-sm sm:text-base break-words">${vac.reason}</p>
                         </div>
                         ` : ''}
                         
                         <!-- Timeline -->
-                        <div class="border-t pt-4 mt-4">
-                            <h5 class="font-semibold text-slate-700 mb-3">Timeline</h5>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex items-center gap-2 text-slate-600">
-                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    <span class="font-medium">Requested:</span>
-                                    <span>${formatDateTime(createdDate)}</span>
+                        <div class="border-t pt-3 sm:pt-4 mt-3 sm:mt-4">
+                            <h5 class="font-semibold text-slate-700 mb-2 sm:mb-3 text-sm sm:text-base">Timeline</h5>
+                            <div class="space-y-2 text-xs sm:text-sm">
+                                <div class="flex items-start gap-2 text-slate-600">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500 mt-1 flex-shrink-0"></span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="font-medium">Requested:</span>
+                                        <span class="block sm:inline">${formatDateTime(createdDate)}</span>
+                                    </div>
                                 </div>
                                 
                                 ${vac.decided_at ? `
-                                <div class="flex items-center gap-2 text-slate-600">
-                                    <span class="w-2 h-2 rounded-full ${vac.status === 'approved' ? 'bg-green-500' : 'bg-red-500'}"></span>
-                                    <span class="font-medium">${vac.status === 'approved' ? 'Approved' : 'Denied'}:</span>
-                                    <span>${formatDateTime(new Date(vac.decided_at))}</span>
-                                    ${vac.approved_by_username ? `<span class="ml-1 text-slate-500">by ${vac.approved_by_username}</span>` : ''}
+                                <div class="flex items-start gap-2 text-slate-600">
+                                    <span class="w-2 h-2 rounded-full ${vac.status === 'approved' ? 'bg-green-500' : 'bg-red-500'} mt-1 flex-shrink-0"></span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="font-medium">${vac.status === 'approved' ? 'Approved' : 'Denied'}:</span>
+                                        <span class="block sm:inline">${formatDateTime(new Date(vac.decided_at))}</span>
+                                        ${vac.approved_by_username ? `<span class="block sm:inline sm:ml-1 text-slate-500">by ${vac.approved_by_username}</span>` : ''}
+                                    </div>
                                 </div>
                                 ` : ''}
                                 
                                 ${vac.decision_reason ? `
-                                <div class="ml-4 pl-4 border-l-2 border-slate-200 text-slate-600">
-                                    <span class="font-medium">Decision Note:</span> ${vac.decision_reason}
+                                <div class="ml-4 pl-3 sm:pl-4 border-l-2 border-slate-200 text-slate-600">
+                                    <span class="font-medium">Decision Note:</span> 
+                                    <span class="break-words">${vac.decision_reason}</span>
                                 </div>
                                 ` : ''}
                             </div>
                         </div>
                         
-                        <div class="flex justify-end pt-4 border-t">
-                            <button type="button" onclick="closeVacationDetailsModal()" class="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors">
+                        <div class="flex justify-end pt-3 sm:pt-4 border-t">
+                            <button type="button" onclick="closeVacationDetailsModal()" class="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-slate-600 text-white text-sm sm:text-base rounded-lg hover:bg-slate-700 transition-colors font-medium">
                                 Close
                             </button>
                         </div>
