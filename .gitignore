@@ -177,6 +177,7 @@ EMAIL_SETUP_GUIDE.md
 FINAL_STATUS_REPORT.md
 test_email_system.py
 test_gmail_connection.py
+migrate_database.sh
 
 # -------------------------
 # Deployment

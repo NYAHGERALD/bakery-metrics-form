@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Vacation Dashboard</title>
+    <!-- Tailwind CSS -->
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet" />
+    <style>
+        /* Custom animations and styles */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Hamburger Menu Animation */
+        .hamburger {
+            width: 24px;
+            height: 20px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hamburger span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: #334155;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background-color: white;
+            z-index: 100;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-menu.active {
+            left: 0;
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Hide mobile menu on large screens */
+        @media (min-width: 1024px) {
+            .mobile-menu,
+            .mobile-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Avatar styles */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* Status indicator pulse */
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Toast Animations */
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastSlideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .toast {
+            animation: toastSlideIn 0.3s ease-out;
+        }
+
+        .toast.removing {
+            animation: toastSlideOut 0.3s ease-in;
+        }
+
+        /* Modal Animations */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-backdrop {
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.2s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="p-6 border-b border-slate-200">
+            <div class="flex items-center gap-3">
+                <div class="avatar bg-blue-500 text-white">{{ user_initials }}</div>
+                <div>
+                    <div class="text-sm font-semibold text-slate-900">{{ user_full_name }}</div>
+                    <div class="text-xs text-slate-500">{{ user_role }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium" onclick="showSection('overview', event); toggleMobileMenu();">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span>Overview</span>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium" onclick="showSection('activity', event); toggleMobileMenu();">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                <span>Activity Log</span>
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium" onclick="showSection('create', event); toggleMobileMenu();">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Create Request</span>
+            </a>
+            
+            <div class="border-t border-slate-200 my-2"></div>
+            
+            <button onclick="openProfileModal(); toggleMobileMenu();" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>My Profile</span>
+            </button>
+            
+            <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 text-red-600 font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
+
+        <div class="p-4 border-t border-slate-200 mt-4">
+            <h3 class="text-xs font-semibold text-slate-500 uppercase mb-3 px-4">My Stats</h3>
+            <div class="space-y-3 px-4" id="quickStats">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-slate-600">Days Used</span>
+                    <span class="font-bold text-slate-900" id="statDaysUsed">--</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-slate-600">Days Remaining</span>
+                    <span class="font-bold text-green-600" id="statDaysRemaining">--</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-slate-600">Pending</span>
+                    <span class="font-bold text-yellow-600" id="statPending">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
+
+    <!-- Top Navigation Bar -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <!-- Top Row: Logo, User -->
+        <div class="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-slate-100">
+            <div class="flex items-center gap-4">
+                <div class="hamburger lg:hidden" id="hamburgerBtn" onclick="toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <h1 class="text-xl lg:text-2xl font-bold text-slate-900">DASHMET</h1>
+                <span class="hidden lg:inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Employee View</span>
+            </div>
+            
+            <div class="flex items-center gap-2 lg:gap-4">
+                <!-- Notifications Bell -->
+                <div class="relative">
+                    <button id="notificationsButton" onclick="toggleNotifications()" class="relative p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                        <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        <!-- Notification Badge -->
+                        <span id="notificationBadge" class="hidden absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">0</span>
+                    </button>
+                    
+                    <!-- Notifications Dropdown -->
+                    <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-slate-200 z-[10001] max-h-[500px] overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                            <h3 class="text-lg font-bold text-slate-900">Notifications</h3>
+                            <button onclick="markAllNotificationsRead()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                                Mark all as read
+                            </button>
+                        </div>
+                        
+                        <!-- Notifications List -->
+                        <div id="notificationsList" class="overflow-y-auto flex-1">
+                            <div class="flex items-center justify-center py-12 text-slate-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Menu with Dropdown -->
+                <div class="relative">
+                    <button id="userMenuButton" onclick="toggleUserDropdown()" class="flex items-center gap-2 lg:gap-3 cursor-pointer hover:bg-slate-50 rounded-lg p-2 transition-colors">
+                        <div class="avatar bg-blue-500 text-white text-sm lg:text-base">{{ user_initials }}</div>
+                        <div class="hidden lg:block text-left">
+                            <div class="text-sm font-semibold text-slate-900">{{ user_full_name }}</div>
+                            <div class="text-xs text-slate-500">{{ user_role }}</div>
+                        </div>
+                        <svg class="hidden lg:block w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 z-[10001]">
+                        <div class="p-3 border-b border-slate-100">
+                            <div class="text-sm font-semibold text-slate-900">{{ user_full_name }}</div>
+                            <div class="text-xs text-slate-500">{{ session.get('email', '') }}</div>
+                        </div>
+                        <div class="py-1">
+                            <button onclick="openProfileModal()" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <span>My Profile</span>
+                            </button>
+                            <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Row - Desktop Only -->
+        <div class="hidden lg:flex items-center justify-between px-6 py-2">
+            <div class="flex items-center gap-1 overflow-x-auto">
+                <a href="#" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 border-b-2 border-blue-700" onclick="showSection('overview', event)" data-section="overview">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span>Overview</span>
+                </a>
+
+                <a href="#" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100" onclick="showSection('activity', event)" data-section="activity">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                    <span>Activity Log</span>
+                </a>
+
+                <a href="#" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100" onclick="showSection('create', event)" data-section="create">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Create Request</span>
+                </a>
+            </div>
+
+            <div class="hidden lg:flex items-center gap-2 ml-4">
+                <input type="date" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" id="dateFilterStart">
+                <span class="text-slate-400 text-sm">to</span>
+                <input type="date" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" id="dateFilterEnd">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-4 lg:p-8">
+        <!-- Overview Section -->
+        <div id="overview-section" class="animate-slide-in">
+            <!-- Quick Stats Card -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Pending Requests</span>
+                        <span id="dashPendingCount" class="text-lg font-bold text-yellow-600">0</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Approved This Year</span>
+                        <span id="dashApprovedCount" class="text-lg font-bold text-green-600">0</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Days Used</span>
+                        <span id="dashDaysUsed" class="text-lg font-bold text-blue-600">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs for Panels -->
+            <div class="mb-6 flex gap-2 bg-slate-100 p-1 rounded-lg overflow-x-auto">
+                <button class="tab-btn px-4 py-2 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm" onclick="showTab('upcoming', event)">Upcoming</button>
+                <button class="tab-btn px-4 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-slate-900" onclick="showTab('pending', event)">Pending</button>
+                <button class="tab-btn px-4 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-slate-900" onclick="showTab('conflicts', event)">Conflicts</button>
+            </div>
+
+            <!-- Tab Content: Upcoming Vacations -->
+            <div id="upcoming-tab" class="tab-content bg-white rounded-lg shadow p-4 lg:p-6">
+                <!-- Important Notice - Hidden by default, shown when vacations exist -->
+                <div id="vacationNotice" class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 hidden">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-800 font-medium">
+                                📋 You must meet with your supervisor to fill and sign your Vacation form to finalize your request.
+                            </p>
+                            <p class="text-sm text-blue-700 mt-1 italic">
+                                📋 Debe reunirse con su supervisor para completar y firmar su formulario de vacaciones para finalizar su solicitud.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Upcoming Vacations (Next 30 Days)</h2>
+                <div id="myUpcomingVacations" class="space-y-4">
+                    <div class="flex items-center justify-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Pending Requests -->
+            <div id="pending-tab" class="tab-content bg-white rounded-lg shadow p-4 lg:p-6 hidden">
+                <!-- Important Notice - Hidden by default, shown when pending requests exist -->
+                <div id="pendingNotice" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 hidden">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-800 font-medium">
+                                ⏳ Your request is currently under review by your supervisor and will be approved based on availability and scheduling considerations. If you need to modify your vacation dates, please contact your supervisor directly.
+                            </p>
+                            <p class="text-sm text-yellow-700 mt-1 italic">
+                                ⏳ Su solicitud está siendo revisada por su supervisor y será aprobada según la disponibilidad y consideraciones de programación. Si necesita modificar las fechas de sus vacaciones, comuníquese directamente con su supervisor.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Pending Requests</h2>
+                <div id="myPendingRequests" class="space-y-4">
+                    <div class="flex items-center justify-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Conflicts -->
+            <div id="conflicts-tab" class="tab-content bg-white rounded-lg shadow p-4 lg:p-6 hidden">
+                <!-- Conflicts Notice (hidden by default, shown when conflicts exist) -->
+                <div id="conflictsNotice" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-red-800">
+                                <strong>English:</strong> A scheduling conflict has been detected with your vacation request. Please contact your supervisor to discuss alternative available dates and resolve this conflict.
+                            </p>
+                            <p class="text-sm font-medium text-red-800 mt-2">
+                                <strong>Español:</strong> Se ha detectado un conflicto de programación con su solicitud de vacaciones. Comuníquese con su supervisor para discutir fechas alternativas disponibles y resolver este conflicto.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Scheduling Conflicts & Warnings</h2>
+                
+                <!-- Loading State -->
+                <div id="conflictsLoading" class="flex items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+
+                <!-- Conflicts Container -->
+                <div id="conflictsContainer" class="space-y-4 hidden">
+                    <!-- Will be populated dynamically by JavaScript -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="conflictsEmpty" class="hidden text-center py-12">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">No Conflicts Detected</h3>
+                    <p class="text-slate-600">Your vacation requests have no scheduling conflicts.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log Section -->
+        <div id="activity-section" class="hidden">
+            <div class="bg-white rounded-lg shadow p-4 lg:p-6">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
+                    <h2 class="text-xl lg:text-2xl font-bold text-slate-900">My Activity Log</h2>
+                </div>
+
+                <div id="activityLogContainer" class="space-y-4">
+                    <!-- Activity items will be loaded here dynamically -->
+                    <div class="flex items-center justify-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Request Section -->
+        <div id="create-section" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Main Form -->
+                <div class="lg:col-span-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-6">Create Vacation Request</h2>
+                        
+                        <form id="createRequestForm" class="space-y-6" data-employee-id="{{ employee_id }}">
+                            <!-- Leave Type -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Leave Type *</label>
+                                <select id="leaveType" name="leave_type" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select leave type</option>
+                                    <option value="vacation">Vacation</option>
+                                    <option value="sick">Sick Leave</option>
+                                    <option value="personal">Personal Leave</option>
+                                    <option value="bereavement">Bereavement</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="unpaid">Unpaid Leave</option>
+                                </select>
+                            </div>
+
+                            <!-- Date Range -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Start Date *</label>
+                                    <input type="date" id="startDate" name="start_date" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
+                                    <input type="date" id="endDate" name="end_date" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Reason -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Reason *</label>
+                                <textarea id="reason" name="reason" rows="3" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Briefly describe the reason for your leave request"></textarea>
+                            </div>
+
+                            <!-- Coverage Plan -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Coverage Plan</label>
+                                <textarea id="coveragePlan" name="coverage_plan" rows="2" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Who will cover your responsibilities? (Optional)"></textarea>
+                            </div>
+
+                            <!-- Emergency Contact -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Emergency Contact Email</label>
+                                    <input type="email" id="emergencyEmail" name="emergency_email" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="emergency@example.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Emergency Contact Phone</label>
+                                    <input type="tel" id="emergencyPhone" name="emergency_phone" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="(555) 123-4567">
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex items-center justify-end gap-4 pt-4 border-t">
+                                <button type="button" onclick="resetCreateForm()" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors">
+                                    Reset
+                                </button>
+                                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sidebar - Quick Stats & Info -->
+                <div class="lg:col-span-4 space-y-6">
+                    <!-- Quick Stats -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-slate-600">Pending Requests</span>
+                                <span id="sidebarPendingCount" class="text-lg font-bold text-yellow-600">-</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-slate-600">Approved This Year</span>
+                                <span id="sidebarApprovedCount" class="text-lg font-bold text-green-600">-</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-slate-600">Days Used</span>
+                                <span id="sidebarDaysUsed" class="text-lg font-bold text-blue-600">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Leaves (Preview) -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Upcoming Leaves</h3>
+                        <div id="sidebarUpcomingLeaves" class="space-y-2">
+                            <p class="text-sm text-slate-500">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Helpful Tips -->
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-blue-900 mb-3">💡 Tips</h3>
+                        <ul class="text-sm text-blue-800 space-y-2">
+                            <li>• Submit requests at least 2 weeks in advance</li>
+                            <li>• Check for scheduling conflicts before submitting</li>
+                            <li>• Provide coverage plans for smoother approval</li>
+                            <li>• Keep emergency contact info updated</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="hidden fixed inset-0 z-[10002] flex items-center justify-center p-4" style="backdrop-filter: blur(8px); background-color: rgba(219, 234, 254, 0.5);">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-slate-900">My Profile</h2>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 space-y-6">
+                <!-- Profile Information -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="avatar bg-blue-500 text-white text-2xl w-16 h-16 flex items-center justify-center">
+                            {{ user_initials }}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-900" id="profileFullName">{{ user_full_name }}</h3>
+                            <p class="text-sm text-slate-600" id="profileEmail">{{ session.get('email', '') }}</p>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 mt-1" id="profileRole">
+                                {{ user_role }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Employee Details Grid -->
+                    <div id="employeeDetails" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Loading state -->
+                        <div class="col-span-2 text-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="text-sm text-slate-500 mt-2">Loading profile information...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password Section -->
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Change Password</h3>
+                    
+                    <form id="changePasswordForm" onsubmit="handlePasswordChange(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Current Password</label>
+                            <input 
+                                type="password" 
+                                id="currentPassword" 
+                                name="current_password"
+                                required
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter your current password"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">New Password</label>
+                            <input 
+                                type="password" 
+                                id="newPassword" 
+                                name="new_password"
+                                required
+                                minlength="8"
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter new password (min 8 characters)"
+                            >
+                            <p class="mt-1 text-xs text-slate-500">Password must be at least 8 characters long</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Confirm New Password</label>
+                            <input 
+                                type="password" 
+                                id="confirmPassword" 
+                                name="confirm_password"
+                                required
+                                minlength="8"
+                                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Confirm your new password"
+                            >
+                        </div>
+
+                        <div id="passwordError" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="ml-3 text-sm text-red-800" id="passwordErrorMessage"></p>
+                            </div>
+                        </div>
+
+                        <div id="passwordSuccess" class="hidden bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="ml-3 text-sm text-green-800">Password changed successfully!</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 pt-4">
+                            <button 
+                                type="submit" 
+                                id="changePasswordBtn"
+                                class="flex-1 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                Change Password
+                            </button>
+                            <button 
+                                type="button"
+                                onclick="closeProfileModal()"
+                                class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Notifications System
+        let notificationsData = [];
+        
+        // Toggle Notifications Dropdown
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const userDropdown = document.getElementById('userDropdownMenu');
+            
+            // Close user dropdown if open
+            userDropdown.classList.add('hidden');
+            
+            dropdown.classList.toggle('hidden');
+            
+            // Load notifications when opening
+            if (!dropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+        }
+        
+        // Load Notifications
+        async function loadNotifications() {
+            const listContainer = document.getElementById('notificationsList');
+            
+            try {
+                const response = await fetch('/api/my-notifications');
+                const data = await response.json();
+                
+                if (data.success && data.notifications) {
+                    notificationsData = data.notifications;
+                    
+                    // Update badge
+                    updateNotificationBadge();
+                    
+                    if (notificationsData.length === 0) {
+                        listContainer.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-12 text-slate-500">
+                                <svg class="w-16 h-16 mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                </svg>
+                                <p class="text-sm font-medium">No notifications</p>
+                                <p class="text-xs mt-1">You're all caught up!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Render notifications
+                    listContainer.innerHTML = notificationsData.map(notification => {
+                        const isUnread = !notification.is_read;
+                        const bgClass = isUnread ? 'bg-blue-50' : 'bg-white';
+                        const borderClass = isUnread ? 'border-l-4 border-blue-500' : '';
+                        
+                        let icon = '';
+                        let iconColor = '';
+                        
+                        switch(notification.type) {
+                            case 'vacation_approved':
+                                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                                iconColor = 'text-green-500';
+                                break;
+                            case 'vacation_denied':
+                                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                                iconColor = 'text-red-500';
+                                break;
+                            case 'vacation_pending':
+                                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                                iconColor = 'text-yellow-500';
+                                break;
+                            case 'vacation_submitted':
+                                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                                iconColor = 'text-blue-500';
+                                break;
+                            default:
+                                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+                                iconColor = 'text-slate-500';
+                        }
+                        
+                        const createdDate = new Date(notification.created_at);
+                        const timeAgo = getTimeAgo(createdDate);
+                        
+                        return `
+                            <div class="${bgClass} ${borderClass} p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="markNotificationRead(${notification.id})">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 mt-1">
+                                        <svg class="w-6 h-6 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            ${icon}
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-slate-900 mb-1">${notification.title}</p>
+                                        <p class="text-sm text-slate-600 mb-2">${notification.message}</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs text-slate-500">${timeAgo}</span>
+                                            ${isUnread ? '<span class="text-xs font-medium text-blue-600">New</span>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    listContainer.innerHTML = `
+                        <div class="flex items-center justify-center py-12 text-red-500">
+                            <p class="text-sm">Error loading notifications</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                listContainer.innerHTML = `
+                    <div class="flex items-center justify-center py-12 text-red-500">
+                        <p class="text-sm">Error loading notifications</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update Notification Badge
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            const unreadCount = notificationsData.filter(n => !n.is_read).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        // Mark Notification as Read
+        async function markNotificationRead(notificationId) {
+            try {
+                const response = await fetch(`/api/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload notifications
+                    loadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+        
+        // Mark All Notifications as Read
+        async function markAllNotificationsRead() {
+            try {
+                const response = await fetch('/api/notifications/mark-all-read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload notifications
+                    loadNotifications();
+                    showToast('All notifications marked as read', 'success');
+                }
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+            }
+        }
+        
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const notificationsButton = document.getElementById('notificationsButton');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            
+            if (notificationsButton && notificationsDropdown && 
+                !notificationsButton.contains(event.target) && 
+                !notificationsDropdown.contains(event.target)) {
+                notificationsDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Load notifications on page load and periodically
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+            // Refresh notifications every 30 seconds
+            setInterval(function() {
+                if (document.getElementById('notificationsDropdown').classList.contains('hidden')) {
+                    // Only update badge when dropdown is closed
+                    fetch('/api/my-notifications')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.notifications) {
+                                notificationsData = data.notifications;
+                                updateNotificationBadge();
+                            }
+                        })
+                        .catch(error => console.error('Error refreshing notifications:', error));
+                }
+            }, 30000); // 30 seconds
+        });
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            
+            mobileMenu.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+
+        // Section Navigation
+        function showSection(sectionName, event) {
+            if (event) event.preventDefault();
+            
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update desktop nav items
+            document.querySelectorAll('.nav-tab').forEach(item => {
+                item.classList.remove('bg-blue-50', 'text-blue-700', 'border-b-2', 'border-blue-700');
+                item.classList.add('text-slate-700', 'hover:bg-slate-100');
+            });
+            
+            // Find and activate the clicked nav item
+            const activeTab = document.querySelector(`.nav-tab[data-section="${sectionName}"]`);
+            if (activeTab) {
+                activeTab.classList.remove('text-slate-700', 'hover:bg-slate-100');
+                activeTab.classList.add('bg-blue-50', 'text-blue-700', 'border-b-2', 'border-blue-700');
+            }
+
+            // Load section-specific data
+            if (sectionName === 'activity') {
+                loadActivityLog();
+            } else if (sectionName === 'create') {
+                loadCreateSectionStats();
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toast Functionality
+        function showToast(message, type = 'info', duration = 4000) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            // Determine toast styling based on type
+            let bgColor, iconColor, iconPath;
+            switch(type) {
+                case 'success':
+                    bgColor = 'bg-green-600';
+                    iconColor = 'text-white';
+                    iconPath = 'M5 13l4 4L19 7';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-600';
+                    iconColor = 'text-white';
+                    iconPath = 'M6 18L18 6M6 6l12 12';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-600';
+                    iconColor = 'text-white';
+                    iconPath = 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.863-.833-2.633 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z';
+                    break;
+                default: // info
+                    bgColor = 'bg-blue-600';
+                    iconColor = 'text-white';
+                    iconPath = 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+            }
+            
+            toast.className = `toast flex items-center p-4 ${bgColor} text-white rounded-lg shadow-lg max-w-sm`;
+            toast.innerHTML = `
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/>
+                    </svg>
+                </div>
+                <div class="ml-3 text-sm font-medium">${message}</div>
+                <button class="ml-auto -mx-1.5 -my-1.5 text-white hover:text-gray-200 focus:outline-none" onclick="removeToast(this.parentElement)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove toast after duration
+            setTimeout(() => {
+                removeToast(toast);
+            }, duration);
+        }
+        
+        function removeToast(toast) {
+            toast.classList.add('removing');
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 300);
+        }
+
+        // Load my vacation stats
+        async function loadMyVacationStats() {
+            try {
+                const response = await fetch('/api/vacation/my-stats');
+                const data = await response.json();
+                
+                console.log('Stats API response:', data);
+                
+                if (data.success && data.stats) {
+                    const stats = data.stats;
+                    
+                    // Update Quick Stats
+                    document.getElementById('dashPendingCount').textContent = stats.pending ?? 0;
+                    document.getElementById('dashApprovedCount').textContent = stats.approved_count ?? 0;
+                    document.getElementById('dashDaysUsed').textContent = stats.days_used ?? 0;
+                    
+                    console.log('My vacation stats loaded successfully', stats);
+                } else {
+                    console.error('Failed to load vacation stats:', data.message || data);
+                    // Set defaults on error
+                    document.getElementById('dashPendingCount').textContent = '0';
+                    document.getElementById('dashApprovedCount').textContent = '0';
+                    document.getElementById('dashDaysUsed').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading vacation stats:', error);
+                // Set defaults on error
+                document.getElementById('dashPendingCount').textContent = '0';
+                document.getElementById('dashApprovedCount').textContent = '0';
+                document.getElementById('dashDaysUsed').textContent = '0';
+            }
+        }
+
+        // Tab Navigation within Overview
+        function showTab(tabName, evt) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Show selected tab content
+            const targetTab = document.getElementById(tabName + '-tab');
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+
+            // Update tab buttons - first deactivate all
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                btn.classList.add('text-slate-700', 'hover:text-slate-900');
+            });
+            
+            // Activate the clicked button
+            if (evt && evt.target) {
+                evt.target.classList.remove('text-slate-700', 'hover:text-slate-900');
+                evt.target.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+            }
+
+            // Load data for specific tabs when they're shown
+            if (tabName === 'upcoming') {
+                loadMyUpcomingVacations();
+            } else if (tabName === 'pending') {
+                loadMyPendingRequests();
+            } else if (tabName === 'conflicts') {
+                loadMyConflicts();
+            }
+        }
+
+        // Load my upcoming vacations (approved, next 30 days)
+        async function loadMyUpcomingVacations() {
+            try {
+                const response = await fetch('/api/vacation/my-upcoming');
+                const data = await response.json();
+                
+                const container = document.getElementById('myUpcomingVacations');
+                const noticeElement = document.getElementById('vacationNotice');
+                
+                if (data.success && data.vacations) {
+                    const vacations = data.vacations;
+                    
+                    if (vacations.length === 0) {
+                        // Hide notice when no vacations
+                        noticeElement.classList.add('hidden');
+                        
+                        container.innerHTML = `
+                            <div class="text-center py-12 text-slate-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="text-lg font-medium">No upcoming vacations</p>
+                                <p class="text-sm">You don't have any approved vacations in the next 30 days</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Show notice when vacations exist
+                    noticeElement.classList.remove('hidden');
+                    
+                    container.innerHTML = vacations.map(vac => {
+                        const startDate = new Date(vac.start_date);
+                        const endDate = new Date(vac.end_date);
+                        const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const leaveTypeDisplay = vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1);
+                        
+                        return `
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg gap-3">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                            <span class="status-indicator bg-green-500"></span>
+                                            Approved
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-slate-600">${vac.duration_days || 0} days • ${leaveTypeDisplay}</div>
+                                    ${vac.reason ? `<div class="text-xs text-slate-500 mt-1">${vac.reason}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    // Hide notice on error
+                    noticeElement.classList.add('hidden');
+                    
+                    container.innerHTML = `
+                        <div class="text-center py-12 text-slate-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <p class="text-slate-600">Error loading upcoming vacations</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading upcoming vacations:', error);
+                const container = document.getElementById('myUpcomingVacations');
+                const noticeElement = document.getElementById('vacationNotice');
+                
+                // Hide notice on error
+                noticeElement.classList.add('hidden');
+                
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <p class="text-slate-600">Error loading upcoming vacations</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load my pending requests
+        async function loadMyPendingRequests() {
+            try {
+                const response = await fetch('/api/vacation/my-pending');
+                const data = await response.json();
+                
+                const container = document.getElementById('myPendingRequests');
+                const noticeElement = document.getElementById('pendingNotice');
+                
+                if (data.success && data.vacations) {
+                    const vacations = data.vacations;
+                    
+                    if (vacations.length === 0) {
+                        // Hide notice when no pending requests
+                        noticeElement.classList.add('hidden');
+                        
+                        container.innerHTML = `
+                            <div class="text-center py-12 text-slate-500">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p class="text-lg font-medium">All caught up!</p>
+                                <p class="text-sm">You don't have any pending vacation requests</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Show notice when pending requests exist
+                    noticeElement.classList.remove('hidden');
+                    
+                    container.innerHTML = vacations.map(vac => {
+                        const startDate = new Date(vac.start_date);
+                        const endDate = new Date(vac.end_date);
+                        const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const leaveTypeDisplay = vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1);
+                        const createdDate = new Date(vac.created_at);
+                        const timeAgo = getTimeAgo(createdDate);
+                        
+                        return `
+                            <div class="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-4 lg:p-5">
+                                <div class="flex flex-col lg:flex-row lg:items-start justify-between mb-3 gap-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                                <span class="status-indicator bg-yellow-500"></span>
+                                                Pending Review
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-slate-600 mb-1">${vac.duration_days || 0} days • ${leaveTypeDisplay}</div>
+                                        <div class="text-xs text-slate-500">Submitted ${timeAgo}</div>
+                                    </div>
+                                </div>
+                                ${vac.reason ? `
+                                <div class="bg-white rounded-lg p-3 mb-3">
+                                    <div class="text-xs font-semibold text-slate-600 mb-1">REASON</div>
+                                    <div class="text-sm text-slate-700">${vac.reason}</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    // Hide notice on error
+                    noticeElement.classList.add('hidden');
+                    
+                    container.innerHTML = `
+                        <div class="text-center py-12 text-slate-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <p class="text-slate-600">Error loading pending requests</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading pending requests:', error);
+                const container = document.getElementById('myPendingRequests');
+                const noticeElement = document.getElementById('pendingNotice');
+                
+                // Hide notice on error
+                noticeElement.classList.add('hidden');
+                
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <p class="text-slate-600">Error loading pending requests</p>
+                    </div>
+                `;
+            }
+        }        // Load my conflicts and warnings
+        async function loadMyConflicts() {
+            const loadingEl = document.getElementById('conflictsLoading');
+            const containerEl = document.getElementById('conflictsContainer');
+            const emptyEl = document.getElementById('conflictsEmpty');
+            const noticeEl = document.getElementById('conflictsNotice');
+
+            try {
+                // Show loading state
+                loadingEl?.classList.remove('hidden');
+                containerEl?.classList.add('hidden');
+                emptyEl?.classList.add('hidden');
+                noticeEl?.classList.add('hidden');
+
+                const response = await fetch('/api/vacation/my-conflicts');
+                const data = await response.json();
+
+                loadingEl?.classList.add('hidden');
+
+                if (data.success && data.conflicts && data.conflicts.length > 0) {
+                    // Show notice when conflicts exist
+                    noticeEl?.classList.remove('hidden');
+                    
+                    containerEl.innerHTML = '';
+                    
+                    data.conflicts.forEach(conflict => {
+                        const conflictCard = createConflictCard(conflict);
+                        containerEl.innerHTML += conflictCard;
+                    });
+                    
+                    containerEl?.classList.remove('hidden');
+                } else {
+                    // Hide notice when no conflicts
+                    noticeEl?.classList.add('hidden');
+                    emptyEl?.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading conflicts:', error);
+                loadingEl?.classList.add('hidden');
+                // Hide notice on error
+                noticeEl?.classList.add('hidden');
+                containerEl.innerHTML = `
+                    <div class="text-center py-8 text-red-600">
+                        <p>Error loading conflicts. Please try again.</p>
+                    </div>
+                `;
+                containerEl?.classList.remove('hidden');
+            }
+        }
+
+        // Create conflict card HTML
+        function createConflictCard(conflict) {
+            const isWarning = conflict.severity === 'warning';
+            const borderColor = isWarning ? 'border-orange-200' : 'border-red-200';
+            const bgColor = isWarning ? 'bg-orange-50' : 'bg-red-50';
+            const iconBg = isWarning ? 'bg-orange-100' : 'bg-red-100';
+            const iconColor = isWarning ? 'text-orange-600' : 'text-red-600';
+            const icon = isWarning ? 
+                'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' :
+                'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+
+            let detailsHtml = '';
+            if (conflict.conflicting_requests && conflict.conflicting_requests.length > 0) {
+                detailsHtml = `
+                    <div class="bg-white rounded-lg p-3 mb-3">
+                        <div class="text-xs font-semibold text-slate-600 mb-2">CONFLICTING REQUESTS</div>
+                        <div class="space-y-2">
+                            ${conflict.conflicting_requests.map(req => `
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-700">${req.employee_name}</span>
+                                    <span class="text-slate-600">${formatDateRange(req.start_date, req.end_date)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (conflict.details) {
+                detailsHtml = `
+                    <div class="bg-white rounded-lg p-3 mb-3">
+                        <div class="text-xs font-semibold text-slate-600 mb-2">DETAILS</div>
+                        <div class="space-y-2 text-sm">
+                            ${Object.entries(conflict.details).map(([key, value]) => `
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600">${key}:</span>
+                                    <span class="text-slate-900 font-medium">${value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="border-2 ${borderColor} ${bgColor} rounded-lg p-4 lg:p-5">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 ${iconBg} rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon}"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-slate-900 mb-2">${conflict.title}</div>
+                            <div class="text-sm text-slate-700 mb-3">${conflict.description}</div>
+                            ${detailsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to format date range
+        function formatDateRange(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            return `${startStr} - ${endStr}`;
+        }
+
+        // Helper function to calculate time ago
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // difference in seconds
+            
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+            if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Load my activity log
+        async function loadActivityLog() {
+            try {
+                const response = await fetch('/api/vacation/my-activity');
+                const data = await response.json();
+                
+                const container = document.getElementById('activityLogContainer');
+                
+                if (data.success && data.activities) {
+                    const activities = data.activities;
+                    
+                    if (activities.length === 0) {
+                        container.innerHTML = `
+                            <div class="text-center py-12">
+                                <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-lg font-medium text-slate-500">No activity to display</p>
+                                <p class="text-sm text-slate-400 mt-2">Your vacation activities will appear here.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = activities.map(activity => {
+                        const activityDate = new Date(activity.activity_timestamp);
+                        const formattedDate = activityDate.toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                        }) + ' at ' + activityDate.toLocaleTimeString('en-US', { 
+                            hour: 'numeric', 
+                            minute: '2-digit',
+                            hour12: true 
+                        });
+
+                        const startDate = new Date(activity.start_date);
+                        const endDate = new Date(activity.end_date);
+                        const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                        const leaveTypeDisplay = activity.leave_type 
+                            ? activity.leave_type.charAt(0).toUpperCase() + activity.leave_type.slice(1) 
+                            : 'N/A';
+
+                        // Determine icon and styling based on activity type
+                        let iconBg, iconColor, iconPath, activityTitle, activityDescription;
+                        
+                        switch (activity.activity_type) {
+                            case 'approved':
+                                iconBg = 'bg-green-100';
+                                iconColor = 'text-green-600';
+                                iconPath = 'M5 13l4 4L19 7';
+                                activityTitle = 'Request Approved';
+                                activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was approved`;
+                                break;
+                            case 'denied':
+                                iconBg = 'bg-red-100';
+                                iconColor = 'text-red-600';
+                                iconPath = 'M6 18L18 6M6 6l12 12';
+                                activityTitle = 'Request Denied';
+                                activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was denied`;
+                                break;
+                            case 'modified':
+                                iconBg = 'bg-purple-100';
+                                iconColor = 'text-purple-600';
+                                iconPath = 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z';
+                                activityTitle = 'Request Modified';
+                                activityDescription = `You updated your vacation dates to ${formattedStartDate} - ${formattedEndDate}`;
+                                break;
+                            case 'new_request':
+                            default:
+                                iconBg = 'bg-blue-100';
+                                iconColor = 'text-blue-600';
+                                iconPath = 'M12 4v16m8-8H4';
+                                activityTitle = 'New Request Submitted';
+                                activityDescription = `You submitted a vacation request for ${formattedStartDate} - ${formattedEndDate}`;
+                                break;
+                        }
+
+                        // Status badge
+                        let statusBadge = '';
+                        if (activity.status === 'pending') {
+                            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>';
+                        }
+
+                        // Decision reason
+                        let decisionReason = '';
+                        if (activity.decision_reason && activity.activity_type === 'denied') {
+                            decisionReason = `<div class="text-xs text-slate-500 italic mb-2">Reason: ${activity.decision_reason}</div>`;
+                        }
+
+                        return `
+                            <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 ${iconBg} rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-2 gap-2">
+                                            <div class="font-semibold text-slate-900">${activityTitle}</div>
+                                            <span class="text-xs text-slate-500">${formattedDate}</span>
+                                        </div>
+                                        <div class="text-sm text-slate-600 mb-2">
+                                            ${activityDescription}
+                                        </div>
+                                        ${decisionReason}
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">${activity.duration_days || 0} day${activity.duration_days !== 1 ? 's' : ''}</span>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">${leaveTypeDisplay}</span>
+                                            ${statusBadge}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <p class="text-slate-500">Error loading activity log</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading activity log:', error);
+                const container = document.getElementById('activityLogContainer');
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <p class="text-slate-500">Error loading activity log</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                // Close mobile menu if window becomes large
+                if (window.innerWidth >= 1024) {
+                    const mobileMenu = document.getElementById('mobileMenu');
+                    const mobileOverlay = document.getElementById('mobileOverlay');
+                    const hamburger = document.getElementById('hamburgerBtn');
+                    
+                    if (mobileMenu.classList.contains('active')) {
+                        mobileMenu.classList.remove('active');
+                        mobileOverlay.classList.remove('active');
+                        hamburger.classList.remove('active');
+                    }
+                }
+            }, 250);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('User Vacation Dashboard loaded');
+            // Load all data when page loads
+            loadMyVacationStats();
+            loadMyUpcomingVacations(); // Load the default tab (upcoming)
+            
+            // Attach form submit handler for Create Request
+            const createForm = document.getElementById('createRequestForm');
+            if (createForm) {
+                createForm.addEventListener('submit', handleCreateRequestSubmit);
+            }
+        });
+
+        // Handle Create Request Form Submission
+        async function handleCreateRequestSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const employeeId = parseInt(form.getAttribute('data-employee-id'));
+            
+            const formData = {
+                employee_id: employeeId,
+                leave_type: document.getElementById('leaveType').value,
+                start_date: document.getElementById('startDate').value,
+                end_date: document.getElementById('endDate').value,
+                reason: document.getElementById('reason').value,
+                coverage_plan: document.getElementById('coveragePlan').value || null,
+                emergency_email: document.getElementById('emergencyEmail').value || null,
+                emergency_phone: document.getElementById('emergencyPhone').value || null
+            };
+            
+            // Validate dates
+            if (new Date(formData.start_date) > new Date(formData.end_date)) {
+                showToast('End date must be after start date', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/vacation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('Vacation request submitted successfully!', 'success');
+                    resetCreateForm();
+                    // Navigate back to overview and reload data
+                    setTimeout(() => {
+                        showSection('overview', null);
+                        loadMyVacationStats();
+                        loadMyUpcomingVacations();
+                    }, 1500);
+                } else {
+                    console.error('Server error:', result);
+                    showToast(result.error || result.message || 'Failed to submit request', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting vacation request:', error);
+                showToast('Failed to submit request', 'error');
+            }
+        }
+
+        // Reset Create Request Form
+        function resetCreateForm() {
+            const form = document.getElementById('createRequestForm');
+            if (form) {
+                form.reset();
+            }
+        }
+
+        // Load sidebar stats when Create section is shown
+        async function loadCreateSectionStats() {
+            try {
+                const response = await fetch('/api/vacation/my-stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        document.getElementById('sidebarPendingCount').textContent = stats.pending || 0;
+                        document.getElementById('sidebarApprovedCount').textContent = stats.approved_count || 0;
+                        document.getElementById('sidebarDaysUsed').textContent = stats.days_used || 0;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading sidebar stats:', error);
+            }
+            
+            // Load upcoming leaves preview
+            try {
+                const response = await fetch('/api/vacation/my-upcoming');
+                if (response.ok) {
+                    const data = await response.json();
+                    const container = document.getElementById('sidebarUpcomingLeaves');
+                    if (data.vacations && data.vacations.length === 0) {
+                        container.innerHTML = '<p class="text-sm text-slate-500">No upcoming leaves</p>';
+                    } else if (data.vacations && data.vacations.length > 0) {
+                        container.innerHTML = data.vacations.slice(0, 3).map(v => `
+                            <div class="text-sm border-l-2 border-green-500 pl-3 py-1">
+                                <div class="font-medium text-slate-900 capitalize">${v.leave_type}</div>
+                                <div class="text-slate-600">${formatDateRange(v.start_date, v.end_date)}</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading upcoming leaves:', error);
+                document.getElementById('sidebarUpcomingLeaves').innerHTML = '<p class="text-sm text-slate-500">No upcoming leaves</p>';
+            }
+        }
+
+        // User Dropdown Toggle
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdownMenu');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenuButton = document.getElementById('userMenuButton');
+            const dropdown = document.getElementById('userDropdownMenu');
+            
+            if (userMenuButton && dropdown && !userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Profile Modal Functions
+        function openProfileModal() {
+            const modal = document.getElementById('profileModal');
+            const dropdown = document.getElementById('userDropdownMenu');
+            
+            // Close dropdown
+            dropdown.classList.add('hidden');
+            
+            // Open modal
+            modal.classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordError').classList.add('hidden');
+            document.getElementById('passwordSuccess').classList.add('hidden');
+            
+            // Load profile data
+            loadProfileData();
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            modal.classList.add('hidden');
+        }
+
+        // Load Profile Data
+        async function loadProfileData() {
+            const detailsContainer = document.getElementById('employeeDetails');
+            
+            try {
+                const response = await fetch('/api/my-profile');
+                const data = await response.json();
+                
+                if (data.success && data.profile) {
+                    const profile = data.profile;
+                    
+                    // Build employee details HTML
+                    let detailsHTML = '';
+                    
+                    // Personal Information
+                    if (profile.phonenumber) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Phone Number</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.phonenumber}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Employment Details
+                    if (profile.department) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Department</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.department}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.shift) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Shift</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.shift}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.workline) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Work Line</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.workline}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.workarea) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Work Area</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.workarea}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.employee_role) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Position</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.employee_role}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Management
+                    if (profile.supervisor) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Supervisor</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.supervisor}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.manager) {
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Manager</div>
+                                <div class="text-sm font-medium text-slate-900">${profile.manager}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Employment Duration
+                    if (profile.date_of_employment) {
+                        const empDate = new Date(profile.date_of_employment);
+                        const formattedDate = empDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Employment Date</div>
+                                <div class="text-sm font-medium text-slate-900">${formattedDate}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (profile.years_of_employment !== null && profile.years_of_employment !== undefined) {
+                        const years = profile.years_of_employment;
+                        const months = profile.months_of_employment || 0;
+                        let durationText = '';
+                        if (years > 0) {
+                            durationText = `${years} ${years === 1 ? 'year' : 'years'}`;
+                            if (months > 0) {
+                                durationText += `, ${months} ${months === 1 ? 'month' : 'months'}`;
+                            }
+                        } else if (months > 0) {
+                            durationText = `${months} ${months === 1 ? 'month' : 'months'}`;
+                        } else {
+                            durationText = 'Less than 1 month';
+                        }
+                        
+                        detailsHTML += `
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Time with Company</div>
+                                <div class="text-sm font-medium text-slate-900">${durationText}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Update the container
+                    detailsContainer.innerHTML = detailsHTML || '<p class="text-sm text-slate-500 col-span-2 text-center py-4">No additional employee information available</p>';
+                } else {
+                    detailsContainer.innerHTML = '<p class="text-sm text-red-500 col-span-2 text-center py-4">Error loading profile information</p>';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                detailsContainer.innerHTML = '<p class="text-sm text-red-500 col-span-2 text-center py-4">Error loading profile information</p>';
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('profileModal')?.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeProfileModal();
+            }
+        });
+
+        // Handle Password Change
+        async function handlePasswordChange(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            const errorDiv = document.getElementById('passwordError');
+            const errorMessage = document.getElementById('passwordErrorMessage');
+            const successDiv = document.getElementById('passwordSuccess');
+            const submitBtn = document.getElementById('changePasswordBtn');
+            
+            // Hide previous messages
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+            
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                errorMessage.textContent = 'New passwords do not match.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            // Validate password length
+            if (newPassword.length < 8) {
+                errorMessage.textContent = 'Password must be at least 8 characters long.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            // Validate new password is different from current
+            if (currentPassword === newPassword) {
+                errorMessage.textContent = 'New password must be different from current password.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                // Disable button and show loading
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Changing Password...';
+                
+                const response = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    successDiv.classList.remove('hidden');
+                    
+                    // Reset form
+                    document.getElementById('changePasswordForm').reset();
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        closeProfileModal();
+                        showToast('Password changed successfully!', 'success');
+                    }, 2000);
+                } else {
+                    errorMessage.textContent = data.message || 'Failed to change password. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Change Password';
+            }
+        }
+
+        // Handle Logout
+        async function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        showToast('Error logging out. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error logging out:', error);
+                    showToast('Error logging out. Please try again.', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

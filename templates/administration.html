@@ -382,7 +382,6 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
                        0 0 0 1px rgba(173, 216, 230, 0.1);
             animation: modalSlideIn 0.3s ease-out;
-            margin: 1rem; /* Add margin for better spacing */
         }
 
         @keyframes modalSlideIn {
@@ -393,33 +392,6 @@
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Improved modal padding for mobile */
-        @media (max-width: 768px) {
-            .modal-content-enhanced {
-                margin: 0.5rem;
-            }
-        }
-
-        /* Fixed footer */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 30;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Footer positioning for desktop - align with main content */
-        @media (min-width: 1024px) {
-            .footer {
-                left: 18rem; /* Match sidebar width */
             }
         }
 
@@ -853,6 +825,12 @@
                             User Management
                         </a>
 
+                        <a href="#employee-management" onclick="showSection('employee-management')" id="nav-employee-management"
+                            class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
+                            <i data-lucide="user-cog" class="mr-3 h-5 w-5"></i>
+                            Employee Management
+                        </a>
+
                         <a href="#announcements" onclick="showSection('announcements')" id="nav-announcements"
                             class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="megaphone" class="mr-3 h-5 w-5"></i>
@@ -1195,11 +1173,18 @@
                                 <h3 class="text-lg font-semibold text-gray-900">User Management</h3>
                                 <p class="text-sm text-gray-600 mt-1">Manage user accounts, roles, and permissions</p>
                             </div>
-                            <button onclick="showAddUserModal()"
-                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
-                                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
-                                Add User
-                            </button>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="showManageAssetsModal()"
+                                    class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                                    <i data-lucide="settings" class="w-4 h-4 mr-2 inline"></i>
+                                    Manage Assets
+                                </button>
+                                <button onclick="showAddUserModal()"
+                                    class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                                    <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                                    Add User
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Search and Filters -->
@@ -1332,6 +1317,166 @@
                                 </div>
                                 <p class="text-gray-500 text-sm">No weeks configured yet</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Management Section -->
+                <div id="employee-management-section" class="section hidden">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="glass-card hover-lift p-6 rounded-2xl fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 mb-1">Total Employees</p>
+                                    <p id="totalEmployees" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <i data-lucide="users" class="w-4 h-4 text-blue-500 mr-1"></i>
+                                        <span class="text-sm text-blue-600 font-medium">All staff</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
+                                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card hover-lift p-6 rounded-2xl fade-in" style="animation-delay: 0.1s;">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 mb-1">Departments</p>
+                                    <p id="totalDepartments" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <i data-lucide="building" class="w-4 h-4 text-purple-500 mr-1"></i>
+                                        <span class="text-sm text-purple-600 font-medium">Active depts</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl">
+                                    <i data-lucide="building" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card hover-lift p-6 rounded-2xl fade-in" style="animation-delay: 0.2s;">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 mb-1">Work Lines</p>
+                                    <p id="totalWorkLines" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <i data-lucide="factory" class="w-4 h-4 text-green-500 mr-1"></i>
+                                        <span class="text-sm text-green-600 font-medium">Production lines</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl">
+                                    <i data-lucide="factory" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card hover-lift p-6 rounded-2xl fade-in" style="animation-delay: 0.3s;">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600 mb-1">Shifts</p>
+                                    <p id="totalShifts" class="text-3xl font-bold text-gray-900">0</p>
+                                    <div class="flex items-center mt-2">
+                                        <i data-lucide="clock" class="w-4 h-4 text-orange-500 mr-1"></i>
+                                        <span class="text-sm text-orange-600 font-medium">Active shifts</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl">
+                                    <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Management Card -->
+                    <div class="glass-card rounded-2xl p-6 fade-in" style="animation-delay: 0.4s;">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Employee Management</h3>
+                                <p class="text-sm text-gray-600 mt-1">Manage employee records, assignments, and details</p>
+                            </div>
+                            <button onclick="showAddEmployeeModal()"
+                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                                Add Employee
+                            </button>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="flex flex-col lg:flex-row gap-4 mb-6">
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <i data-lucide="search"
+                                        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                    <input id="employeeSearchInput" type="text"
+                                        placeholder="Search employees by name, email, or phone..."
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                                </div>
+                            </div>
+                            <div class="flex gap-3 flex-wrap">
+                                <select id="employeeDepartmentFilter"
+                                    class="px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+                                    <option value="">All Departments</option>
+                                </select>
+                                <select id="employeeShiftFilter"
+                                    class="px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+                                    <option value="">All Shifts</option>
+                                </select>
+                                <select id="employeeWorkLineFilter"
+                                    class="px-4 py-3 border border-gray-300 rounded-xl bg-white/80 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+                                    <option value="">All Work Lines</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Employees Table -->
+                        <div class="overflow-x-auto rounded-xl border border-gray-200">
+                            <table class="w-full bg-white">
+                                <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Employee
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Contact
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Department
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Role
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Shift
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Work Line
+                                        </th>
+                                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeesTableBody" class="divide-y divide-gray-200">
+                                    <!-- Employees will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="employeesEmptyState" class="hidden text-center py-12">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                                <i data-lucide="user-cog" class="w-8 h-8 text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
+                            <p class="text-gray-500 mb-6">Get started by adding your first employee to the system.</p>
+                            <button onclick="showAddEmployeeModal()"
+                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                                Add First Employee
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2598,7 +2743,8 @@
                                 <div class="relative">
                                     <select id="role" required class="form-input appearance-none pr-10">
                                         <option value="">Select a role</option>
-                                        <option value="user">User - Basic access</option>
+                                         <option value="employee">employee - Very Basic access</option>
+                                         <option value="user">User - Basic access</option>
                                         <option value="supervisor">Supervisor - Extended access</option>
                                         <option value="admin">Administrator - Full access</option>
                                     </select>
@@ -2751,6 +2897,485 @@
                         <i data-lucide="x" class="w-5 h-5 mr-2 inline"></i>
                         Cancel
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employeeModal"
+        class="fixed inset-0 modal-overlay-light-blue flex items-center justify-center z-50 hidden p-4 sm:p-6 lg:p-8">
+        <div class="relative w-full max-w-5xl max-h-[95vh] mx-auto">
+            <!-- Modal Content with enhanced styling -->
+            <div class="modal-content-enhanced rounded-3xl form-enhanced overflow-hidden shadow-2xl border border-white/20">
+                <!-- Scrollable Content -->
+                <div class="max-h-[95vh] overflow-y-auto">
+                    <div class="p-6 sm:p-8 md:p-10 lg:p-12">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i data-lucide="user-cog" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 id="employeeModalTitle" class="text-3xl font-bold text-gray-900">Add New Employee</h3>
+                                    <p class="text-base text-gray-600 mt-1">Create employee record with work assignment details</p>
+                                </div>
+                            </div>
+                            <button onclick="closeEmployeeModal()"
+                                class="p-3 hover:bg-gray-100 rounded-2xl transition-all hover:scale-105 group">
+                                <i data-lucide="x" class="w-6 h-6 text-gray-500 group-hover:text-gray-700"></i>
+                            </button>
+                        </div>
+
+                        <form id="employeeForm" class="space-y-8" autocomplete="off">
+                            <input type="hidden" id="employeeId" value="">
+
+                            <!-- Personal Information Section -->
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Personal Information</h4>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label">First Name *</label>
+                                        <input id="empFirstName" type="text" required
+                                            class="form-input" placeholder="Enter first name" 
+                                            autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Last Name *</label>
+                                        <input id="empLastName" type="text" required
+                                            class="form-input" placeholder="Enter last name"
+                                            autocomplete="off">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Information Section -->
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="mail" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Contact Information</h4>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Email Address</label>
+                                        <input id="empEmail" type="email"
+                                            class="form-input" placeholder="employee@bakery.com"
+                                            autocomplete="off">
+                                        <p class="form-help">Work email address</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Phone Number</label>
+                                        <input id="empPhone" type="tel" 
+                                            class="form-input" placeholder="(555) 123-4567"
+                                            autocomplete="off">
+                                        <p class="form-help">Contact phone number</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Work Assignment Section -->
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="briefcase" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Work Assignment</h4>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Department</label>
+                                        <select id="empDepartment" class="form-input">
+                                            <option value="">Select Department</option>
+                                            <!-- Will be populated from assets -->
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Role</label>
+                                        <select id="empRole" class="form-input">
+                                            <option value="">Select Role</option>
+                                            <!-- Will be populated from assets -->
+                                        </select>
+                                        <p class="form-help">Job title or position</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Shift</label>
+                                        <select id="empShift" class="form-input">
+                                            <option value="">Select Shift</option>
+                                            <!-- Will be populated from assets -->
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Work Line</label>
+                                        <select id="empWorkLine" class="form-input">
+                                            <option value="">Select Work Line</option>
+                                            <!-- Will be populated from assets -->
+                                        </select>
+                                        <p class="form-help">Production or work line assignment</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Work Area</label>
+                                        <select id="empWorkArea" class="form-input">
+                                            <option value="">Select Work Area</option>
+                                            <!-- Will be populated from assets -->
+                                        </select>
+                                        <p class="form-help">Specific work area or station</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Supervisor</label>
+                                        <select id="empSupervisor" class="form-input">
+                                            <option value="">Select Supervisor</option>
+                                            <!-- Will be populated from users with role='supervisor' -->
+                                        </select>
+                                        <p class="form-help">Assigned supervisor</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Manager</label>
+                                        <select id="empManager" class="form-input">
+                                            <option value="">Select Manager</option>
+                                            <!-- Will be populated from users with role='manager' -->
+                                        </select>
+                                        <p class="form-help">Assigned manager</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Employment Details Section -->
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="calendar-clock" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Employment Details</h4>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Date of Employment</label>
+                                        <input id="empDateOfEmployment" type="date"
+                                            class="form-input"
+                                            autocomplete="off">
+                                        <p class="form-help">Employee start date</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Allocated Vacation Hours</label>
+                                        <input id="empVacationHours" type="number" 
+                                            class="form-input bg-gray-100" placeholder="Auto-calculated" min="0" step="0.5"
+                                            autocomplete="off" readonly>
+                                        <p class="form-help">Automatically calculated from vacation schedule and employment date</p>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Maximum Accumulated Hours</label>
+                                        <input id="empMaxAccumulatedHours" type="number"
+                                            class="form-input" placeholder="0" min="0" step="0.5"
+                                            autocomplete="off" onchange="hideVacationScheduleWarning()" oninput="hideVacationScheduleWarning()">
+                                        <p class="form-help">Max hours that can be carried over</p>
+                                    </div>
+                                </div>
+
+                                <!-- Vacation Schedule Section -->
+                                <div class="mt-6">
+                                    <!-- Warning Message (Hidden by default) -->
+                                    <div id="vacationScheduleWarning" class="hidden mb-4 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-orange-400 p-4 rounded-lg">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0">
+                                                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h5 class="font-semibold text-orange-900 mb-1">Maximum Accumulated Hours Required</h5>
+                                                <p class="text-sm text-orange-800">Please provide a value for Maximum Accumulated Hours before adding vacation schedule years.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-5 rounded-2xl border border-indigo-200">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="flex items-center space-x-2">
+                                                <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-600"></i>
+                                                <h5 class="font-semibold text-gray-900">Vacation Schedule by Years of Service</h5>
+                                            </div>
+                                            <button type="button" onclick="addVacationScheduleRow()" 
+                                                class="flex items-center space-x-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105">
+                                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                                <span>Add Year</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <p class="text-sm text-indigo-700 mb-4">
+                                            Define how vacation hours change based on years of employment. For example, year 1 = 80 hours, year 2 = 100 hours, etc.
+                                        </p>
+                                        
+                                        <!-- Table Header -->
+                                        <div class="grid grid-cols-12 gap-3 mb-2 px-2">
+                                            <div class="col-span-5 text-xs font-semibold text-gray-600 uppercase">
+                                                Year
+                                            </div>
+                                            <div class="col-span-6 text-xs font-semibold text-gray-600 uppercase">
+                                                Vacation Hours
+                                            </div>
+                                            <div class="col-span-1"></div>
+                                        </div>
+                                        
+                                        <!-- Dynamic Rows Container -->
+                                        <div id="vacationScheduleRows" class="space-y-2">
+                                            <!-- Rows will be added here dynamically -->
+                                        </div>
+                                        
+                                        <!-- Empty State -->
+                                        <div id="vacationScheduleEmpty" class="text-center py-8 text-gray-500">
+                                            <i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-2 text-gray-400"></i>
+                                            <p class="text-sm">No vacation schedule defined. Click "Add Year" to start.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Account Linking Section -->
+                            <div class="space-y-6">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="link" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">User Account Linking</h4>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Link to User Account (Optional)</label>
+                                    <select id="empUserId" class="form-input">
+                                        <option value="">No user account linked</option>
+                                        <!-- Will be populated dynamically with users -->
+                                    </select>
+                                    <p class="form-help">Link this employee to an existing user account for system access</p>
+                                </div>
+
+                                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="info" class="w-4 h-4 text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-medium text-blue-900 mb-1">User Account Linking</h5>
+                                            <p class="text-sm text-blue-700">Linking an employee to a user account allows them to log in to the system. Leave unlinked if the employee doesn't need system access. You can link accounts later.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 pt-8 mt-8 border-t border-gray-200">
+                                <button type="submit"
+                                    class="flex-1 btn-primary text-white px-10 py-5 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl">
+                                    <i data-lucide="user-plus" class="w-6 h-6 mr-3 inline"></i>
+                                    <span id="employeeSubmitButtonText">Create Employee</span>
+                                </button>
+                                <button type="button" onclick="closeEmployeeModal()"
+                                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-10 py-5 rounded-2xl font-semibold text-lg transition-all hover:scale-105">
+                                    <i data-lucide="x" class="w-6 h-6 mr-3 inline"></i>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Assets Modal -->
+    <div id="assetsModal"
+        class="fixed inset-0 modal-overlay-light-blue flex items-center justify-center z-50 hidden p-4">
+        <!-- Modal Container with fixed dimensions -->
+        <div class="relative w-full max-w-7xl h-[90vh] mx-auto flex items-center justify-center">
+            <!-- Modal Content - Fixed structure -->
+            <div class="modal-content-enhanced rounded-3xl form-enhanced shadow-2xl border border-white/20 w-full h-full flex flex-col overflow-hidden">
+                <!-- Header - Fixed at top -->
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-white/20 backdrop-blur-sm p-2.5 rounded-xl">
+                                <i data-lucide="settings" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Manage Assets</h3>
+                                <p class="text-emerald-100 text-sm mt-0.5">Configure work roles, lines, areas, departments, and shifts</p>
+                            </div>
+                        </div>
+                        <button onclick="closeAssetsModal()"
+                            class="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-xl transition-all flex-shrink-0">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Body - Scrollable content area -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar bg-white">
+                    <div class="p-6">
+                        <form id="assetsForm" class="space-y-6">
+                            <!-- Info Alert -->
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                                <div class="flex items-start">
+                                    <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                                    <div class="text-sm text-blue-700">
+                                        <p class="font-semibold mb-1">Asset Management</p>
+                                        <p>Add or remove items by editing the text areas below. Separate each item with a new line. These values will be used across the system for dropdowns and selections.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Work Roles Section -->
+                        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-5 rounded-2xl border border-purple-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                                    <i data-lucide="briefcase" class="w-5 h-5 text-purple-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-lg font-semibold text-purple-900 mb-0">Work Roles</label>
+                                    <p class="text-sm text-purple-600">Available job roles (e.g., Baker, Packager)</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsWorkRoles" name="workRoles" rows="5"
+                                class="form-input w-full resize-none font-mono text-sm"
+                                placeholder="Enter each role on a new line...&#10;Baker&#10;Packager&#10;Quality Control"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="list" class="w-3 h-3 inline mr-1"></i>
+                                <span id="workRolesCount">0</span> roles
+                            </p>
+                        </div>
+
+                        <!-- Work Lines Section -->
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-2xl border border-blue-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                    <i data-lucide="git-branch" class="w-5 h-5 text-blue-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-lg font-semibold text-blue-900 mb-0">Work Lines</label>
+                                    <p class="text-sm text-blue-600">Production or packaging lines (e.g., Line 1, Line 2)</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsWorkLines" name="workLines" rows="5"
+                                class="form-input w-full resize-none font-mono text-sm"
+                                placeholder="Enter each line on a new line...&#10;Line 1&#10;Line 2&#10;Packaging Line A"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="list" class="w-3 h-3 inline mr-1"></i>
+                                <span id="workLinesCount">0</span> lines
+                            </p>
+                        </div>
+
+                        <!-- Work Areas Section -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-2xl border border-green-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                                    <i data-lucide="map-pin" class="w-5 h-5 text-green-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-lg font-semibold text-green-900 mb-0">Work Areas</label>
+                                    <p class="text-sm text-green-600">Physical work locations (e.g., Production Floor, Packaging Area)</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsWorkAreas" name="workAreas" rows="5"
+                                class="form-input w-full resize-none font-mono text-sm"
+                                placeholder="Enter each area on a new line...&#10;Production Floor&#10;Packaging Area&#10;Quality Lab"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="list" class="w-3 h-3 inline mr-1"></i>
+                                <span id="workAreasCount">0</span> areas
+                            </p>
+                        </div>
+
+                        <!-- Departments Section -->
+                        <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-2xl border border-orange-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-orange-100 p-2 rounded-lg mr-3">
+                                    <i data-lucide="building" class="w-5 h-5 text-orange-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-base sm:text-lg font-semibold text-orange-900 mb-0">Departments</label>
+                                    <p class="text-xs sm:text-sm text-orange-600 truncate">Organizational departments (e.g., Production, Quality Assurance)</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsDepartments" name="departments" rows="4"
+                                class="form-input w-full resize-none font-mono text-xs sm:text-sm"
+                                placeholder="Enter each department on a new line...&#10;Production&#10;Packaging&#10;Quality Assurance"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="list" class="w-3 h-3 inline mr-1"></i>
+                                <span id="departmentsCount">0</span> departments
+                            </p>
+                        </div>
+
+                        <!-- Shifts Names Section -->
+                        <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-5 rounded-2xl border border-pink-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-pink-100 p-2 rounded-lg mr-3">
+                                    <i data-lucide="clock" class="w-5 h-5 text-pink-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-lg font-semibold text-pink-900 mb-0">Shift Names</label>
+                                    <p class="text-sm text-pink-600">Available work shifts (e.g., Day Shift, Night Shift)</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsShiftsNames" name="shiftsNames" rows="5"
+                                class="form-input w-full resize-none font-mono text-sm"
+                                placeholder="Enter each shift on a new line...&#10;Day Shift&#10;Night Shift&#10;Evening Shift"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i data-lucide="list" class="w-3 h-3 inline mr-1"></i>
+                                <span id="shiftsNamesCount">0</span> shifts
+                            </p>
+                        </div>
+
+                        <!-- Notes Section (Optional) -->
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-gray-200 p-2 rounded-lg mr-3">
+                                    <i data-lucide="file-text" class="w-5 h-5 text-gray-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="form-label text-lg font-semibold text-gray-900 mb-0">Notes (Optional)</label>
+                                    <p class="text-sm text-gray-600">Add any notes about this configuration</p>
+                                </div>
+                            </div>
+                            <textarea id="assetsNotes" name="notes" rows="3"
+                                class="form-input w-full resize-none text-sm"
+                                placeholder="e.g., Updated for Q1 2026, Added new production line..."></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Footer - Fixed at bottom -->
+                <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-t border-gray-200/50 flex justify-between items-center flex-shrink-0">
+                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        <span>Version <span id="assetsVersion">1</span> - Changes create a new version</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeAssetsModal()"
+                            class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all">
+                            <i data-lucide="x" class="w-4 h-4 mr-2 inline"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" form="assetsForm"
+                            class="btn-success px-8 py-2.5 text-white rounded-xl font-medium shadow-lg">
+                            <i data-lucide="save" class="w-4 h-4 mr-2 inline"></i>
+                            Save Configuration
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2951,27 +3576,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Fixed Footer -->
-    <footer class="footer">
-        <div class="px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-2 h-2 bg-green-400 rounded-full notification-dot"></div>
-                        <span class="text-xs text-slate-300">System Operational</span>
-                    </div>
-                    <span class="text-xs text-slate-400">|</span>
-                    <span class="text-xs text-slate-400">Bakery Analytics Admin v2.1</span>
-                </div>
-                <div class="flex items-center space-x-4 text-xs text-slate-400">
-                    <span>© 2025 Bakery Analytics</span>
-                    <span>•</span>
-                    <span>All rights reserved</span>
-                </div>
-            </div>
-        </div>
-    </footer>
 
     <script>
         // Initialize Lucide icons
@@ -3281,6 +3885,7 @@
             const titles = {
                 'dashboard': 'Dashboard Overview',
                 'user-management': 'User Management',
+                'employee-management': 'Employee Management',
                 'announcements': 'Announcements',
                 'reviews': 'Reviews Management',
                 'support': 'Support Tickets',
@@ -3293,6 +3898,7 @@
             const subtitles = {
                 'dashboard': 'Manage your bakery analytics system',
                 'user-management': 'Manage user accounts, roles, and permissions',
+                'employee-management': 'Manage employee records, work assignments, and user account linking',
                 'announcements': 'Create and manage system announcements',
                 'reviews': 'Monitor and manage customer reviews',
                 'support': 'Handle customer support tickets',
@@ -3325,6 +3931,9 @@
                     case 'user-management':
                         await loadUsers();
                         await loadWeeks();
+                        break;
+                    case 'employee-management':
+                        await loadEmployees();
                         break;
                     case 'announcements':
                         await loadAnnouncements();
@@ -4152,6 +4761,890 @@
 
             renderUsers(filtered);
         }
+
+        // ========================================
+        // EMPLOYEE MANAGEMENT FUNCTIONS
+        // ========================================
+
+        let allEmployees = [];
+        let currentEditingEmployeeId = null;
+
+        // Load all employees
+        async function loadEmployees() {
+            try {
+                console.log('Loading employees...'); // Debug log
+                const response = await fetch('/api/employees');
+                const data = await response.json();
+                
+                console.log('API Response:', data); // Debug log
+
+                if (data.success) {
+                    allEmployees = data.employees || [];
+                    console.log('All employees:', allEmployees); // Debug log
+                    renderEmployees(allEmployees);
+                    updateEmployeeStats();
+                    populateEmployeeFilters();
+                } else {
+                    console.error('Failed to load employees:', data.message); // Debug log
+                    showError(data.message || 'Failed to load employees');
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                showError('Failed to load employees: ' + error.message);
+            }
+        }
+
+        // Render employees table
+        function renderEmployees(employees) {
+            const tbody = document.getElementById('employeesTableBody');
+            const emptyState = document.getElementById('employeesEmptyState');
+            
+            console.log('Rendering employees:', employees); // Debug log
+
+            if (!employees || employees.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            tbody.innerHTML = employees.map(emp => `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                ${(emp.firstname?.charAt(0) || '') + (emp.lastname?.charAt(0) || '')}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900">${emp.firstname || ''} ${emp.lastname || ''}</div>
+                                <div class="text-sm text-gray-500">ID: ${emp.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">${emp.email || 'N/A'}</div>
+                        <div class="text-sm text-gray-500">${emp.phonenumber || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${emp.department || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">${emp.role || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            emp.shift === 'First' ? 'bg-blue-100 text-blue-800' :
+                            emp.shift === 'Second' ? 'bg-purple-100 text-purple-800' :
+                            emp.shift === 'Night' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">
+                            ${emp.shift || 'N/A'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">${emp.workline || 'N/A'}</div>
+                        <div class="text-xs text-gray-500">${emp.workarea || ''}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editEmployee(${emp.id})"
+                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Edit employee">
+                                <i data-lucide="edit" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteEmployee(${emp.id}, '${emp.firstname} ${emp.lastname}')"
+                                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete employee">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Reinitialize lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+        // Update employee statistics
+        function updateEmployeeStats() {
+            const totalEmployees = allEmployees.length;
+            const departments = new Set(allEmployees.filter(e => e.department).map(e => e.department));
+            const workLines = new Set(allEmployees.filter(e => e.workline).map(e => e.workline));
+            const shifts = new Set(allEmployees.filter(e => e.shift).map(e => e.shift));
+
+            document.getElementById('totalEmployees').textContent = totalEmployees;
+            document.getElementById('totalDepartments').textContent = departments.size;
+            document.getElementById('totalWorkLines').textContent = workLines.size;
+            document.getElementById('totalShifts').textContent = shifts.size;
+        }
+
+        // Populate filter dropdowns
+        function populateEmployeeFilters() {
+            const departments = [...new Set(allEmployees.filter(e => e.department).map(e => e.department))].sort();
+            const shifts = [...new Set(allEmployees.filter(e => e.shift).map(e => e.shift))].sort();
+            const workLines = [...new Set(allEmployees.filter(e => e.workline).map(e => e.workline))].sort();
+
+            const deptFilter = document.getElementById('employeeDepartmentFilter');
+            const shiftFilter = document.getElementById('employeeShiftFilter');
+            const workLineFilter = document.getElementById('employeeWorkLineFilter');
+
+            if (deptFilter) {
+                deptFilter.innerHTML = '<option value="">All Departments</option>' +
+                    departments.map(d => `<option value="${d}">${d}</option>`).join('');
+            }
+
+            if (shiftFilter) {
+                shiftFilter.innerHTML = '<option value="">All Shifts</option>' +
+                    shifts.map(s => `<option value="${s}">${s}</option>`).join('');
+            }
+
+            if (workLineFilter) {
+                workLineFilter.innerHTML = '<option value="">All Work Lines</option>' +
+                    workLines.map(w => `<option value="${w}">${w}</option>`).join('');
+            }
+        }
+
+        // Vacation Schedule Management
+        let vacationScheduleData = [];
+
+        function addVacationScheduleRow(year = '', hours = '') {
+            // Check if Maximum Accumulated Hours has a value
+            const maxAccumulatedHours = document.getElementById('empMaxAccumulatedHours');
+            const warningDiv = document.getElementById('vacationScheduleWarning');
+            
+            if (!maxAccumulatedHours.value || maxAccumulatedHours.value.trim() === '' || parseFloat(maxAccumulatedHours.value) <= 0) {
+                // Show warning message
+                if (warningDiv) {
+                    warningDiv.classList.remove('hidden');
+                    // Re-initialize icons for the warning
+                    lucide.createIcons();
+                    
+                    // Scroll to warning message
+                    warningDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Add a pulse animation to draw attention
+                    warningDiv.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        warningDiv.classList.remove('animate-pulse');
+                    }, 2000);
+                }
+                
+                // Focus on the Maximum Accumulated Hours field
+                maxAccumulatedHours.focus();
+                maxAccumulatedHours.classList.add('border-orange-400', 'ring-2', 'ring-orange-200');
+                setTimeout(() => {
+                    maxAccumulatedHours.classList.remove('border-orange-400', 'ring-2', 'ring-orange-200');
+                }, 3000);
+                
+                return; // Prevent adding the row
+            }
+            
+            // Hide warning if it was visible
+            if (warningDiv) {
+                warningDiv.classList.add('hidden');
+            }
+            
+            const container = document.getElementById('vacationScheduleRows');
+            const rowId = `vacation-row-${Date.now()}-${Math.random()}`;
+            
+            const row = document.createElement('div');
+            row.id = rowId;
+            row.className = 'grid grid-cols-12 gap-3 p-2 bg-white rounded-xl border border-indigo-100 hover:border-indigo-300 transition-colors';
+            row.innerHTML = `
+                <div class="col-span-5">
+                    <input type="number" class="form-input text-sm" placeholder="Year (e.g., 1, 2, 3)" 
+                        min="1" step="1" value="${year}"
+                        onchange="updateVacationScheduleData()">
+                </div>
+                <div class="col-span-6">
+                    <input type="number" class="form-input text-sm" placeholder="Hours (e.g., 80, 100, 120)" 
+                        min="0" step="1" value="${hours}"
+                        onchange="updateVacationScheduleData()">
+                </div>
+                <div class="col-span-1 flex items-center justify-center">
+                    <button type="button" onclick="removeVacationScheduleRow('${rowId}')" 
+                        class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            lucide.createIcons();
+            updateVacationScheduleVisibility();
+            updateVacationScheduleData();
+        }
+
+        function removeVacationScheduleRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                updateVacationScheduleVisibility();
+                updateVacationScheduleData();
+            }
+        }
+
+        function updateVacationScheduleVisibility() {
+            const container = document.getElementById('vacationScheduleRows');
+            const emptyState = document.getElementById('vacationScheduleEmpty');
+            const hasRows = container.children.length > 0;
+            
+            if (hasRows) {
+                emptyState.classList.add('hidden');
+            } else {
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        function updateVacationScheduleData() {
+            const container = document.getElementById('vacationScheduleRows');
+            vacationScheduleData = [];
+            
+            Array.from(container.children).forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const year = parseInt(inputs[0].value);
+                const hours = parseInt(inputs[1].value);
+                
+                if (!isNaN(year) && !isNaN(hours)) {
+                    vacationScheduleData.push({ year, hours });
+                }
+            });
+            
+            // Recalculate allocated vacation hours when schedule changes
+            calculateAllocatedVacationHours();
+        }
+
+        function calculateAllocatedVacationHours() {
+            const dateOfEmployment = document.getElementById('empDateOfEmployment').value;
+            
+            if (!dateOfEmployment || vacationScheduleData.length === 0) {
+                document.getElementById('empVacationHours').value = '';
+                return;
+            }
+            
+            // Calculate years of service
+            const employmentDate = new Date(dateOfEmployment);
+            const today = new Date();
+            const diffTime = today - employmentDate;
+            const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+            
+            // If less than 1 year of service, allocate 0 hours
+            if (diffYears < 1) {
+                document.getElementById('empVacationHours').value = 0;
+                return;
+            }
+            
+            // Calculate years of service (minimum 1 year if >= 1 year)
+            const yearsOfService = diffYears + 1;
+            
+            // Sort schedule by year ascending
+            const sortedSchedule = [...vacationScheduleData].sort((a, b) => a.year - b.year);
+            
+            // Find matching vacation hours for current year of service
+            let allocatedHours = 0;
+            
+            for (let i = sortedSchedule.length - 1; i >= 0; i--) {
+                if (yearsOfService >= sortedSchedule[i].year) {
+                    allocatedHours = sortedSchedule[i].hours;
+                    break;
+                }
+            }
+            
+            // If no match found but schedule exists, use the first year's hours
+            if (allocatedHours === 0 && sortedSchedule.length > 0) {
+                allocatedHours = sortedSchedule[0].hours;
+            }
+            
+            document.getElementById('empVacationHours').value = allocatedHours;
+        }
+
+        function clearVacationSchedule() {
+            const container = document.getElementById('vacationScheduleRows');
+            container.innerHTML = '';
+            vacationScheduleData = [];
+            updateVacationScheduleVisibility();
+        }
+
+        function hideVacationScheduleWarning() {
+            const maxAccumulatedHours = document.getElementById('empMaxAccumulatedHours');
+            const warningDiv = document.getElementById('vacationScheduleWarning');
+            
+            // Hide warning if a valid value is entered
+            if (warningDiv && maxAccumulatedHours.value && maxAccumulatedHours.value.trim() !== '' && parseFloat(maxAccumulatedHours.value) > 0) {
+                warningDiv.classList.add('hidden');
+            }
+        }
+
+        function loadVacationSchedule(years, hours) {
+            clearVacationSchedule();
+            
+            if (years && hours && years.length === hours.length) {
+                for (let i = 0; i < years.length; i++) {
+                    addVacationScheduleRow(years[i], hours[i]);
+                }
+            }
+            
+            updateVacationScheduleVisibility();
+            // Trigger recalculation after loading schedule
+            calculateAllocatedVacationHours();
+        }
+
+        // Show add employee modal
+        async function showAddEmployeeModal() {
+            currentEditingEmployeeId = null;
+            document.getElementById('employeeModalTitle').textContent = 'Add New Employee';
+            document.getElementById('employeeSubmitButtonText').textContent = 'Create Employee';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '';
+            
+            // Clear vacation schedule
+            clearVacationSchedule();
+            
+            // Hide warning message
+            const warningDiv = document.getElementById('vacationScheduleWarning');
+            if (warningDiv) {
+                warningDiv.classList.add('hidden');
+            }
+
+            // Load users for linking
+            await populateUserDropdown();
+            
+            // Load supervisors and managers
+            await populateSupervisorDropdown();
+            await populateManagerDropdown();
+            
+            // Load assets data for dropdowns
+            await populateEmployeeDropdowns();
+
+            document.getElementById('employeeModal').classList.remove('hidden');
+        }
+        
+        // Populate employee form dropdowns from assets
+        async function populateEmployeeDropdowns() {
+            try {
+                const response = await fetch('/api/assets');
+                const data = await response.json();
+                
+                console.log('Assets API response:', data); // Debug log
+
+                if (data.success && data.assets) {
+                    const assets = data.assets;
+                    
+                    // Populate Departments dropdown (use camelCase as returned by API)
+                    const deptSelect = document.getElementById('empDepartment');
+                    if (deptSelect && assets.departments && assets.departments.length > 0) {
+                        deptSelect.innerHTML = '<option value="">Select Department</option>' +
+                            assets.departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+                    }
+                    
+                    // Populate Roles dropdown (use camelCase: workRoles)
+                    const roleSelect = document.getElementById('empRole');
+                    if (roleSelect && assets.workRoles && assets.workRoles.length > 0) {
+                        roleSelect.innerHTML = '<option value="">Select Role</option>' +
+                            assets.workRoles.map(role => `<option value="${role}">${role}</option>`).join('');
+                    }
+                    
+                    // Populate Shifts dropdown (use camelCase: shiftsNames)
+                    const shiftSelect = document.getElementById('empShift');
+                    if (shiftSelect && assets.shiftsNames && assets.shiftsNames.length > 0) {
+                        shiftSelect.innerHTML = '<option value="">Select Shift</option>' +
+                            assets.shiftsNames.map(shift => `<option value="${shift}">${shift}</option>`).join('');
+                    }
+                    
+                    // Populate Work Lines dropdown (use camelCase: workLines)
+                    const workLineSelect = document.getElementById('empWorkLine');
+                    if (workLineSelect && assets.workLines && assets.workLines.length > 0) {
+                        workLineSelect.innerHTML = '<option value="">Select Work Line</option>' +
+                            assets.workLines.map(line => `<option value="${line}">${line}</option>`).join('');
+                    }
+                    
+                    // Populate Work Areas dropdown (use camelCase: workAreas)
+                    const workAreaSelect = document.getElementById('empWorkArea');
+                    if (workAreaSelect && assets.workAreas && assets.workAreas.length > 0) {
+                        workAreaSelect.innerHTML = '<option value="">Select Work Area</option>' +
+                            assets.workAreas.map(area => `<option value="${area}">${area}</option>`).join('');
+                    }
+                    
+                    console.log('Dropdowns populated successfully'); // Debug log
+                } else {
+                    console.warn('No assets data found or API call failed'); // Debug log
+                }
+            } catch (error) {
+                console.error('Error loading assets for employee form:', error);
+            }
+        }
+
+        // Close employee modal
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').classList.add('hidden');
+            currentEditingEmployeeId = null;
+            
+            // Hide warning message
+            const warningDiv = document.getElementById('vacationScheduleWarning');
+            if (warningDiv) {
+                warningDiv.classList.add('hidden');
+            }
+
+            // Reinitialize lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+        // Populate user dropdown for linking
+        async function populateUserDropdown() {
+            try {
+                console.log('Loading users for employee linking...'); // Debug log
+                // Filter to show users with role='user' or role='employee' for employee linking
+                const response = await fetch('/api/users?role=user,employee');
+                const data = await response.json();
+                
+                console.log('Users API response (role=user,employee):', data); // Debug log
+
+                if (data.success) {
+                    const users = data.users || [];
+                    const dropdown = document.getElementById('empUserId');
+                    
+                    console.log('Found users with role=user or employee:', users.length); // Debug log
+
+                    if (users.length > 0) {
+                        dropdown.innerHTML = '<option value="">No user account linked</option>' +
+                            users.map(u => `<option value="${u.id}">${u.email} - ${u.first_name} ${u.last_name}</option>`).join('');
+                        console.log('User dropdown populated with', users.length, 'user/employee accounts'); // Debug log
+                    } else {
+                        dropdown.innerHTML = '<option value="">No user account linked</option><option disabled>No users available</option>';
+                        console.warn('No users with role=user or employee found in database'); // Debug log
+                    }
+                } else {
+                    console.error('Failed to load users:', data.message); // Debug log
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Populate supervisor dropdown
+        async function populateSupervisorDropdown() {
+            try {
+                console.log('Loading supervisors...'); // Debug log
+                const response = await fetch('/api/users?role=supervisor');
+                const data = await response.json();
+                
+                console.log('Supervisors API response:', data); // Debug log
+
+                if (data.success) {
+                    const supervisors = data.users || [];
+                    const dropdown = document.getElementById('empSupervisor');
+                    
+                    console.log('Found supervisors:', supervisors.length); // Debug log
+
+                    if (supervisors.length > 0) {
+                        dropdown.innerHTML = '<option value="">Select Supervisor</option>' +
+                            supervisors.map(s => `<option value="${s.first_name} ${s.last_name}">${s.first_name} ${s.last_name}</option>`).join('');
+                        console.log('Supervisor dropdown populated with', supervisors.length, 'supervisors'); // Debug log
+                    } else {
+                        dropdown.innerHTML = '<option value="">Select Supervisor</option><option disabled>No supervisors available</option>';
+                        console.warn('No supervisors found in database'); // Debug log
+                    }
+                } else {
+                    console.error('Failed to load supervisors:', data.message); // Debug log
+                }
+            } catch (error) {
+                console.error('Error loading supervisors:', error);
+            }
+        }
+
+        // Populate manager dropdown
+        async function populateManagerDropdown() {
+            try {
+                console.log('Loading managers (admins)...'); // Debug log
+                const response = await fetch('/api/users?role=admin');
+                const data = await response.json();
+                
+                console.log('Managers API response (role=admin):', data); // Debug log
+
+                if (data.success) {
+                    const managers = data.users || [];
+                    const dropdown = document.getElementById('empManager');
+                    
+                    console.log('Found managers (admins):', managers.length); // Debug log
+
+                    if (managers.length > 0) {
+                        dropdown.innerHTML = '<option value="">Select Manager</option>' +
+                            managers.map(m => `<option value="${m.first_name} ${m.last_name}">${m.first_name} ${m.last_name}</option>`).join('');
+                        console.log('Manager dropdown populated with', managers.length, 'admins'); // Debug log
+                    } else {
+                        dropdown.innerHTML = '<option value="">Select Manager</option><option disabled>No managers available</option>';
+                        console.warn('No admins found in database'); // Debug log
+                    }
+                } else {
+                    console.error('Failed to load managers:', data.message); // Debug log
+                }
+            } catch (error) {
+                console.error('Error loading managers:', error);
+            }
+        }
+
+        // Edit employee
+        async function editEmployee(employeeId) {
+            try {
+                const response = await fetch(`/api/employees/${employeeId}`);
+                const data = await response.json();
+
+                if (data.success && data.employee) {
+                    const emp = data.employee;
+                    currentEditingEmployeeId = employeeId;
+
+                    document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
+                    document.getElementById('employeeSubmitButtonText').textContent = 'Update Employee';
+                    document.getElementById('employeeId').value = emp.id;
+                    
+                    // Load dropdowns first
+                    await populateUserDropdown();
+                    await populateSupervisorDropdown();
+                    await populateManagerDropdown();
+                    await populateEmployeeDropdowns();
+                    
+                    // Then populate form fields
+                    document.getElementById('empFirstName').value = emp.firstname || '';
+                    document.getElementById('empLastName').value = emp.lastname || '';
+                    document.getElementById('empEmail').value = emp.email || '';
+                    document.getElementById('empPhone').value = emp.phonenumber || '';
+                    document.getElementById('empDepartment').value = emp.department || '';
+                    document.getElementById('empRole').value = emp.role || '';
+                    document.getElementById('empShift').value = emp.shift || '';
+                    document.getElementById('empWorkLine').value = emp.workline || '';
+                    document.getElementById('empWorkArea').value = emp.workarea || '';
+                    document.getElementById('empSupervisor').value = emp.supervisor || '';
+                    document.getElementById('empManager').value = emp.manager || '';
+
+                    // Employment details
+                    document.getElementById('empDateOfEmployment').value = emp.dateOfEmployment || emp.date_of_employment || '';
+                    document.getElementById('empVacationHours').value = emp.vacationHours || emp.vacation_hours || 0;
+                    document.getElementById('empMaxAccumulatedHours').value = emp.maxAccumulatedHours || emp.max_accumulated_hours || '';
+
+                    // Load vacation schedule
+                    const years = emp.vacationScheduleYears || emp.vacation_schedule_years || [];
+                    const hours = emp.vacationScheduleHours || emp.vacation_schedule_hours || [];
+                    loadVacationSchedule(years, hours);
+
+                    // Set selected user if linked
+                    if (emp.user_id) {
+                        document.getElementById('empUserId').value = emp.user_id;
+                    }
+
+                    document.getElementById('employeeModal').classList.remove('hidden');
+                } else {
+                    showError('Failed to load employee details');
+                }
+            } catch (error) {
+                console.error('Error loading employee:', error);
+                showError('Failed to load employee details');
+            }
+        }
+
+        // Delete employee
+        function deleteEmployee(employeeId, employeeName) {
+            showDeleteModal(`Are you sure you want to delete employee "${employeeName}"? This action cannot be undone.`, async () => {
+                try {
+                    const response = await fetch(`/api/employees/${employeeId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showSuccess('Employee deleted successfully!');
+                        await loadEmployees();
+                    } else {
+                        throw new Error(data.message || 'Failed to delete employee');
+                    }
+                } catch (error) {
+                    console.error('Error deleting employee:', error);
+                    showError('Failed to delete employee: ' + error.message);
+                }
+            });
+        }
+
+        // Employee form submission
+        document.getElementById('employeeForm')?.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Update vacation schedule data before submitting
+            updateVacationScheduleData();
+
+            const employeeId = document.getElementById('employeeId').value;
+            
+            // Extract vacation schedule arrays
+            const vacationYears = vacationScheduleData.map(item => item.year);
+            const vacationHours = vacationScheduleData.map(item => item.hours);
+            
+            const employeeData = {
+                firstname: document.getElementById('empFirstName').value,
+                lastname: document.getElementById('empLastName').value,
+                email: document.getElementById('empEmail').value || null,
+                phonenumber: document.getElementById('empPhone').value || null,
+                department: document.getElementById('empDepartment').value || null,
+                role: document.getElementById('empRole').value || null,
+                shift: document.getElementById('empShift').value || null,
+                workline: document.getElementById('empWorkLine').value || null,
+                workarea: document.getElementById('empWorkArea').value || null,
+                supervisor: document.getElementById('empSupervisor').value || null,
+                manager: document.getElementById('empManager').value || null,
+                user_id: document.getElementById('empUserId').value || null,
+                date_of_employment: document.getElementById('empDateOfEmployment').value || null,
+                vacation_hours: document.getElementById('empVacationHours').value || null,
+                max_accumulated_hours: document.getElementById('empMaxAccumulatedHours').value || null,
+                vacation_schedule_years: vacationYears,
+                vacation_schedule_hours: vacationHours
+            };
+
+            try {
+                const url = employeeId ? `/api/employees/${employeeId}` : '/api/employees';
+                const method = employeeId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(employeeData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(employeeId ? 'Employee updated successfully!' : 'Employee created successfully!');
+                    closeEmployeeModal();
+                    await loadEmployees();
+                } else {
+                    throw new Error(data.message || 'Failed to save employee');
+                }
+            } catch (error) {
+                console.error('Error saving employee:', error);
+                showError('Failed to save employee: ' + error.message);
+            }
+        });
+
+        // Add event listener for Date of Employment to auto-calculate vacation hours
+        document.getElementById('empDateOfEmployment')?.addEventListener('change', function() {
+            calculateAllocatedVacationHours();
+        });
+
+        // Employee search and filter
+        document.getElementById('employeeSearchInput')?.addEventListener('input', filterEmployees);
+        document.getElementById('employeeDepartmentFilter')?.addEventListener('change', filterEmployees);
+        document.getElementById('employeeShiftFilter')?.addEventListener('change', filterEmployees);
+        document.getElementById('employeeWorkLineFilter')?.addEventListener('change', filterEmployees);
+
+        function filterEmployees() {
+            const searchTerm = document.getElementById('employeeSearchInput').value.toLowerCase();
+            const deptFilter = document.getElementById('employeeDepartmentFilter').value;
+            const shiftFilter = document.getElementById('employeeShiftFilter').value;
+            const workLineFilter = document.getElementById('employeeWorkLineFilter').value;
+
+            const filtered = allEmployees.filter(emp => {
+                const fullName = `${emp.firstname || ''} ${emp.lastname || ''}`.toLowerCase();
+                const matchesSearch = fullName.includes(searchTerm) || 
+                                     (emp.email && emp.email.toLowerCase().includes(searchTerm)) ||
+                                     (emp.phonenumber && emp.phonenumber.toLowerCase().includes(searchTerm));
+                const matchesDept = !deptFilter || emp.department === deptFilter;
+                const matchesShift = !shiftFilter || emp.shift === shiftFilter;
+                const matchesWorkLine = !workLineFilter || emp.workline === workLineFilter;
+
+                return matchesSearch && matchesDept && matchesShift && matchesWorkLine;
+            });
+
+            renderEmployees(filtered);
+        }
+
+        // ========================================
+        // ASSETS MANAGEMENT FUNCTIONS
+        // ========================================
+
+        let currentAssetsData = null;
+
+        // Show manage assets modal
+        async function showManageAssetsModal() {
+            try {
+                showLoading('Loading assets configuration...');
+                
+                // Fetch current assets
+                const response = await fetch('/api/assets');
+                const data = await response.json();
+                
+                if (data.success && data.assets) {
+                    currentAssetsData = data.assets;
+                    
+                    // Populate form with current values
+                    document.getElementById('assetsWorkRoles').value = (data.assets.workRoles || []).join('\n');
+                    document.getElementById('assetsWorkLines').value = (data.assets.workLines || []).join('\n');
+                    document.getElementById('assetsWorkAreas').value = (data.assets.workAreas || []).join('\n');
+                    document.getElementById('assetsDepartments').value = (data.assets.departments || []).join('\n');
+                    document.getElementById('assetsShiftsNames').value = (data.assets.shiftsNames || []).join('\n');
+                    document.getElementById('assetsNotes').value = '';
+                    document.getElementById('assetsVersion').textContent = data.assets.version || 1;
+                    
+                    // Update counts
+                    updateAssetsCounts();
+                } else {
+                    // No assets found, start fresh
+                    document.getElementById('assetsForm').reset();
+                    document.getElementById('assetsVersion').textContent = 1;
+                    updateAssetsCounts();
+                }
+                
+                document.getElementById('assetsModal').classList.remove('hidden');
+                hideLoading();
+                lucide.createIcons();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error loading assets:', error);
+                showError('Failed to load assets configuration');
+            }
+        }
+
+        // Close assets modal
+        function closeAssetsModal() {
+            document.getElementById('assetsModal').classList.add('hidden');
+            document.getElementById('assetsForm').reset();
+            currentAssetsData = null;
+        }
+
+        // Update counts for each asset type
+        function updateAssetsCounts() {
+            const workRoles = document.getElementById('assetsWorkRoles').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+            document.getElementById('workRolesCount').textContent = workRoles.length;
+
+            const workLines = document.getElementById('assetsWorkLines').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+            document.getElementById('workLinesCount').textContent = workLines.length;
+
+            const workAreas = document.getElementById('assetsWorkAreas').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+            document.getElementById('workAreasCount').textContent = workAreas.length;
+
+            const departments = document.getElementById('assetsDepartments').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+            document.getElementById('departmentsCount').textContent = departments.length;
+
+            const shiftsNames = document.getElementById('assetsShiftsNames').value
+                .split('\n')
+                .filter(line => line.trim() !== '');
+            document.getElementById('shiftsNamesCount').textContent = shiftsNames.length;
+        }
+
+        // Add event listeners for real-time count updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const assetFields = [
+                'assetsWorkRoles',
+                'assetsWorkLines',
+                'assetsWorkAreas',
+                'assetsDepartments',
+                'assetsShiftsNames'
+            ];
+
+            assetFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', updateAssetsCounts);
+                }
+            });
+        });
+
+        // Assets form submission
+        document.getElementById('assetsForm')?.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            try {
+                showLoading('Saving assets configuration...');
+
+                // Parse textarea values into arrays
+                const workRoles = document.getElementById('assetsWorkRoles').value
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                const workLines = document.getElementById('assetsWorkLines').value
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                const workAreas = document.getElementById('assetsWorkAreas').value
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                const departments = document.getElementById('assetsDepartments').value
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                const shiftsNames = document.getElementById('assetsShiftsNames').value
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                const notes = document.getElementById('assetsNotes').value.trim();
+
+                // Validate at least one item in each category
+                if (workRoles.length === 0 || workLines.length === 0 || workAreas.length === 0 || 
+                    departments.length === 0 || shiftsNames.length === 0) {
+                    hideLoading();
+                    showError('Each category must have at least one item');
+                    return;
+                }
+
+                const payload = {
+                    workRoles,
+                    workLines,
+                    workAreas,
+                    departments,
+                    shiftsNames,
+                    notes: notes || undefined
+                };
+
+                const response = await fetch('/api/assets', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    hideLoading();
+                    showSuccess('Assets configuration saved successfully!');
+                    closeAssetsModal();
+                    
+                    // Reload employees to refresh dropdowns if on that section
+                    if (currentSection === 'employee-management') {
+                        await loadEmployees();
+                    }
+                } else {
+                    hideLoading();
+                    showError(data.error || 'Failed to save assets configuration');
+                }
+
+            } catch (error) {
+                hideLoading();
+                console.error('Error saving assets:', error);
+                showError('Failed to save assets configuration');
+            }
+        });
 
         // Week Management Functions
         async function loadWeeks() {

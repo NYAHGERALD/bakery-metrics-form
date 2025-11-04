@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <title>Welcome - Bakery Management System</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Minimal custom animations only */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0.6;
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .particle {
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .animate-fadeInDown {
+            animation: fadeInDown 1s ease-out;
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 1s ease-out 0.3s backwards;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 overflow-x-hidden">
+    <!-- Background Animation -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="particle absolute w-20 h-20 bg-white/10 rounded-full left-[10%]" style="animation-delay: 0s;"></div>
+        <div class="particle absolute w-16 h-16 bg-white/10 rounded-full left-[20%]" style="animation-delay: 2s;"></div>
+        <div class="particle absolute w-24 h-24 bg-white/10 rounded-full left-[35%] hidden md:block" style="animation-delay: 4s;"></div>
+        <div class="particle absolute w-18 h-18 bg-white/10 rounded-full left-[50%]" style="animation-delay: 0s;"></div>
+        <div class="particle absolute w-20 h-20 bg-white/10 rounded-full left-[65%] hidden md:block" style="animation-delay: 3s;"></div>
+        <div class="particle absolute w-20 h-20 bg-white/10 rounded-full left-[80%]" style="animation-delay: 1s;"></div>
+        <div class="particle absolute w-20 h-20 bg-white/10 rounded-full left-[90%] hidden md:block" style="animation-delay: 5s;"></div>
+    </div>
+
+    <!-- Home Button -->
+    <a href="/" class="fixed top-4 left-4 md:top-5 md:left-5 z-[10000] flex items-center gap-2 bg-white/20 text-white border-2 border-white/50 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:bg-white/30 hover:border-white hover:scale-105 backdrop-blur-sm cursor-pointer">
+        <span>🏠</span>
+        <span class="hidden sm:inline">Home</span>
+    </a>
+
+    <!-- Logout Button -->
+    <form method="POST" action="/logout" class="fixed top-4 right-4 md:top-5 md:right-5 z-[10000] m-0">
+        <button type="submit" class="bg-white/20 text-white border-2 border-white/50 px-4 py-2 md:px-6 md:py-2.5 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:bg-white/30 hover:border-white hover:scale-105 backdrop-blur-sm cursor-pointer">
+            Logout
+        </button>
+    </form>
+
+    <!-- Main Container -->
+    <div class="relative z-10 flex flex-col justify-center items-center min-h-screen px-4 py-8 md:py-12">
+        <!-- Header -->
+        <div class="text-center mb-8 md:mb-12 lg:mb-16 animate-fadeInDown">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3 md:mb-4" style="text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);">
+                Welcome!
+            </h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-white/90 font-light">
+                Choose where you'd like to go
+            </p>
+        </div>
+
+        <!-- Button Grid - Flexbox for responsive centering -->
+        <div class="flex flex-wrap justify-center items-center gap-5 md:gap-8 lg:gap-10 w-full max-w-xs sm:max-w-md md:max-w-3xl lg:max-w-4xl animate-fadeInUp pt-0 md:pt-10">
+            <!-- Bakery Button - Visible for user, supervisor, and admin roles -->
+            {% if user_role in ['user', 'supervisor', 'admin'] %}
+            <a href="/dashboard" class="group relative bg-white/95 rounded-2xl p-8 md:p-10 lg:p-12 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-105 flex flex-col items-center justify-center min-h-[180px] md:min-h-[220px] w-full sm:w-[calc(50%-1.25rem)] md:w-[calc(50%-2rem)] lg:w-[calc(50%-2.5rem)]">
+                <div class="text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">🥖</div>
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3 transition-colors duration-300">Bakery</h3>
+                <p class="text-sm md:text-base text-gray-600 transition-colors duration-300">Manage bakery operations and metrics</p>
+                
+                <!-- Tooltip - Only visible on desktop hover -->
+                <div class="hidden lg:block absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none z-[9999]">
+                    <div class="bg-gradient-to-br from-red-500 to-orange-500 text-white px-6 py-4 rounded-xl shadow-2xl w-72">
+                        <div class="font-bold text-base mb-2 flex items-center gap-2">
+                            <span>🥖</span>
+                            <span>Bakery Operations Hub</span>
+                        </div>
+                        <ul class="text-sm space-y-1 opacity-95">
+                            <li>📊 Real-time production metrics</li>
+                            <li>📋 Daily reporting & analytics</li>
+                            <li>📦 Inventory management</li>
+                            <li>👥 Staff scheduling</li>
+                            <li>📈 Performance tracking</li>
+                        </ul>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-orange-500"></div>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+
+            <!-- Production Button - Visible for supervisor and admin roles only - COMING SOON -->
+            {% if user_role in ['supervisor', 'admin'] %}
+            <div class="group relative bg-white/60 rounded-2xl p-8 md:p-10 lg:p-12 text-center shadow-lg cursor-not-allowed flex flex-col items-center justify-center min-h-[180px] md:min-h-[220px] w-full sm:w-[calc(50%-1.25rem)] md:w-[calc(50%-2rem)] lg:w-[calc(50%-2.5rem)] opacity-75">
+                <div class="text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-5 transition-all duration-300 grayscale">🏭</div>
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-500 mb-2 md:mb-3">Production</h3>
+                <p class="text-sm md:text-base text-gray-400">Track production data and efficiency</p>
+                
+                <!-- Coming Soon Badge -->
+                <div class="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                    Coming Soon
+                </div>
+                
+                <!-- Tooltip - Shows "Coming Soon" message on hover/click -->
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none z-[9999]">
+                    <div class="bg-gradient-to-br from-yellow-400 to-orange-500 text-white px-6 py-4 rounded-xl shadow-2xl w-72">
+                        <div class="font-bold text-base mb-2 flex items-center gap-2">
+                            <span>🚧</span>
+                            <span>Coming Soon!</span>
+                        </div>
+                        <p class="text-sm opacity-95">
+                            The Production Dashboard is currently under development. Check back soon for updates!
+                        </p>
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-orange-500"></div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Vacation Button - Visible for supervisor and admin roles only -->
+            {% if user_role in ['supervisor', 'admin'] %}
+            <a href="/vacation-hub" class="group relative bg-white/95 rounded-2xl p-8 md:p-10 lg:p-12 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-105 flex flex-col items-center justify-center min-h-[180px] md:min-h-[220px] w-full sm:w-[calc(50%-1.25rem)] md:w-[calc(50%-2rem)] lg:w-[calc(50%-2.5rem)]">
+                <div class="text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">🌴</div>
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3 transition-colors duration-300">Vacation</h3>
+                <p class="text-sm md:text-base text-gray-600 transition-colors duration-300">View and manage vacation schedules</p>
+                
+                <!-- Tooltip - Only visible on desktop hover (positioned on left side) -->
+                <div class="hidden lg:block absolute top-1/2 right-full -translate-y-1/2 mr-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none z-[9999]">
+                    <div class="bg-gradient-to-br from-emerald-400 to-teal-600 text-white px-6 py-4 rounded-xl shadow-2xl w-72">
+                        <div class="font-bold text-base mb-2 flex items-center gap-2">
+                            <span>🌴</span>
+                            <span>Vacation Management</span>
+                        </div>
+                        <ul class="text-sm space-y-1 opacity-95">
+                            <li>📅 View vacation calendar</li>
+                            <li>✅ Approve/deny requests</li>
+                            <li>👥 Team availability overview</li>
+                            <li>⏰ Time-off balances</li>
+                            <li>🔔 Request notifications</li>
+                        </ul>
+                        <div class="absolute top-1/2 left-full -translate-y-1/2 border-8 border-transparent border-l-teal-600"></div>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+
+            <!-- Request Vacation Button - Visible for employee and user roles only -->
+            {% if user_role in ['employee', 'user'] %}
+            <a href="/user-first" class="group relative bg-white/95 rounded-2xl p-8 md:p-10 lg:p-12 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:scale-105 flex flex-col items-center justify-center min-h-[180px] md:min-h-[220px] w-full sm:w-[calc(50%-1.25rem)] md:w-[calc(50%-2rem)] lg:w-[calc(50%-2.5rem)]">
+                <div class="text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">📝</div>
+                <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3 transition-colors duration-300">Request Vacation</h3>
+                <p class="text-sm md:text-base text-gray-600 transition-colors duration-300">Submit new vacation requests</p>
+                
+                <!-- Tooltip - Only visible on desktop hover (positioned on right side) -->
+                <div class="hidden lg:block absolute top-1/2 left-full -translate-y-1/2 ml-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none z-[9999]">
+                    <div class="bg-gradient-to-br from-pink-500 to-rose-600 text-white px-6 py-4 rounded-xl shadow-2xl w-72">
+                        <div class="font-bold text-base mb-2 flex items-center gap-2">
+                            <span>📝</span>
+                            <span>My Vacation Dashboard</span>
+                        </div>
+                        <ul class="text-sm space-y-1 opacity-95">
+                            <li>📊 View your vacation balance</li>
+                            <li>📆 Check your vacation history</li>
+                            <li>⏰ Track pending requests</li>
+                            <li>� Review activity log</li>
+                            <li>✨ Simple employee interface</li>
+                        </ul>
+                        <div class="absolute top-1/2 right-full -translate-y-1/2 border-8 border-transparent border-r-rose-600"></div>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <script>
+        // Add entrance animation delay to each button
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.nav-button');
+            buttons.forEach((button, index) => {
+                button.style.animation = `fadeInUp 0.8s ease-out ${0.5 + (index * 0.1)}s backwards`;
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="/#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href.includes('#')) {
+                    e.preventDefault();
+                    const targetId = href.split('#')[1];
+                    window.location.href = '/' + (targetId ? '#' + targetId : '');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
