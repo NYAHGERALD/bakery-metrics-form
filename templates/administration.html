@@ -7,6 +7,7 @@
     <title>Admin Dashboard - Bakery Analytics</title>
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="{{ url_for('static', filename='js/timezone-utils.js') }}"></script>
     <script src="{{ url_for('static', filename='global-announcements.js') }}"></script>
     <style>
         /* Custom animations and glassmorphism effects */
@@ -170,6 +171,12 @@
             font-weight: 500;
             color: #374151;
             margin-bottom: 0.5rem;
+        }
+
+        /* Make asterisks red for required fields */
+        .form-label:has(+ input[required])::after,
+        label:contains('*') {
+            color: #ef4444;
         }
 
         .form-group {
@@ -470,6 +477,27 @@
 
         .enhanced-btn:hover::before {
             left: 100%;
+        }
+
+        /* Timezone Warning Highlight */
+        #settingsModal[data-timezone-warning="true"] .border.border-gray-200.rounded-2xl.p-6.bg-white\/50:first-of-type {
+            border-color: #f59e0b;
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Subtle pulse animation for warning */
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.95;
+            }
         }
 
         /* Colorful Badge Gradients */
@@ -1024,9 +1052,18 @@
                                 <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-dot">
                                 </div>
                             </button>
-                            <button class="p-2 hover:bg-gray-100/50 rounded-lg transition-colors">
-                                <i data-lucide="settings" class="w-5 h-5 text-gray-600"></i>
-                            </button>
+                            <div class="relative">
+                                <button id="settingsDropdownBtn" onclick="toggleSettingsDropdown()" class="p-2 hover:bg-gray-100/50 rounded-lg transition-colors">
+                                    <i data-lucide="settings" class="w-5 h-5 text-gray-600"></i>
+                                </button>
+                                <!-- Settings Dropdown -->
+                                <div id="settingsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                    <button onclick="openSettingsModal(); toggleSettingsDropdown();" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                        <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+                                        Settings
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2687,13 +2724,13 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
                             <div class="form-group">
-                                <label class="form-label">First Name *</label>
+                                <label class="form-label">First Name <span class="text-red-500">*</span></label>
                                 <input id="firstName" type="text" required
                                     class="form-input" placeholder="Enter first name" 
                                     autocomplete="given-name">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Last Name *</label>
+                                <label class="form-label">Last Name <span class="text-red-500">*</span></label>
                                 <input id="lastName" type="text" required
                                     class="form-input" placeholder="Enter last name"
                                     autocomplete="family-name">
@@ -2712,7 +2749,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="form-group">
-                                <label class="form-label">Email Address *</label>
+                                <label class="form-label">Email Address <span class="text-red-500">*</span></label>
                                 <input id="email" type="email" required
                                     class="form-input" placeholder="user@example.com"
                                     autocomplete="email">
@@ -2739,7 +2776,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="form-group">
-                                <label class="form-label">Role *</label>
+                                <label class="form-label">Role <span class="text-red-500">*</span></label>
                                 <div class="relative">
                                     <select id="role" required class="form-input appearance-none pr-10">
                                         <option value="">Select a role</option>
@@ -2775,7 +2812,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Password *</label>
+                            <label class="form-label">Password <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <input id="password" type="text" required readonly
                                     class="form-input bg-gray-50 cursor-default" placeholder="Auto-generated temporary password">
@@ -2797,7 +2834,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Confirm Password *</label>
+                            <label class="form-label">Confirm Password <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <input id="confirmPassword" type="text" required readonly
                                     class="form-input bg-gray-50 cursor-default" placeholder="Auto-generated confirmation">
@@ -2833,6 +2870,128 @@
                         </button>
                     </div>
                 </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal"
+        class="fixed inset-0 modal-overlay-light-blue flex items-center justify-center z-50 hidden p-4 sm:p-6 lg:p-8">
+        <div class="relative w-full max-w-3xl max-h-[95vh] mx-auto">
+            <!-- Modal Content -->
+            <div class="modal-content-enhanced rounded-3xl form-enhanced overflow-hidden shadow-2xl border border-white/20">
+                <!-- Scrollable Content -->
+                <div class="max-h-[95vh] overflow-y-auto">
+                    <div class="p-6 sm:p-8 md:p-10">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i data-lucide="settings" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-bold text-gray-900">Settings</h3>
+                                    <p class="text-base text-gray-600 mt-1">Configure system preferences</p>
+                                </div>
+                            </div>
+                            <button onclick="closeSettingsModal()"
+                                class="p-3 hover:bg-gray-100 rounded-2xl transition-all hover:scale-105 group">
+                                <i data-lucide="x" class="w-6 h-6 text-gray-500 group-hover:text-gray-700"></i>
+                            </button>
+                        </div>
+
+                        <!-- Settings Sections -->
+                        <div class="space-y-6">
+                            <!-- Timezone Settings -->
+                            <div class="border border-gray-200 rounded-2xl p-6 bg-white/50">
+                                <div class="flex items-center space-x-3 mb-6">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="clock" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Timezone Settings</h4>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Select Timezone</label>
+                                        <select id="timezoneSelect" onchange="updateTimezonePreview()" class="form-input">
+                                            <optgroup label="US Timezones">
+                                                <option value="America/New_York">Eastern Time (ET) - GMT-5</option>
+                                                <option value="America/Chicago" selected>Central Time (CT) - GMT-6</option>
+                                                <option value="America/Denver">Mountain Time (MT) - GMT-7</option>
+                                                <option value="America/Los_Angeles">Pacific Time (PT) - GMT-8</option>
+                                                <option value="America/Anchorage">Alaska Time (AKT) - GMT-9</option>
+                                                <option value="Pacific/Honolulu">Hawaii Time (HT) - GMT-10</option>
+                                            </optgroup>
+                                            <optgroup label="Other Timezones">
+                                                <option value="UTC">UTC - GMT+0</option>
+                                                <option value="Europe/London">London (GMT) - GMT+0</option>
+                                                <option value="Europe/Paris">Paris (CET) - GMT+1</option>
+                                                <option value="Asia/Tokyo">Tokyo (JST) - GMT+9</option>
+                                                <option value="Australia/Sydney">Sydney (AEDT) - GMT+11</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+
+                                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                        <div class="flex items-start">
+                                            <i data-lucide="info" class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5"></i>
+                                            <div class="text-sm text-blue-800">
+                                                <p class="font-semibold mb-1">Current Time Preview:</p>
+                                                <p id="timezonePreview" class="text-lg font-mono">Loading...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Placeholder for Future Settings -->
+                            <div class="border border-gray-200 rounded-2xl p-6 bg-white/50 opacity-60">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="bell" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Notification Settings</h4>
+                                </div>
+                                <p class="text-sm text-gray-500 italic">Coming soon...</p>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-2xl p-6 bg-white/50 opacity-60">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Security Settings</h4>
+                                </div>
+                                <p class="text-sm text-gray-500 italic">Coming soon...</p>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-2xl p-6 bg-white/50 opacity-60">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="palette" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Appearance Settings</h4>
+                                </div>
+                                <p class="text-sm text-gray-500 italic">Coming soon...</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 pt-8 mt-8 border-t border-gray-200">
+                            <button onclick="saveSettings()"
+                                class="flex-1 btn-primary text-white px-10 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all shadow-xl">
+                                <i data-lucide="save" class="w-5 h-5 mr-3 inline"></i>
+                                Save Settings
+                            </button>
+                            <button type="button" onclick="closeSettingsModal()"
+                                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-10 py-4 rounded-2xl font-semibold text-lg transition-all hover:scale-105">
+                                <i data-lucide="x" class="w-5 h-5 mr-3 inline"></i>
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2942,13 +3101,13 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="form-group">
-                                        <label class="form-label">First Name *</label>
+                                        <label class="form-label">First Name <span class="text-red-500">*</span></label>
                                         <input id="empFirstName" type="text" required
                                             class="form-input" placeholder="Enter first name" 
                                             autocomplete="off">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Last Name *</label>
+                                        <label class="form-label">Last Name <span class="text-red-500">*</span></label>
                                         <input id="empLastName" type="text" required
                                             class="form-input" placeholder="Enter last name"
                                             autocomplete="off">
@@ -2967,8 +3126,8 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="form-group">
-                                        <label class="form-label">Email Address</label>
-                                        <input id="empEmail" type="email"
+                                        <label class="form-label">Email Address <span class="text-red-500">*</span></label>
+                                        <input id="empEmail" type="email" required
                                             class="form-input" placeholder="employee@bakery.com"
                                             autocomplete="off">
                                         <p class="form-help">Work email address</p>
@@ -2994,16 +3153,16 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="form-group">
-                                        <label class="form-label">Department</label>
-                                        <select id="empDepartment" class="form-input">
+                                        <label class="form-label">Department <span class="text-red-500">*</span></label>
+                                        <select id="empDepartment" required class="form-input"> 
                                             <option value="">Select Department</option>
                                             <!-- Will be populated from assets -->
                                         </select>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Role</label>
-                                        <select id="empRole" class="form-input">
+                                        <label class="form-label">Role <span class="text-red-500">*</span></label>
+                                        <select id="empRole" required class="form-input">
                                             <option value="">Select Role</option>
                                             <!-- Will be populated from assets -->
                                         </select>
@@ -3011,16 +3170,16 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Shift</label>
-                                        <select id="empShift" class="form-input">
+                                        <label class="form-label">Shift <span class="text-red-500">*</span> </label>
+                                        <select id="empShift" required class="form-input">
                                             <option value="">Select Shift</option>
                                             <!-- Will be populated from assets -->
                                         </select>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Work Line</label>
-                                        <select id="empWorkLine" class="form-input">
+                                        <label class="form-label">Work Line <span class="text-red-500">*</span></label>
+                                        <select id="empWorkLine" required class="form-input">
                                             <option value="">Select Work Line</option>
                                             <!-- Will be populated from assets -->
                                         </select>
@@ -3028,8 +3187,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Work Area</label>
-                                        <select id="empWorkArea" class="form-input">
+                                        <label class="form-label">Work Area <span class="text-red-500">*</span></label>
+                                        <select id="empWorkArea" required class="form-input">
                                             <option value="">Select Work Area</option>
                                             <!-- Will be populated from assets -->
                                         </select>
@@ -3037,8 +3196,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Supervisor</label>
-                                        <select id="empSupervisor" class="form-input">
+                                        <label class="form-label">Supervisor <span class="text-red-500">*</span></label>
+                                        <select id="empSupervisor" required class="form-input">
                                             <option value="">Select Supervisor</option>
                                             <!-- Will be populated from users with role='supervisor' -->
                                         </select>
@@ -3046,8 +3205,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Manager</label>
-                                        <select id="empManager" class="form-input">
+                                        <label class="form-label">Manager <span class="text-red-500">*</span></label>
+                                        <select id="empManager" required class="form-input">
                                             <option value="">Select Manager</option>
                                             <!-- Will be populated from users with role='manager' -->
                                         </select>
@@ -3083,8 +3242,8 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Maximum Accumulated Hours</label>
-                                        <input id="empMaxAccumulatedHours" type="number"
+                                        <label class="form-label">Maximum Accumulated Hours <span class="text-red-500">*</span></label>
+                                        <input id="empMaxAccumulatedHours" required type="number"
                                             class="form-input" placeholder="0" min="0" step="0.5"
                                             autocomplete="off" onchange="hideVacationScheduleWarning()" oninput="hideVacationScheduleWarning()">
                                         <p class="form-help">Max hours that can be carried over</p>
@@ -3158,8 +3317,8 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">Link to User Account (Optional)</label>
-                                    <select id="empUserId" class="form-input">
+                                    <label class="form-label">Link to User Account <span class="text-red-500">*</span></label>
+                                    <select id="empUserId" required class="form-input">
                                         <option value="">No user account linked</option>
                                         <!-- Will be populated dynamically with users -->
                                     </select>
@@ -3699,6 +3858,12 @@
         function formatTimeAgo(dateString) {
             if (!dateString) return '--';
             
+            // Use timezone-aware time ago if available
+            if (window.TimezoneUtils && window.TimezoneUtils.getTimeAgo) {
+                return window.TimezoneUtils.getTimeAgo(dateString);
+            }
+            
+            // Fallback to local calculation
             const now = new Date();
             const activityTime = new Date(dateString);
             const diffSeconds = Math.floor((now - activityTime) / 1000);
@@ -4468,6 +4633,411 @@
             }
         }
 
+        // Settings Dropdown Functions
+        function toggleSettingsDropdown() {
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            const button = document.getElementById('settingsDropdownBtn');
+            if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Settings Modal Functions
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            updateTimezonePreview();
+            loadSavedSettings();
+            // Reinitialize lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function updateTimezonePreview() {
+            const timezone = document.getElementById('timezoneSelect').value;
+            const preview = document.getElementById('timezonePreview');
+            
+            try {
+                const now = new Date();
+                const options = {
+                    timeZone: timezone,
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZoneName: 'short'
+                };
+                preview.textContent = now.toLocaleString('en-US', options);
+            } catch (error) {
+                preview.textContent = 'Invalid timezone';
+            }
+        }
+
+        function loadSavedSettings() {
+            // Load settings from the database
+            fetch('/api/user-settings')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.settings) {
+                        // Load timezone if saved
+                        if (data.settings.timezone) {
+                            document.getElementById('timezoneSelect').value = data.settings.timezone.value;
+                            updateTimezonePreview();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading settings:', error);
+                    // Fallback to localStorage if API fails
+                    const savedTimezone = localStorage.getItem('userTimezone');
+                    if (savedTimezone) {
+                        document.getElementById('timezoneSelect').value = savedTimezone;
+                        updateTimezonePreview();
+                    }
+                });
+        }
+
+        function saveSettings() {
+            const timezone = document.getElementById('timezoneSelect').value;
+            
+            // Prepare settings data
+            const settingsData = {
+                timezone: timezone
+            };
+            
+            console.log('Saving settings:', settingsData);
+            
+            // Save to database
+            fetch('/api/user-settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settingsData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Also save to localStorage as backup
+                    localStorage.setItem('userTimezone', timezone);
+                    
+                    // Clear ALL timezone warning flags from sessionStorage
+                    const sessionKeys = Object.keys(sessionStorage);
+                    sessionKeys.forEach(key => {
+                        if (key.startsWith('lastTimezoneWarning_')) {
+                            sessionStorage.removeItem(key);
+                            console.log('Cleared session flag:', key);
+                        }
+                    });
+                    
+                    // Reset warning count
+                    sessionStorage.removeItem('timezoneWarningCount');
+                    
+                    console.log('✅ Timezone saved successfully:', timezone);
+                    
+                    // Reload timezone utilities to use new timezone
+                    if (window.TimezoneUtils && window.TimezoneUtils.reloadTimezone) {
+                        window.TimezoneUtils.reloadTimezone().then(() => {
+                            console.log('🔄 Timezone utilities reloaded with new timezone');
+                        });
+                    }
+                    
+                    // Show success message
+                    showSuccess('Settings saved successfully!');
+                    
+                    // Close modal
+                    closeSettingsModal();
+                    
+                    // Re-check timezone after save to verify it matches now
+                    console.log('🔄 Settings saved, re-checking timezone in 700ms...');
+                    setTimeout(() => {
+                        checkTimezoneOnLogin();
+                    }, 700); // Slightly longer delay to allow modal close + state updates
+                } else {
+                    showError('Failed to save settings: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saving settings:', error);
+                showError('Failed to save settings. Please try again.');
+            });
+        }
+
+        // Detect user's system timezone
+        function getSystemTimezone() {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
+        }
+
+        // Map timezone to closest standard timezone in our list
+        function mapToStandardTimezone(detectedTz) {
+            // Common timezone mappings
+            const timezoneMap = {
+                // US timezones
+                'America/New_York': 'America/New_York',
+                'America/Detroit': 'America/New_York',
+                'America/Kentucky/Louisville': 'America/New_York',
+                'America/Indiana/Indianapolis': 'America/New_York',
+                'America/Chicago': 'America/Chicago',
+                'America/Denver': 'America/Denver',
+                'America/Phoenix': 'America/Denver',
+                'America/Los_Angeles': 'America/Los_Angeles',
+                'America/Anchorage': 'America/Anchorage',
+                'Pacific/Honolulu': 'Pacific/Honolulu',
+                // International
+                'UTC': 'UTC',
+                'Europe/London': 'Europe/London',
+                'Europe/Paris': 'Europe/Paris',
+                'Europe/Berlin': 'Europe/Paris',
+                'Asia/Tokyo': 'Asia/Tokyo',
+                'Australia/Sydney': 'Australia/Sydney'
+            };
+            
+            return timezoneMap[detectedTz] || detectedTz;
+        }
+
+        // Check timezone and show warning if mismatch
+        async function checkTimezoneOnLogin() {
+            const systemTimezone = getSystemTimezone();
+            const standardTimezone = mapToStandardTimezone(systemTimezone);
+            
+            console.log('=== Timezone Check Started ===');
+            console.log('Detected system timezone:', systemTimezone);
+            console.log('Mapped to standard timezone:', standardTimezone);
+
+            try {
+                // Fetch user's saved timezone setting
+                const response = await fetch('/api/user-settings/timezone');
+                const data = await response.json();
+
+                let savedTimezone = null;
+                if (data.success && data.setting_value) {
+                    savedTimezone = data.setting_value;
+                    console.log('Saved timezone from database:', savedTimezone);
+                } else {
+                    // No saved timezone, check localStorage
+                    savedTimezone = localStorage.getItem('userTimezone');
+                    console.log('No database timezone, checked localStorage:', savedTimezone);
+                }
+
+                // Compare timezones
+                if (!savedTimezone || savedTimezone !== standardTimezone) {
+                    console.log('🚨 TIMEZONE MISMATCH DETECTED!');
+                    console.log('System:', standardTimezone, 'vs Saved:', savedTimezone || 'none');
+                    console.log('Showing warning modal...');
+                    
+                    // Increment warning count to track how many times we've shown it
+                    let warningCount = parseInt(sessionStorage.getItem('timezoneWarningCount') || '0');
+                    warningCount++;
+                    sessionStorage.setItem('timezoneWarningCount', warningCount.toString());
+                    
+                    showTimezoneWarning(systemTimezone, standardTimezone, savedTimezone, warningCount);
+                } else {
+                    console.log('✅ Timezone matches! No warning needed.');
+                    console.log('System:', standardTimezone, '=== Saved:', savedTimezone);
+                    // Reset warning count when timezone finally matches
+                    sessionStorage.removeItem('timezoneWarningCount');
+                }
+                
+                console.log('=== Timezone Check Complete ===');
+            } catch (error) {
+                console.error('❌ Error checking timezone:', error);
+                // Don't show warning if there's an error checking
+            }
+        }
+
+        // Show timezone warning modal
+        function showTimezoneWarning(detectedTz, standardTz, savedTz, warningCount = 1) {
+            console.log('📢 Opening timezone warning modal (attempt #' + warningCount + ')...');
+
+            // Pre-select the detected timezone
+            document.getElementById('timezoneSelect').value = standardTz;
+            updateTimezonePreview();
+
+            // Open settings modal
+            openSettingsModal();
+
+            // Add warning message to the modal with escalating emphasis
+            const timezoneSection = document.querySelector('#settingsModal .space-y-6 > .border.border-gray-200.rounded-2xl');
+            
+            // Check if warning already exists
+            let warningDiv = document.getElementById('timezoneWarning');
+            
+            // Determine warning intensity based on count
+            let warningClass = 'bg-amber-50 border-2 border-amber-400';
+            let warningIcon = 'alert-triangle';
+            let warningTitle = '⚠️ Timezone Mismatch Detected';
+            let emphasizedText = '';
+            
+            if (warningCount === 1) {
+                warningClass = 'bg-amber-50 border-2 border-amber-400';
+                warningTitle = '⚠️ Timezone Mismatch Detected';
+                emphasizedText = '✅ We have automatically selected the recommended timezone for your location.';
+            } else if (warningCount === 2) {
+                warningClass = 'bg-orange-100 border-2 border-orange-500';
+                warningTitle = '⚠️ Important: Timezone Still Incorrect';
+                emphasizedText = '⚠️ <strong>PLEASE UPDATE YOUR TIMEZONE</strong> to ensure accurate time display throughout the application.';
+            } else {
+                warningClass = 'bg-red-100 border-3 border-red-600';
+                warningTitle = '🚨 CRITICAL: Timezone Mismatch Persists';
+                emphasizedText = '🚨 <strong class="text-red-900">ACTION REQUIRED:</strong> Your timezone setting does not match your current location. This will cause incorrect time displays. Please save the recommended timezone now.';
+            }
+            
+            if (warningDiv) {
+                // Update existing warning
+                warningDiv.className = `mb-4 ${warningClass} rounded-xl p-4 animate-pulse-subtle`;
+                warningDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i data-lucide="${warningIcon}" class="w-7 h-7 ${warningCount > 2 ? 'text-red-600' : warningCount > 1 ? 'text-orange-600' : 'text-amber-600'} mr-3 flex-shrink-0 mt-0.5"></i>
+                        <div class="flex-1">
+                            <h5 class="font-bold ${warningCount > 2 ? 'text-red-900' : warningCount > 1 ? 'text-orange-900' : 'text-amber-900'} mb-2 text-lg">${warningTitle}</h5>
+                            <p class="text-sm ${warningCount > 2 ? 'text-red-800' : warningCount > 1 ? 'text-orange-800' : 'text-amber-800'} mb-2">
+                                Your system timezone (<strong>${detectedTz}</strong>) is different from your saved timezone setting${savedTz ? ` (<strong>${savedTz}</strong>)` : ''}.
+                            </p>
+                            <p class="text-sm ${warningCount > 2 ? 'text-red-800' : warningCount > 1 ? 'text-orange-800' : 'text-amber-800'} font-medium">
+                                ${emphasizedText}
+                            </p>
+                            ${warningCount > 1 ? `
+                            <div class="mt-3 p-2 bg-white bg-opacity-50 rounded border ${warningCount > 2 ? 'border-red-300' : 'border-orange-300'}">
+                                <p class="text-xs ${warningCount > 2 ? 'text-red-700' : 'text-orange-700'} font-semibold">
+                                    💡 This is reminder #${warningCount}. The recommended timezone (<strong>${standardTz}</strong>) has been pre-selected. Click "Save Settings" below.
+                                </p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                warningDiv = document.createElement('div');
+                warningDiv.id = 'timezoneWarning';
+                warningDiv.className = `mb-4 ${warningClass} rounded-xl p-4 animate-pulse-subtle`;
+                warningDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i data-lucide="${warningIcon}" class="w-7 h-7 ${warningCount > 2 ? 'text-red-600' : warningCount > 1 ? 'text-orange-600' : 'text-amber-600'} mr-3 flex-shrink-0 mt-0.5"></i>
+                        <div class="flex-1">
+                            <h5 class="font-bold ${warningCount > 2 ? 'text-red-900' : warningCount > 1 ? 'text-orange-900' : 'text-amber-900'} mb-2 text-lg">${warningTitle}</h5>
+                            <p class="text-sm ${warningCount > 2 ? 'text-red-800' : warningCount > 1 ? 'text-orange-800' : 'text-amber-800'} mb-2">
+                                Your system timezone (<strong>${detectedTz}</strong>) is different from your saved timezone setting${savedTz ? ` (<strong>${savedTz}</strong>)` : ''}.
+                            </p>
+                            <p class="text-sm ${warningCount > 2 ? 'text-red-800' : warningCount > 1 ? 'text-orange-800' : 'text-amber-800'} font-medium">
+                                ${emphasizedText}
+                            </p>
+                            ${warningCount > 1 ? `
+                            <div class="mt-3 p-2 bg-white bg-opacity-50 rounded border ${warningCount > 2 ? 'border-red-300' : 'border-orange-300'}">
+                                <p class="text-xs ${warningCount > 2 ? 'text-red-700' : 'text-orange-700'} font-semibold">
+                                    💡 This is reminder #${warningCount}. The recommended timezone (<strong>${standardTz}</strong>) has been pre-selected. Click "Save Settings" below.
+                                </p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Insert warning at the beginning of the timezone section
+                if (timezoneSection) {
+                    const spaceyDiv = timezoneSection.querySelector('.space-y-4');
+                    if (spaceyDiv) {
+                        spaceyDiv.insertBefore(warningDiv, spaceyDiv.firstChild);
+                    }
+                }
+            }
+
+            // Update save button to be more prominent based on warning count
+            const saveButton = document.querySelector('#settingsModal button[onclick="saveSettings()"]');
+            if (saveButton) {
+                if (warningCount === 1) {
+                    saveButton.innerHTML = `
+                        <i data-lucide="save" class="w-5 h-5 mr-3 inline"></i>
+                        Save Timezone Settings (Recommended)
+                    `;
+                    saveButton.className = saveButton.className.replace('btn-primary', 'bg-amber-600 hover:bg-amber-700');
+                } else if (warningCount === 2) {
+                    saveButton.innerHTML = `
+                        <i data-lucide="alert-circle" class="w-5 h-5 mr-3 inline"></i>
+                        Save Correct Timezone (Important)
+                    `;
+                    saveButton.className = saveButton.className.replace(/bg-\w+-\d+/g, 'bg-orange-600 hover:bg-orange-700');
+                } else {
+                    saveButton.innerHTML = `
+                        <i data-lucide="alert-triangle" class="w-6 h-6 mr-3 inline animate-pulse"></i>
+                        SAVE TIMEZONE NOW (Required)
+                    `;
+                    saveButton.className = saveButton.className.replace(/bg-\w+-\d+/g, 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/50');
+                }
+            }
+
+            // Reinitialize lucide icons
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+
+            // Add special styling to highlight this is important
+            const modal = document.getElementById('settingsModal');
+            modal.setAttribute('data-timezone-warning', 'true');
+            modal.setAttribute('data-warning-count', warningCount.toString());
+        }
+
+        // Override closeSettingsModal to remove warning
+        const originalCloseSettingsModal = closeSettingsModal;
+        closeSettingsModal = function() {
+            console.log('🔒 Closing settings modal...');
+            
+            // Remove warning div if it exists
+            const warningDiv = document.getElementById('timezoneWarning');
+            if (warningDiv) {
+                warningDiv.remove();
+            }
+            
+            // Restore save button text and styling
+            const saveButton = document.querySelector('#settingsModal button[onclick="saveSettings()"]');
+            if (saveButton) {
+                saveButton.innerHTML = `
+                    <i data-lucide="save" class="w-5 h-5 mr-3 inline"></i>
+                    Save Settings
+                `;
+                saveButton.className = 'btn-primary px-8 py-3.5 rounded-xl text-base font-medium';
+                // Reinitialize icons
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            }
+            
+            // Remove warning attributes
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.removeAttribute('data-timezone-warning');
+                modal.removeAttribute('data-warning-count');
+            }
+            
+            // Call original close function
+            originalCloseSettingsModal();
+
+            // Re-check timezone after modal closes to ensure continuous enforcement
+            console.log('🔄 Modal closed, re-checking timezone in 500ms...');
+            setTimeout(() => {
+                checkTimezoneOnLogin();
+            }, 500); // Small delay to allow modal to fully close
+        };
+
         // Toggle user status
         async function toggleUserStatus(userId, newStatus) {
             try {
@@ -4505,6 +5075,20 @@
                 toggleUserStatusCheckbox(userId, checkbox.checked, syntheticEvent);
             }
         }
+
+        // Manual trigger for testing timezone check (can be called from console)
+        window.forceTimezoneCheck = function() {
+            console.log('🔄 Forcing timezone check...');
+            // Clear all timezone warning flags
+            const sessionKeys = Object.keys(sessionStorage);
+            sessionKeys.forEach(key => {
+                if (key.startsWith('lastTimezoneWarning_')) {
+                    sessionStorage.removeItem(key);
+                }
+            });
+            // Run the check
+            checkTimezoneOnLogin();
+        };
 
         // Toggle user status via checkbox
         async function toggleUserStatusCheckbox(userId, isChecked, event) {
@@ -8049,6 +8633,10 @@
             startSupportTicketCountUpdates();
             console.log('✅ Support ticket count monitoring started');
 
+            // Check timezone on login (after successful authentication)
+            checkTimezoneOnLogin();
+            console.log('✅ Timezone check initiated');
+
             showSection('dashboard');
         });
 
@@ -8072,6 +8660,12 @@
         document.getElementById('userModal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeUserModal();
+            }
+        });
+
+        document.getElementById('settingsModal')?.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSettingsModal();
             }
         });
 

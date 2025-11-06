@@ -34,6 +34,13 @@
             justify-content: space-between;
         }
 
+        /* Hide hamburger on large screens */
+        @media (min-width: 1024px) {
+            .hamburger {
+                display: none !important;
+            }
+        }
+
         .hamburger span {
             display: block;
             height: 2px;
@@ -96,6 +103,31 @@
             .mobile-overlay {
                 display: none !important;
             }
+        }
+
+        /* Glassy Navbar Effect */
+        .glass-navbar {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        /* Enhanced Search Field */
+        .glass-search {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-search:focus {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
         }
 
         /* Avatar styles */
@@ -236,6 +268,13 @@
                 </svg>
                 <span>Create Request</span>
             </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium" onclick="showSection('help', event); toggleMobileMenu();">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Help Center</span>
+            </a>
             
             <div class="border-t border-slate-200 my-2"></div>
             
@@ -277,9 +316,9 @@
     <div id="toastContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
 
     <!-- Top Navigation Bar -->
-    <div class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="glass-navbar sticky top-0 z-50">
         <!-- Top Row: Logo, User -->
-        <div class="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-slate-100">
+        <div class="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-slate-100/60">
             <div class="flex items-center gap-4">
                 <div class="hamburger lg:hidden" id="hamburgerBtn" onclick="toggleMobileMenu()">
                     <span></span>
@@ -291,6 +330,16 @@
             </div>
             
             <div class="flex items-center gap-2 lg:gap-4">
+                <!-- Global Search - Hidden on mobile, shown on larger screens -->
+                <div class="relative hidden md:block">
+                    <input type="text" placeholder="Search..." 
+                           class="glass-search pl-10 pr-4 py-2.5 rounded-xl w-48 lg:w-80 focus:outline-none" 
+                           id="globalSearch">
+                    <svg class="absolute left-3 top-3 w-5 h-5 text-indigo-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+
                 <!-- Notifications Bell -->
                 <div class="relative">
                     <button id="notificationsButton" onclick="toggleNotifications()" class="relative p-2 hover:bg-slate-50 rounded-lg transition-colors">
@@ -302,11 +351,11 @@
                     </button>
                     
                     <!-- Notifications Dropdown -->
-                    <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-slate-200 z-[10001] max-h-[500px] overflow-hidden flex flex-col">
-                        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-                            <h3 class="text-lg font-bold text-slate-900">Notifications</h3>
-                            <button onclick="markAllNotificationsRead()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
-                                Mark all as read
+                    <div id="notificationsDropdown" class="hidden fixed lg:absolute right-2 lg:right-0 top-16 lg:top-auto lg:mt-2 w-[calc(100vw-1rem)] sm:w-96 lg:w-96 bg-white rounded-lg shadow-xl border border-slate-200 z-[10001] max-h-[calc(100vh-5rem)] lg:max-h-[500px] overflow-hidden flex flex-col">
+                        <div class="p-3 lg:p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                            <h3 class="text-base lg:text-lg font-bold text-slate-900">Notifications</h3>
+                            <button onclick="markAllNotificationsRead()" class="text-xs text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap">
+                                Mark all read
                             </button>
                         </div>
                         
@@ -380,6 +429,13 @@
                     </svg>
                     <span>Create Request</span>
                 </a>
+
+                <a href="#" class="nav-tab flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100" onclick="showSection('help', event)" data-section="help">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Help Center</span>
+                </a>
             </div>
 
             <div class="hidden lg:flex items-center gap-2 ml-4">
@@ -441,12 +497,23 @@
                     </div>
                 </div>
 
-                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Upcoming Vacations (Next 30 Days)</h2>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-3">
+                    <h2 class="text-lg lg:text-xl font-bold text-slate-900">My Upcoming Vacations (Next 30 Days)</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="upcoming-rows-per-page" class="text-sm text-slate-600">Rows per page:</label>
+                        <select id="upcoming-rows-per-page" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="changeRowsPerPage('upcoming', this.value)">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="myUpcomingVacations" class="space-y-4">
                     <div class="flex items-center justify-center py-12">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
                 </div>
+                <div id="upcoming-pagination" class="mt-6"></div>
             </div>
 
             <!-- Tab Content: Pending Requests -->
@@ -470,12 +537,23 @@
                     </div>
                 </div>
 
-                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Pending Requests</h2>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-3">
+                    <h2 class="text-lg lg:text-xl font-bold text-slate-900">My Pending Requests</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="pending-rows-per-page" class="text-sm text-slate-600">Rows per page:</label>
+                        <select id="pending-rows-per-page" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="changeRowsPerPage('pending', this.value)">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="myPendingRequests" class="space-y-4">
                     <div class="flex items-center justify-center py-12">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
                 </div>
+                <div id="pending-pagination" class="mt-6"></div>
             </div>
 
             <!-- Tab Content: Conflicts -->
@@ -499,7 +577,17 @@
                     </div>
                 </div>
                 
-                <h2 class="text-lg lg:text-xl font-bold text-slate-900 mb-4 lg:mb-6">My Scheduling Conflicts & Warnings</h2>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-3">
+                    <h2 class="text-lg lg:text-xl font-bold text-slate-900">My Scheduling Conflicts & Warnings</h2>
+                    <div class="flex items-center gap-2" id="conflictsRowsPerPageContainer" style="display: none;">
+                        <label for="conflicts-rows-per-page" class="text-sm text-slate-600">Rows per page:</label>
+                        <select id="conflicts-rows-per-page" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="changeConflictsRowsPerPage()">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
+                </div>
                 
                 <!-- Loading State -->
                 <div id="conflictsLoading" class="flex items-center justify-center py-12">
@@ -507,9 +595,12 @@
                 </div>
 
                 <!-- Conflicts Container -->
-                <div id="conflictsContainer" class="space-y-4 hidden">
+                <div id="conflictsContainer" class="space-y-4 hidden mb-4">
                     <!-- Will be populated dynamically by JavaScript -->
                 </div>
+
+                <!-- Pagination Controls -->
+                <div id="conflicts-pagination" class="mt-6"></div>
 
                 <!-- Empty State -->
                 <div id="conflictsEmpty" class="hidden text-center py-12">
@@ -529,14 +620,25 @@
             <div class="bg-white rounded-lg shadow p-4 lg:p-6">
                 <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
                     <h2 class="text-xl lg:text-2xl font-bold text-slate-900">My Activity Log</h2>
+                    <div id="activityRowsPerPageContainer" class="flex items-center gap-2" style="display: none;">
+                        <label for="activity-rows-per-page" class="text-sm text-slate-600">Rows per page:</label>
+                        <select id="activity-rows-per-page" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="changeActivityRowsPerPage()">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div id="activityLogContainer" class="space-y-4">
+                <div id="activityLogContainer" class="space-y-4 mb-4">
                     <!-- Activity items will be loaded here dynamically -->
                     <div class="flex items-center justify-center py-12">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
                 </div>
+
+                <!-- Pagination Controls -->
+                <div id="activity-pagination" class="mt-6"></div>
             </div>
         </div>
 
@@ -555,11 +657,6 @@
                                 <select id="leaveType" name="leave_type" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">Select leave type</option>
                                     <option value="vacation">Vacation</option>
-                                    <option value="sick">Sick Leave</option>
-                                    <option value="personal">Personal Leave</option>
-                                    <option value="bereavement">Bereavement</option>
-                                    <option value="emergency">Emergency</option>
-                                    <option value="unpaid">Unpaid Leave</option>
                                 </select>
                             </div>
 
@@ -568,10 +665,95 @@
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-2">Start Date *</label>
                                     <input type="date" id="startDate" name="start_date" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <div id="startDatePastWarning" class="hidden mt-2 p-3 bg-red-50 border border-red-300 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <div class="text-sm text-red-800">
+                                                <span class="font-semibold">Past Date Not Allowed:</span>
+                                                Start date cannot be in the past. Please select today or a future date.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="startDateWeekendWarning" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            <div class="text-sm text-amber-800">
+                                                <span class="font-semibold">Weekend Selected:</span>
+                                                <span id="startDateWeekendDay"></span> is not a working day. Vacation days are counted Monday-Friday only.
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
                                     <input type="date" id="endDate" name="end_date" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <div id="endDatePastWarning" class="hidden mt-2 p-3 bg-red-50 border border-red-300 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <div class="text-sm text-red-800">
+                                                <span class="font-semibold">Past Date Not Allowed:</span>
+                                                End date cannot be in the past. Please select today or a future date.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="endDateWeekendWarning" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            <div class="text-sm text-amber-800">
+                                                <span class="font-semibold">Weekend Selected:</span>
+                                                <span id="endDateWeekendDay"></span> is not a working day. Vacation days are counted Monday-Friday only.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vacation Days Summary -->
+                            <div id="vacationDaysSummary" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-600 mb-1">WORKING DAYS</div>
+                                        <div id="workingDaysCount" class="text-2xl font-bold text-blue-900">0</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-600 mb-1">WEEKEND DAYS</div>
+                                        <div id="weekendDaysCount" class="text-2xl font-bold text-slate-600">0</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold text-slate-600 mb-1">AUTO RETURN DATE</div>
+                                        <div id="returnToWorkDate" class="text-sm font-bold text-green-900">--</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Return to Work Date -->
+                            <div id="returnToWorkContainer" class="hidden">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">
+                                    Return to Work Date
+                                    <span class="text-xs text-slate-500 font-normal ml-2">(Auto-filled, editable)</span>
+                                </label>
+                                <input type="date" id="returnDate" name="return_to_work" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                
+                                <!-- Heads-up message for gap days -->
+                                <div id="returnDateGapWarning" class="hidden mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div class="flex items-start gap-2">
+                                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <div class="text-sm text-blue-800">
+                                            <span class="font-semibold">Heads-Up:</span>
+                                            There are <span id="gapDaysCount" class="font-bold">0</span> working day(s) between your requested end date and return to work date. 
+                                            Please contact HR to clarify the status of these days (unpaid leave, additional vacation, etc.).
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -604,8 +786,12 @@
                                 <button type="button" onclick="resetCreateForm()" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors">
                                     Reset
                                 </button>
-                                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">
-                                    Submit Request
+                                <button type="submit" id="submitRequestBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center justify-center gap-2">
+                                    <svg id="submitSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span id="submitBtnText">Submit Request</span>
                                 </button>
                             </div>
                         </form>
@@ -647,13 +833,166 @@
                         <ul class="text-sm text-blue-800 space-y-2">
                             <li>• Submit requests at least 2 weeks in advance</li>
                             <li>• Check for scheduling conflicts before submitting</li>
-                            <li>• Provide coverage plans for smoother approval</li>
                             <li>• Keep emergency contact info updated</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Help Center Section -->
+    <div id="helpSection" class="hidden p-4 lg:p-8">
+        <div class="mb-6">
+            <h2 class="text-2xl lg:text-3xl font-bold text-white">Help Center</h2>
+            <p class="text-blue-100 mt-2">Find answers to common questions and learn how to use the vacation management system</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Quick Links -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Quick Start Guide</h3>
+                    </div>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Click "Create Request" to submit a new vacation request</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>View your vacation history in the "Activity Log" tab</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Check your remaining vacation hours on ADP or contact your direct supervisor</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Support -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900">Need Help?</h3>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-4">Contact your supervisor for assistance with:</p>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-start gap-2">
+                            <span class="text-purple-600">•</span>
+                            <span>Vacation policy questions</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-purple-600">•</span>
+                            <span>Request status inquiries</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-purple-600">•</span>
+                            <span>Account or technical issues</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">Frequently Asked Questions</h3>
+                
+                <div class="space-y-4">
+                    <!-- FAQ Item 1 -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">How do I submit a vacation request?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>Click on the "Create Request" tab, fill in all required fields including start date, end date, leave type, and reason. Make sure to select working days (Monday-Friday) only. Click "Submit Request" when ready.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 2 -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">How far in advance should I submit my request?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>We recommend submitting vacation requests at least 2 weeks in advance to allow sufficient time for approval and scheduling adjustments.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 3 -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">Can I select weekend dates for my vacation?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>No, the system only counts working days (Monday through Friday). Weekend dates are automatically excluded from vacation calculations.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 4 -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">How do I check my remaining vacation days?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>Check on the ADP App or contact your supervisor directly.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 5 -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">What happens after I submit a request?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>Your request will be sent to your supervisor for review. You can track the status in the "Pending" tab. You'll receive a notification once your request is approved or denied.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 6 -->
+                    <div class="pb-4">
+                        <button class="faq-question w-full flex items-center justify-between text-left" onclick="toggleFAQ(this)">
+                            <h4 class="font-semibold text-slate-900">Can I cancel or modify my request?</h4>
+                            <svg class="w-5 h-5 text-slate-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="faq-answer hidden mt-3 text-sm text-slate-600">
+                            <p>Please contact your supervisor directly to cancel or modify a pending vacation request. Once approved, you'll need supervisor approval for any changes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 
     <!-- Profile Modal -->
@@ -781,6 +1120,144 @@
     </div>
 
     <script>
+        // Pagination State Management
+        const paginationState = {
+            upcoming: { currentPage: 1, rowsPerPage: 10, allData: [] },
+            pending: { currentPage: 1, rowsPerPage: 10, allData: [] },
+            conflicts: { currentPage: 1, rowsPerPage: 5, allData: [] },
+            activity: { currentPage: 1, rowsPerPage: 10, allData: [] }
+        };
+
+        // Pagination Functions
+        function changeRowsPerPage(tab, value) {
+            paginationState[tab].rowsPerPage = parseInt(value);
+            paginationState[tab].currentPage = 1;
+            renderPaginatedData(tab);
+        }
+
+        function goToPage(tab, page) {
+            const state = paginationState[tab];
+            const totalPages = Math.ceil(state.allData.length / state.rowsPerPage);
+            
+            if (page < 1 || page > totalPages) return;
+            
+            state.currentPage = page;
+            renderPaginatedData(tab);
+        }
+
+        function renderPaginationControls(tab) {
+            const state = paginationState[tab];
+            const totalPages = Math.ceil(state.allData.length / state.rowsPerPage);
+            const paginationContainer = document.getElementById(`${tab}-pagination`);
+            
+            if (!paginationContainer || totalPages <= 1) {
+                if (paginationContainer) paginationContainer.innerHTML = '';
+                return;
+            }
+            
+            const currentPage = state.currentPage;
+            const maxVisiblePages = 5;
+            
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            let paginationHTML = `
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-4">
+                    <div class="text-sm text-slate-600">
+                        Showing ${Math.min((currentPage - 1) * state.rowsPerPage + 1, state.allData.length)} to ${Math.min(currentPage * state.rowsPerPage, state.allData.length)} of ${state.allData.length} results
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button 
+                            onclick="goToPage('${tab}', 1)" 
+                            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            ${currentPage === 1 ? 'disabled' : ''}
+                        >
+                            First
+                        </button>
+                        <button 
+                            onclick="goToPage('${tab}', ${currentPage - 1})" 
+                            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            ${currentPage === 1 ? 'disabled' : ''}
+                        >
+                            Previous
+                        </button>
+                        <div class="flex gap-1">
+            `;
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button 
+                        onclick="goToPage('${tab}', ${i})" 
+                        class="px-3 py-1.5 text-sm border rounded-lg ${i === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 hover:bg-slate-50'}"
+                    >
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            paginationHTML += `
+                        </div>
+                        <button 
+                            onclick="goToPage('${tab}', ${currentPage + 1})" 
+                            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            ${currentPage === totalPages ? 'disabled' : ''}
+                        >
+                            Next
+                        </button>
+                        <button 
+                            onclick="goToPage('${tab}', ${totalPages})" 
+                            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            ${currentPage === totalPages ? 'disabled' : ''}
+                        >
+                            Last
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function renderPaginatedData(tab) {
+            const state = paginationState[tab];
+            const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+            const endIndex = startIndex + state.rowsPerPage;
+            const paginatedData = state.allData.slice(startIndex, endIndex);
+            
+            // Call the appropriate render function based on tab
+            if (tab === 'upcoming') {
+                renderMyUpcomingVacations(paginatedData);
+            } else if (tab === 'pending') {
+                renderMyPendingRequests(paginatedData);
+            } else if (tab === 'conflicts') {
+                renderConflicts(paginatedData);
+            } else if (tab === 'activity') {
+                renderActivityLog(paginatedData);
+            }
+            
+            renderPaginationControls(tab);
+        }
+
+        // Pagination functions for conflicts
+        function changeConflictsRowsPerPage() {
+            const value = document.getElementById('conflicts-rows-per-page').value;
+            paginationState.conflicts.rowsPerPage = parseInt(value);
+            paginationState.conflicts.currentPage = 1;
+            renderPaginatedData('conflicts');
+        }
+
+        // Pagination functions for activity
+        function changeActivityRowsPerPage() {
+            const value = document.getElementById('activity-rows-per-page').value;
+            paginationState.activity.rowsPerPage = parseInt(value);
+            paginationState.activity.currentPage = 1;
+            renderPaginatedData('activity');
+        }
+
         // Notifications System
         let notificationsData = [];
         
@@ -862,19 +1339,25 @@
                         const timeAgo = getTimeAgo(createdDate);
                         
                         return `
-                            <div class="${bgClass} ${borderClass} p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors" onclick="markNotificationRead(${notification.id})">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex-shrink-0 mt-1">
-                                        <svg class="w-6 h-6 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="${bgClass} ${borderClass} p-3 lg:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <div class="flex items-start gap-2 lg:gap-3">
+                                    <div class="flex-shrink-0 mt-0.5 lg:mt-1">
+                                        <svg class="w-5 h-5 lg:w-6 lg:h-6 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             ${icon}
                                         </svg>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-slate-900 mb-1">${notification.title}</p>
-                                        <p class="text-sm text-slate-600 mb-2">${notification.message}</p>
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-xs text-slate-500">${timeAgo}</span>
-                                            ${isUnread ? '<span class="text-xs font-medium text-blue-600">New</span>' : ''}
+                                        <p class="text-xs lg:text-sm font-semibold text-slate-900 mb-1">${notification.title}</p>
+                                        <p class="text-xs lg:text-sm text-slate-600 mb-2">${notification.message}</p>
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs text-slate-500">${timeAgo}</span>
+                                                ${isUnread ? '<span class="text-xs font-medium text-blue-600">New</span>' : ''}
+                                            </div>
+                                            <div class="flex gap-2">
+                                                ${isUnread ? `<button onclick="event.stopPropagation(); markNotificationRead(${notification.id})" class="text-xs text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap">Mark read</button>` : ''}
+                                                <button onclick="event.stopPropagation(); deleteNotification(${notification.id})" class="text-xs text-red-600 hover:text-red-700 font-medium whitespace-nowrap">Delete</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -951,6 +1434,32 @@
                 }
             } catch (error) {
                 console.error('Error marking all notifications as read:', error);
+                showToast('Failed to mark notifications as read', 'error');
+            }
+        }
+
+        // Delete Notification
+        async function deleteNotification(notificationId) {
+            try {
+                const response = await fetch(`/api/notifications/${notificationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload notifications
+                    loadNotifications();
+                    showToast('Notification deleted', 'success');
+                } else {
+                    showToast(data.message || 'Failed to delete notification', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+                showToast('Failed to delete notification', 'error');
             }
         }
         
@@ -966,9 +1475,245 @@
             }
         });
         
+        // Global Search Functionality
+        let globalSearchData = {
+            myVacations: [],
+            upcomingVacations: []
+        };
+
+        function initGlobalSearch() {
+            const searchInput = document.getElementById('globalSearch');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', debounce(performGlobalSearch, 300));
+            searchInput.addEventListener('focus', showSearchResults);
+            
+            // Close search results when clicking outside
+            document.addEventListener('click', function(e) {
+                const searchContainer = searchInput.closest('.relative');
+                const resultsContainer = document.getElementById('globalSearchResults');
+                if (resultsContainer && !searchContainer.contains(e.target)) {
+                    resultsContainer.remove();
+                }
+            });
+
+            // Load search data
+            loadGlobalSearchData();
+        }
+
+        async function loadGlobalSearchData() {
+            try {
+                // Load my vacation requests
+                const myVacResponse = await fetch('/api/vacation/my-requests');
+                const myVacData = await myVacResponse.json();
+                if (myVacData.success) {
+                    globalSearchData.myVacations = myVacData.requests || [];
+                }
+
+                // Load upcoming vacations
+                const upcomingResponse = await fetch('/api/vacation/upcoming');
+                const upcomingData = await upcomingResponse.json();
+                if (upcomingData.success) {
+                    globalSearchData.upcomingVacations = upcomingData.vacations || [];
+                }
+            } catch (error) {
+                console.error('Error loading search data:', error);
+            }
+        }
+
+        function performGlobalSearch(e) {
+            const searchTerm = e.target.value.trim().toLowerCase();
+            
+            if (searchTerm.length < 2) {
+                removeSearchResults();
+                return;
+            }
+
+            const results = {
+                myVacations: [],
+                colleagues: []
+            };
+
+            // Search my vacations
+            results.myVacations = globalSearchData.myVacations.filter(vac => {
+                const leaveType = (vac.leave_type || '').toLowerCase();
+                const status = (vac.status || '').toLowerCase();
+                const reason = (vac.reason || '').toLowerCase();
+                return leaveType.includes(searchTerm) || status.includes(searchTerm) || reason.includes(searchTerm);
+            }).slice(0, 5);
+
+            // Search upcoming vacations (colleagues)
+            results.colleagues = globalSearchData.upcomingVacations.filter(vac => {
+                const employeeName = `${vac.firstname || ''} ${vac.lastname || ''}`.toLowerCase();
+                const department = (vac.department || '').toLowerCase();
+                return employeeName.includes(searchTerm) || department.includes(searchTerm);
+            }).slice(0, 5);
+
+            displaySearchResults(results, searchTerm);
+        }
+
+        function parseLocalDate(dateString) {
+            // Parse YYYY-MM-DD format to local date without timezone issues
+            if (!dateString || typeof dateString !== 'string') {
+                return new Date(); // Return current date as fallback
+            }
+            const parts = dateString.split('-');
+            if (parts.length !== 3) {
+                return new Date(); // Return current date as fallback
+            }
+            const [year, month, day] = parts.map(num => parseInt(num, 10));
+            if (isNaN(year) || isNaN(month) || isNaN(day)) {
+                return new Date(); // Return current date as fallback
+            }
+            return new Date(year, month - 1, day);
+        }
+
+        function parseLocalDateTime(datetimeString) {
+            // Parse YYYY-MM-DD HH:MM:SS format to local datetime without timezone issues
+            if (!datetimeString || typeof datetimeString !== 'string') {
+                return new Date(); // Return current date as fallback
+            }
+            const parts = datetimeString.split(' ');
+            if (parts.length !== 2) {
+                return new Date(); // Return current date as fallback
+            }
+            const [datePart, timePart] = parts;
+            const dateParts = datePart.split('-');
+            const timeParts = timePart.split(':');
+            
+            if (dateParts.length !== 3 || timeParts.length !== 3) {
+                return new Date(); // Return current date as fallback
+            }
+            
+            const [year, month, day] = dateParts.map(num => parseInt(num, 10));
+            const [hour, minute, second] = timeParts.map(num => parseInt(num, 10));
+            
+            if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute) || isNaN(second)) {
+                return new Date(); // Return current date as fallback
+            }
+            
+            return new Date(year, month - 1, day, hour, minute, second);
+        }
+
+        function displaySearchResults(results, searchTerm) {
+            removeSearchResults();
+
+            const searchInput = document.getElementById('globalSearch');
+            const searchContainer = searchInput.closest('.relative');
+            
+            const resultsDiv = document.createElement('div');
+            resultsDiv.id = 'globalSearchResults';
+            resultsDiv.className = 'absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-96 overflow-y-auto';
+
+            let html = '';
+
+            // My Vacations Section
+            if (results.myVacations.length > 0) {
+                html += `
+                    <div class="p-3 border-b border-slate-200">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase">My Requests</h4>
+                    </div>
+                `;
+                results.myVacations.forEach(vac => {
+                    const startDate = parseLocalDate(vac.start_date);
+                    const endDate = parseLocalDate(vac.end_date);
+                    const { workingDays } = calculateWorkingDays(startDate, endDate);
+                    const formattedDates = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                    const statusColors = {
+                        'pending': 'bg-yellow-100 text-yellow-700',
+                        'approved': 'bg-green-100 text-green-700',
+                        'denied': 'bg-red-100 text-red-700'
+                    };
+                    const statusClass = statusColors[vac.status] || 'bg-slate-100 text-slate-700';
+                    html += `
+                        <div class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 transition-colors" onclick="viewMyVacationDetails(${vac.id})">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium text-slate-900">${formattedDates}</div>
+                                    <div class="text-xs text-slate-500">${vac.leave_type || 'N/A'} • ${workingDays} day${workingDays !== 1 ? 's' : ''}</div>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusClass}">
+                                    ${vac.status.charAt(0).toUpperCase() + vac.status.slice(1)}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Colleagues' Vacations Section
+            if (results.colleagues.length > 0) {
+                html += `
+                    <div class="p-3 border-b border-slate-200 ${results.myVacations.length > 0 ? 'mt-2' : ''}">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase">Colleagues On Leave</h4>
+                    </div>
+                `;
+                results.colleagues.forEach(vac => {
+                    const fullName = `${vac.firstname || ''} ${vac.lastname || ''}`;
+                    const initials = `${vac.firstname?.[0] || ''}${vac.lastname?.[0] || ''}`.toUpperCase();
+                    const startDate = parseLocalDate(vac.start_date);
+                    const endDate = parseLocalDate(vac.end_date);
+                    const formattedDates = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                    html += `
+                        <div class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar bg-blue-500 text-white text-sm">${initials}</div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-slate-900">${fullName}</div>
+                                    <div class="text-xs text-slate-500">${formattedDates}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // No Results
+            if (results.myVacations.length === 0 && results.colleagues.length === 0) {
+                html = `
+                    <div class="p-8 text-center text-slate-500">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <p class="text-sm">No results found for "${searchTerm}"</p>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+            searchContainer.appendChild(resultsDiv);
+        }
+
+        function showSearchResults() {
+            const searchInput = document.getElementById('globalSearch');
+            if (searchInput.value.trim().length >= 2) {
+                performGlobalSearch({ target: searchInput });
+            }
+        }
+
+        function removeSearchResults() {
+            const resultsDiv = document.getElementById('globalSearchResults');
+            if (resultsDiv) {
+                resultsDiv.remove();
+            }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
         // Load notifications on page load and periodically
         document.addEventListener('DOMContentLoaded', function() {
             loadNotifications();
+            initGlobalSearch();
             // Refresh notifications every 30 seconds
             setInterval(function() {
                 if (document.getElementById('notificationsDropdown').classList.contains('hidden')) {
@@ -1005,9 +1750,20 @@
             document.querySelectorAll('[id$="-section"]').forEach(section => {
                 section.classList.add('hidden');
             });
+            // Also hide help section specifically
+            const helpSection = document.getElementById('helpSection');
+            if (helpSection) {
+                helpSection.classList.add('hidden');
+            }
 
             // Show selected section
-            const targetSection = document.getElementById(sectionName + '-section');
+            let targetSection;
+            if (sectionName === 'help') {
+                targetSection = document.getElementById('helpSection');
+            } else {
+                targetSection = document.getElementById(sectionName + '-section');
+            }
+            
             if (targetSection) {
                 targetSection.classList.remove('hidden');
             }
@@ -1097,6 +1853,20 @@
             }, 300);
         }
 
+        // FAQ Toggle Functionality
+        function toggleFAQ(button) {
+            const answer = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+            
+            if (answer.classList.contains('hidden')) {
+                answer.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                answer.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
         // Load my vacation stats
         async function loadMyVacationStats() {
             try {
@@ -1171,84 +1941,100 @@
                 const response = await fetch('/api/vacation/my-upcoming');
                 const data = await response.json();
                 
-                const container = document.getElementById('myUpcomingVacations');
                 const noticeElement = document.getElementById('vacationNotice');
                 
                 if (data.success && data.vacations) {
                     const vacations = data.vacations;
                     
+                    // Store data in pagination state
+                    paginationState.upcoming.allData = vacations;
+                    paginationState.upcoming.currentPage = 1;
+                    
                     if (vacations.length === 0) {
                         // Hide notice when no vacations
                         noticeElement.classList.add('hidden');
-                        
-                        container.innerHTML = `
-                            <div class="text-center py-12 text-slate-500">
-                                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <p class="text-lg font-medium">No upcoming vacations</p>
-                                <p class="text-sm">You don't have any approved vacations in the next 30 days</p>
-                            </div>
-                        `;
-                        return;
+                    } else {
+                        // Show notice when vacations exist
+                        noticeElement.classList.remove('hidden');
                     }
                     
-                    // Show notice when vacations exist
-                    noticeElement.classList.remove('hidden');
-                    
-                    container.innerHTML = vacations.map(vac => {
-                        const startDate = new Date(vac.start_date);
-                        const endDate = new Date(vac.end_date);
-                        const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                        const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        const leaveTypeDisplay = vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1);
-                        
-                        return `
-                            <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg gap-3">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            <span class="status-indicator bg-green-500"></span>
-                                            Approved
-                                        </span>
-                                    </div>
-                                    <div class="text-sm text-slate-600">${vac.duration_days || 0} days • ${leaveTypeDisplay}</div>
-                                    ${vac.reason ? `<div class="text-xs text-slate-500 mt-1">${vac.reason}</div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
+                    renderPaginatedData('upcoming');
                 } else {
                     // Hide notice on error
                     noticeElement.classList.add('hidden');
-                    
-                    container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                            </svg>
-                            <p class="text-slate-600">Error loading upcoming vacations</p>
-                        </div>
-                    `;
+                    paginationState.upcoming.allData = [];
+                    renderPaginatedData('upcoming');
                 }
             } catch (error) {
                 console.error('Error loading upcoming vacations:', error);
-                const container = document.getElementById('myUpcomingVacations');
                 const noticeElement = document.getElementById('vacationNotice');
-                
-                // Hide notice on error
                 noticeElement.classList.add('hidden');
-                
+                paginationState.upcoming.allData = [];
+                renderPaginatedData('upcoming');
+            }
+        }
+
+        // Render my upcoming vacations
+        function renderMyUpcomingVacations(vacations) {
+            const container = document.getElementById('myUpcomingVacations');
+            if (!container) return;
+            
+            if (paginationState.upcoming.allData.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
-                        <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
-                        <p class="text-slate-600">Error loading upcoming vacations</p>
+                        <p class="text-lg font-medium">No upcoming vacations</p>
+                        <p class="text-sm">You don't have any approved vacations in the next 30 days</p>
                     </div>
                 `;
+                return;
             }
+            
+            container.innerHTML = vacations.map(vac => {
+                // Check if dates exist before parsing
+                if (!vac.start_date || !vac.end_date) {
+                    console.warn('Vacation entry missing dates:', vac);
+                    return ''; // Skip invalid entries
+                }
+                
+                try {
+                    // Use parseLocalDate to avoid timezone issues
+                    const startDate = parseLocalDate(vac.start_date);
+                    const endDate = parseLocalDate(vac.end_date);
+                    
+                    // Validate that dates are valid
+                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                        console.warn('Invalid dates for vacation:', vac);
+                        return '';
+                    }
+                    
+                    const { workingDays } = calculateWorkingDays(startDate, endDate);
+                    const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const leaveTypeDisplay = vac.leave_type ? vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1) : 'Vacation';
+                    
+                    return `
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                        <span class="status-indicator bg-green-500"></span>
+                                        Approved
+                                    </span>
+                                </div>
+                                <div class="text-sm text-slate-600">${workingDays} day${workingDays !== 1 ? 's' : ''} • ${leaveTypeDisplay}</div>
+                                ${vac.reason ? `<div class="text-xs text-slate-500 mt-1">${vac.reason}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('Error rendering vacation entry:', error, vac);
+                    return '';
+                }
+            }).join('');
         }
 
         // Load my pending requests
@@ -1257,100 +2043,106 @@
                 const response = await fetch('/api/vacation/my-pending');
                 const data = await response.json();
                 
-                const container = document.getElementById('myPendingRequests');
                 const noticeElement = document.getElementById('pendingNotice');
                 
                 if (data.success && data.vacations) {
                     const vacations = data.vacations;
                     
+                    // Store data in pagination state
+                    paginationState.pending.allData = vacations;
+                    paginationState.pending.currentPage = 1;
+                    
                     if (vacations.length === 0) {
                         // Hide notice when no pending requests
                         noticeElement.classList.add('hidden');
-                        
-                        container.innerHTML = `
-                            <div class="text-center py-12 text-slate-500">
-                                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <p class="text-lg font-medium">All caught up!</p>
-                                <p class="text-sm">You don't have any pending vacation requests</p>
-                            </div>
-                        `;
-                        return;
+                    } else {
+                        // Show notice when pending requests exist
+                        noticeElement.classList.remove('hidden');
                     }
                     
-                    // Show notice when pending requests exist
-                    noticeElement.classList.remove('hidden');
-                    
-                    container.innerHTML = vacations.map(vac => {
-                        const startDate = new Date(vac.start_date);
-                        const endDate = new Date(vac.end_date);
-                        const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                        const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        const leaveTypeDisplay = vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1);
-                        const createdDate = new Date(vac.created_at);
-                        const timeAgo = getTimeAgo(createdDate);
-                        
-                        return `
-                            <div class="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-4 lg:p-5">
-                                <div class="flex flex-col lg:flex-row lg:items-start justify-between mb-3 gap-3">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                                                <span class="status-indicator bg-yellow-500"></span>
-                                                Pending Review
-                                            </span>
-                                        </div>
-                                        <div class="text-sm text-slate-600 mb-1">${vac.duration_days || 0} days • ${leaveTypeDisplay}</div>
-                                        <div class="text-xs text-slate-500">Submitted ${timeAgo}</div>
-                                    </div>
-                                </div>
-                                ${vac.reason ? `
-                                <div class="bg-white rounded-lg p-3 mb-3">
-                                    <div class="text-xs font-semibold text-slate-600 mb-1">REASON</div>
-                                    <div class="text-sm text-slate-700">${vac.reason}</div>
-                                </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    }).join('');
+                    renderPaginatedData('pending');
                 } else {
                     // Hide notice on error
                     noticeElement.classList.add('hidden');
-                    
-                    container.innerHTML = `
-                        <div class="text-center py-12 text-slate-500">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                            </svg>
-                            <p class="text-slate-600">Error loading pending requests</p>
-                        </div>
-                    `;
+                    paginationState.pending.allData = [];
+                    renderPaginatedData('pending');
                 }
             } catch (error) {
                 console.error('Error loading pending requests:', error);
-                const container = document.getElementById('myPendingRequests');
                 const noticeElement = document.getElementById('pendingNotice');
-                
-                // Hide notice on error
                 noticeElement.classList.add('hidden');
-                
+                paginationState.pending.allData = [];
+                renderPaginatedData('pending');
+            }
+        }
+
+        // Render my pending requests
+        function renderMyPendingRequests(vacations) {
+            const container = document.getElementById('myPendingRequests');
+            if (!container) return;
+            
+            if (paginationState.pending.allData.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
-                        <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <p class="text-slate-600">Error loading pending requests</p>
+                        <p class="text-lg font-medium">All caught up!</p>
+                        <p class="text-sm">You don't have any pending vacation requests</p>
                     </div>
                 `;
+                return;
             }
-        }        // Load my conflicts and warnings
+            
+            container.innerHTML = vacations.map(vac => {
+                // Check if dates exist before parsing
+                if (!vac.start_date || !vac.end_date) {
+                    return ''; // Skip invalid entries
+                }
+                
+                // Use parseLocalDate to avoid timezone issues
+                const startDate = parseLocalDate(vac.start_date);
+                const endDate = parseLocalDate(vac.end_date);
+                const { workingDays } = calculateWorkingDays(startDate, endDate);
+                const formattedStart = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const leaveTypeDisplay = vac.leave_type ? vac.leave_type.charAt(0).toUpperCase() + vac.leave_type.slice(1) : 'Vacation';
+                const createdDate = vac.created_at ? new Date(vac.created_at) : new Date();
+                const timeAgo = getTimeAgo(createdDate);
+                
+                return `
+                    <div class="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-4 lg:p-5">
+                        <div class="flex flex-col lg:flex-row lg:items-start justify-between mb-3 gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="font-semibold text-slate-900">${formattedStart} - ${formattedEnd}</div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                        <span class="status-indicator bg-yellow-500"></span>
+                                        Pending Review
+                                    </span>
+                                </div>
+                                <div class="text-sm text-slate-600 mb-1">${workingDays} day${workingDays !== 1 ? 's' : ''} • ${leaveTypeDisplay}</div>
+                                <div class="text-xs text-slate-500">Submitted ${timeAgo}</div>
+                            </div>
+                        </div>
+                        ${vac.reason ? `
+                        <div class="bg-white rounded-lg p-3 mb-3">
+                            <div class="text-xs font-semibold text-slate-600 mb-1">REASON</div>
+                            <div class="text-sm text-slate-700">${vac.reason}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load my conflicts and warnings
         async function loadMyConflicts() {
             const loadingEl = document.getElementById('conflictsLoading');
             const containerEl = document.getElementById('conflictsContainer');
             const emptyEl = document.getElementById('conflictsEmpty');
             const noticeEl = document.getElementById('conflictsNotice');
+            const rowsPerPageContainer = document.getElementById('conflictsRowsPerPageContainer');
 
             try {
                 // Show loading state
@@ -1358,6 +2150,7 @@
                 containerEl?.classList.add('hidden');
                 emptyEl?.classList.add('hidden');
                 noticeEl?.classList.add('hidden');
+                rowsPerPageContainer.style.display = 'none';
 
                 const response = await fetch('/api/vacation/my-conflicts');
                 const data = await response.json();
@@ -1368,17 +2161,22 @@
                     // Show notice when conflicts exist
                     noticeEl?.classList.remove('hidden');
                     
-                    containerEl.innerHTML = '';
+                    // Store conflicts in pagination state
+                    paginationState.conflicts.allData = data.conflicts;
+                    paginationState.conflicts.currentPage = 1;
                     
-                    data.conflicts.forEach(conflict => {
-                        const conflictCard = createConflictCard(conflict);
-                        containerEl.innerHTML += conflictCard;
-                    });
+                    // Show rows per page selector
+                    rowsPerPageContainer.style.display = 'flex';
+                    
+                    // Render paginated conflicts
+                    renderPaginatedData('conflicts');
                     
                     containerEl?.classList.remove('hidden');
                 } else {
                     // Hide notice when no conflicts
                     noticeEl?.classList.add('hidden');
+                    paginationState.conflicts.allData = [];
+                    rowsPerPageContainer.style.display = 'none';
                     emptyEl?.classList.remove('hidden');
                 }
             } catch (error) {
@@ -1386,6 +2184,8 @@
                 loadingEl?.classList.add('hidden');
                 // Hide notice on error
                 noticeEl?.classList.add('hidden');
+                paginationState.conflicts.allData = [];
+                rowsPerPageContainer.style.display = 'none';
                 containerEl.innerHTML = `
                     <div class="text-center py-8 text-red-600">
                         <p>Error loading conflicts. Please try again.</p>
@@ -1393,6 +2193,26 @@
                 `;
                 containerEl?.classList.remove('hidden');
             }
+        }
+
+        // Render conflicts with pagination
+        function renderConflicts(conflicts) {
+            const containerEl = document.getElementById('conflictsContainer');
+            
+            if (!conflicts || conflicts.length === 0) {
+                containerEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <p>No conflicts on this page</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            containerEl.innerHTML = '';
+            conflicts.forEach(conflict => {
+                const conflictCard = createConflictCard(conflict);
+                containerEl.innerHTML += conflictCard;
+            });
         }
 
         // Create conflict card HTML
@@ -1457,8 +2277,8 @@
 
         // Helper function to format date range
         function formatDateRange(startDate, endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+            const start = parseLocalDate(startDate);
+            const end = parseLocalDate(endDate);
             const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             return `${startStr} - ${endStr}`;
@@ -1478,16 +2298,20 @@
 
         // Load my activity log
         async function loadActivityLog() {
+            const container = document.getElementById('activityLogContainer');
+            const rowsPerPageContainer = document.getElementById('activityRowsPerPageContainer');
+            
             try {
                 const response = await fetch('/api/vacation/my-activity');
                 const data = await response.json();
                 
-                const container = document.getElementById('activityLogContainer');
-                
                 if (data.success && data.activities) {
-                    const activities = data.activities;
+                    // Store activities in pagination state
+                    paginationState.activity.allData = data.activities;
+                    paginationState.activity.currentPage = 1;
                     
-                    if (activities.length === 0) {
+                    if (data.activities.length === 0) {
+                        rowsPerPageContainer.style.display = 'none';
                         container.innerHTML = `
                             <div class="text-center py-12">
                                 <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1500,102 +2324,14 @@
                         return;
                     }
 
-                    container.innerHTML = activities.map(activity => {
-                        const activityDate = new Date(activity.activity_timestamp);
-                        const formattedDate = activityDate.toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                        }) + ' at ' + activityDate.toLocaleTimeString('en-US', { 
-                            hour: 'numeric', 
-                            minute: '2-digit',
-                            hour12: true 
-                        });
-
-                        const startDate = new Date(activity.start_date);
-                        const endDate = new Date(activity.end_date);
-                        const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-                        const leaveTypeDisplay = activity.leave_type 
-                            ? activity.leave_type.charAt(0).toUpperCase() + activity.leave_type.slice(1) 
-                            : 'N/A';
-
-                        // Determine icon and styling based on activity type
-                        let iconBg, iconColor, iconPath, activityTitle, activityDescription;
-                        
-                        switch (activity.activity_type) {
-                            case 'approved':
-                                iconBg = 'bg-green-100';
-                                iconColor = 'text-green-600';
-                                iconPath = 'M5 13l4 4L19 7';
-                                activityTitle = 'Request Approved';
-                                activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was approved`;
-                                break;
-                            case 'denied':
-                                iconBg = 'bg-red-100';
-                                iconColor = 'text-red-600';
-                                iconPath = 'M6 18L18 6M6 6l12 12';
-                                activityTitle = 'Request Denied';
-                                activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was denied`;
-                                break;
-                            case 'modified':
-                                iconBg = 'bg-purple-100';
-                                iconColor = 'text-purple-600';
-                                iconPath = 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z';
-                                activityTitle = 'Request Modified';
-                                activityDescription = `You updated your vacation dates to ${formattedStartDate} - ${formattedEndDate}`;
-                                break;
-                            case 'new_request':
-                            default:
-                                iconBg = 'bg-blue-100';
-                                iconColor = 'text-blue-600';
-                                iconPath = 'M12 4v16m8-8H4';
-                                activityTitle = 'New Request Submitted';
-                                activityDescription = `You submitted a vacation request for ${formattedStartDate} - ${formattedEndDate}`;
-                                break;
-                        }
-
-                        // Status badge
-                        let statusBadge = '';
-                        if (activity.status === 'pending') {
-                            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>';
-                        }
-
-                        // Decision reason
-                        let decisionReason = '';
-                        if (activity.decision_reason && activity.activity_type === 'denied') {
-                            decisionReason = `<div class="text-xs text-slate-500 italic mb-2">Reason: ${activity.decision_reason}</div>`;
-                        }
-
-                        return `
-                            <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0 w-10 h-10 ${iconBg} rounded-full flex items-center justify-center">
-                                        <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/>
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-2 gap-2">
-                                            <div class="font-semibold text-slate-900">${activityTitle}</div>
-                                            <span class="text-xs text-slate-500">${formattedDate}</span>
-                                        </div>
-                                        <div class="text-sm text-slate-600 mb-2">
-                                            ${activityDescription}
-                                        </div>
-                                        ${decisionReason}
-                                        <div class="flex flex-wrap gap-2">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">${activity.duration_days || 0} day${activity.duration_days !== 1 ? 's' : ''}</span>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">${leaveTypeDisplay}</span>
-                                            ${statusBadge}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
+                    // Show rows per page selector when data exists
+                    rowsPerPageContainer.style.display = 'flex';
+                    
+                    // Render paginated activity data
+                    renderPaginatedData('activity');
                 } else {
+                    paginationState.activity.allData = [];
+                    rowsPerPageContainer.style.display = 'none';
                     container.innerHTML = `
                         <div class="text-center py-12">
                             <svg class="w-16 h-16 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1607,16 +2343,133 @@
                 }
             } catch (error) {
                 console.error('Error loading activity log:', error);
-                const container = document.getElementById('activityLogContainer');
+                paginationState.activity.allData = [];
+                rowsPerPageContainer.style.display = 'none';
                 container.innerHTML = `
                     <div class="text-center py-12">
                         <svg class="w-16 h-16 mx-auto text-red-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                        <p class="text-slate-500">Error loading activity log</p>
+                            </svg>
+                            <p class="text-slate-500">Error loading activity log</p>
+                        </div>
+                    `;
+            }
+        }        // Render activity log with pagination
+        function renderActivityLog(activities) {
+            const container = document.getElementById('activityLogContainer');
+            
+            if (!activities || activities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500">
+                        <p>No activities on this page</p>
                     </div>
                 `;
+                return;
             }
+
+            container.innerHTML = activities.map(activity => {
+                // Check if dates exist
+                if (!activity.start_date || !activity.end_date) {
+                    return '';
+                }
+
+                // Use parseLocalDateTime for timestamp to avoid timezone issues
+                const activityDate = parseLocalDateTime(activity.activity_timestamp);
+                const formattedDate = activityDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                }) + ' at ' + activityDate.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+
+                // Use parseLocalDate to avoid timezone issues
+                const startDate = parseLocalDate(activity.start_date);
+                const endDate = parseLocalDate(activity.end_date);
+                const { workingDays } = calculateWorkingDays(startDate, endDate);
+                const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const leaveTypeDisplay = activity.leave_type 
+                    ? activity.leave_type.charAt(0).toUpperCase() + activity.leave_type.slice(1) 
+                    : 'N/A';
+
+                // Determine icon and styling based on activity type
+                let iconBg, iconColor, iconPath, activityTitle, activityDescription;
+                
+                switch (activity.activity_type) {
+                    case 'approved':
+                        iconBg = 'bg-green-100';
+                        iconColor = 'text-green-600';
+                        iconPath = 'M5 13l4 4L19 7';
+                        activityTitle = 'Request Approved';
+                        activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was approved`;
+                        break;
+                    case 'denied':
+                        iconBg = 'bg-red-100';
+                        iconColor = 'text-red-600';
+                        iconPath = 'M6 18L18 6M6 6l12 12';
+                        activityTitle = 'Request Denied';
+                        activityDescription = `Your vacation request for ${formattedStartDate} - ${formattedEndDate} was denied`;
+                        break;
+                    case 'modified':
+                        iconBg = 'bg-purple-100';
+                        iconColor = 'text-purple-600';
+                        iconPath = 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z';
+                        activityTitle = 'Request Modified';
+                        activityDescription = `You updated your vacation dates to ${formattedStartDate} - ${formattedEndDate}`;
+                        break;
+                    case 'new_request':
+                    default:
+                        iconBg = 'bg-blue-100';
+                        iconColor = 'text-blue-600';
+                        iconPath = 'M12 4v16m8-8H4';
+                        activityTitle = 'New Request Submitted';
+                        activityDescription = `You submitted a vacation request for ${formattedStartDate} - ${formattedEndDate}`;
+                        break;
+                }
+
+                // Status badge
+                let statusBadge = '';
+                if (activity.status === 'pending') {
+                    statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>';
+                }
+
+                // Decision reason
+                let decisionReason = '';
+                if (activity.decision_reason && activity.activity_type === 'denied') {
+                    decisionReason = `<div class="text-xs text-slate-500 italic mb-2">Reason: ${activity.decision_reason}</div>`;
+                }
+
+                return `
+                    <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 ${iconBg} rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-2 gap-2">
+                                    <div class="font-semibold text-slate-900">${activityTitle}</div>
+                                    <span class="text-xs text-slate-500">${formattedDate}</span>
+                                </div>
+                                <div class="text-sm text-slate-600 mb-2">
+                                    ${activityDescription}
+                                </div>
+                                ${decisionReason}
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">${workingDays} day${workingDays !== 1 ? 's' : ''}</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">${leaveTypeDisplay}</span>
+                                    ${statusBadge}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Handle window resize
@@ -1651,7 +2504,215 @@
             if (createForm) {
                 createForm.addEventListener('submit', handleCreateRequestSubmit);
             }
+
+            // Add event listeners for date validation
+            document.getElementById('startDate')?.addEventListener('change', validateAndUpdateDates);
+            document.getElementById('endDate')?.addEventListener('change', validateAndUpdateDates);
+            document.getElementById('returnDate')?.addEventListener('change', checkReturnDateGap);
         });
+
+        // Weekend detection and working days calculation
+        function isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+        }
+
+        function getDayName(date) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        }
+
+        function parseLocalDate(dateString) {
+            // Parse YYYY-MM-DD format to local date without timezone issues
+            if (!dateString || typeof dateString !== 'string') {
+                return new Date(); // Return current date as fallback
+            }
+            const parts = dateString.split('-');
+            if (parts.length !== 3) {
+                return new Date(); // Return current date as fallback
+            }
+            const [year, month, day] = parts.map(num => parseInt(num, 10));
+            if (isNaN(year) || isNaN(month) || isNaN(day)) {
+                return new Date(); // Return current date as fallback
+            }
+            return new Date(year, month - 1, day);
+        }
+
+        function calculateWorkingDays(startDate, endDate) {
+            let count = 0;
+            let weekendCount = 0;
+            const current = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+            while (current <= end) {
+                if (isWeekend(current)) {
+                    weekendCount++;
+                } else {
+                    count++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+
+            return { workingDays: count, weekendDays: weekendCount };
+        }
+
+        function getReturnToWorkDate(endDate) {
+            // Return date is the next day after end date
+            const returnDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            returnDate.setDate(returnDate.getDate() + 1);
+            
+            // Skip weekends for return date
+            while (isWeekend(returnDate)) {
+                returnDate.setDate(returnDate.getDate() + 1);
+            }
+            
+            return returnDate;
+        }
+
+        function validateAndUpdateDates() {
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const startPastWarning = document.getElementById('startDatePastWarning');
+            const endPastWarning = document.getElementById('endDatePastWarning');
+            const startWarning = document.getElementById('startDateWeekendWarning');
+            const endWarning = document.getElementById('endDateWeekendWarning');
+            const startWeekendDay = document.getElementById('startDateWeekendDay');
+            const endWeekendDay = document.getElementById('endDateWeekendDay');
+            const summaryDiv = document.getElementById('vacationDaysSummary');
+            const returnDateInput = document.getElementById('returnDate');
+            const returnDateContainer = document.getElementById('returnToWorkContainer');
+
+            if (!startDateInput.value || !endDateInput.value) {
+                startPastWarning.classList.add('hidden');
+                endPastWarning.classList.add('hidden');
+                startWarning.classList.add('hidden');
+                endWarning.classList.add('hidden');
+                summaryDiv.classList.add('hidden');
+                returnDateContainer.classList.add('hidden');
+                return;
+            }
+
+            // Parse dates properly to avoid timezone issues
+            const startDate = parseLocalDate(startDateInput.value);
+            const endDate = parseLocalDate(endDateInput.value);
+            
+            // Get today's date at midnight for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Check if start date is in the past
+            let hasError = false;
+            if (startDate < today) {
+                startPastWarning.classList.remove('hidden');
+                startDateInput.classList.add('border-red-500');
+                startDateInput.classList.remove('border-slate-300');
+                hasError = true;
+            } else {
+                startPastWarning.classList.add('hidden');
+                startDateInput.classList.remove('border-red-500');
+                startDateInput.classList.add('border-slate-300');
+            }
+
+            // Check if end date is in the past
+            if (endDate < today) {
+                endPastWarning.classList.remove('hidden');
+                endDateInput.classList.add('border-red-500');
+                endDateInput.classList.remove('border-slate-300');
+                hasError = true;
+            } else {
+                endPastWarning.classList.add('hidden');
+                endDateInput.classList.remove('border-red-500');
+                endDateInput.classList.add('border-slate-300');
+            }
+
+            // If there are past date errors, don't proceed with other validations
+            if (hasError) {
+                startWarning.classList.add('hidden');
+                endWarning.classList.add('hidden');
+                summaryDiv.classList.add('hidden');
+                returnDateContainer.classList.add('hidden');
+                return;
+            }
+
+            // Check if start date is weekend
+            if (isWeekend(startDate)) {
+                startWarning.classList.remove('hidden');
+                startWeekendDay.textContent = getDayName(startDate);
+            } else {
+                startWarning.classList.add('hidden');
+            }
+
+            // Check if end date is weekend
+            if (isWeekend(endDate)) {
+                endWarning.classList.remove('hidden');
+                endWeekendDay.textContent = getDayName(endDate);
+            } else {
+                endWarning.classList.add('hidden');
+            }
+
+            // Calculate working days
+            if (endDate >= startDate) {
+                const { workingDays, weekendDays } = calculateWorkingDays(startDate, endDate);
+                const returnDate = getReturnToWorkDate(endDate);
+
+                // Update summary display
+                summaryDiv.classList.remove('hidden');
+                document.getElementById('workingDaysCount').textContent = workingDays;
+                document.getElementById('weekendDaysCount').textContent = weekendDays;
+                document.getElementById('returnToWorkDate').textContent = returnDate.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+
+                // Auto-fill return to work date input field
+                const returnDateString = returnDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                returnDateInput.value = returnDateString;
+                returnDateContainer.classList.remove('hidden');
+
+                // Check for gap days when return date is auto-filled
+                checkReturnDateGap();
+            } else {
+                summaryDiv.classList.add('hidden');
+                returnDateContainer.classList.add('hidden');
+            }
+        }
+
+        function checkReturnDateGap() {
+            const endDateInput = document.getElementById('endDate');
+            const returnDateInput = document.getElementById('returnDate');
+            const gapWarning = document.getElementById('returnDateGapWarning');
+            const gapDaysCount = document.getElementById('gapDaysCount');
+
+            if (!endDateInput.value || !returnDateInput.value) {
+                gapWarning.classList.add('hidden');
+                return;
+            }
+
+            const endDate = parseLocalDate(endDateInput.value);
+            const returnDate = parseLocalDate(returnDateInput.value);
+            const expectedReturnDate = getReturnToWorkDate(endDate);
+
+            // Only show warning if return date is AFTER the expected return date
+            if (returnDate > expectedReturnDate) {
+                // Calculate working days between expected return and actual return date
+                const gapStart = new Date(expectedReturnDate.getFullYear(), expectedReturnDate.getMonth(), expectedReturnDate.getDate());
+                const gapEnd = new Date(returnDate.getFullYear(), returnDate.getMonth(), returnDate.getDate());
+                gapEnd.setDate(gapEnd.getDate() - 1); // Don't include the actual return date
+
+                const { workingDays } = calculateWorkingDays(gapStart, gapEnd);
+
+                if (workingDays > 0) {
+                    gapDaysCount.textContent = workingDays;
+                    gapWarning.classList.remove('hidden');
+                } else {
+                    gapWarning.classList.add('hidden');
+                }
+            } else {
+                gapWarning.classList.add('hidden');
+            }
+        }
 
         // Handle Create Request Form Submission
         async function handleCreateRequestSubmit(e) {
@@ -1660,24 +2721,63 @@
             const form = e.target;
             const employeeId = parseInt(form.getAttribute('data-employee-id'));
             
-            const formData = {
-                employee_id: employeeId,
-                leave_type: document.getElementById('leaveType').value,
-                start_date: document.getElementById('startDate').value,
-                end_date: document.getElementById('endDate').value,
-                reason: document.getElementById('reason').value,
-                coverage_plan: document.getElementById('coveragePlan').value || null,
-                emergency_email: document.getElementById('emergencyEmail').value || null,
-                emergency_phone: document.getElementById('emergencyPhone').value || null
-            };
+            // Get button elements
+            const submitBtn = document.getElementById('submitRequestBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            const submitSpinner = document.getElementById('submitSpinner');
             
-            // Validate dates
-            if (new Date(formData.start_date) > new Date(formData.end_date)) {
-                showToast('End date must be after start date', 'error');
-                return;
-            }
+            // Set loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            submitBtnText.textContent = 'Submitting...';
+            submitSpinner.classList.remove('hidden');
             
             try {
+                const formData = {
+                    employee_id: employeeId,
+                    leave_type: document.getElementById('leaveType').value,
+                    start_date: document.getElementById('startDate').value,
+                    end_date: document.getElementById('endDate').value,
+                    return_to_work: document.getElementById('returnDate').value || null,
+                    reason: document.getElementById('reason').value,
+                    coverage_plan: document.getElementById('coveragePlan').value || null,
+                    emergency_email: document.getElementById('emergencyEmail').value || null,
+                    emergency_phone: document.getElementById('emergencyPhone').value || null
+                };
+                
+                // Validate dates
+                if (new Date(formData.start_date) > new Date(formData.end_date)) {
+                    showToast('End date must be after start date', 'error');
+                    return;
+                }
+
+                // Check for past dates
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const startDateObj = new Date(formData.start_date);
+                startDateObj.setHours(0, 0, 0, 0);
+                const endDateObj = new Date(formData.end_date);
+                endDateObj.setHours(0, 0, 0, 0);
+
+                if (startDateObj < today) {
+                    showToast('Cannot submit: Start date cannot be in the past', 'error');
+                    return;
+                }
+
+                if (endDateObj < today) {
+                    showToast('Cannot submit: End date cannot be in the past', 'error');
+                    return;
+                }
+
+                // Check for weekend warnings
+                const startWarning = document.getElementById('startDateWeekendWarning');
+                const endWarning = document.getElementById('endDateWeekendWarning');
+                
+                if (!startWarning.classList.contains('hidden') || !endWarning.classList.contains('hidden')) {
+                    showToast('Cannot submit: Weekend dates are not allowed. Please select working days (Monday-Friday) only.', 'error');
+                    return;
+                }
+                
                 const response = await fetch('/api/vacation', {
                     method: 'POST',
                     headers: {
@@ -1704,6 +2804,12 @@
             } catch (error) {
                 console.error('Error submitting vacation request:', error);
                 showToast('Failed to submit request', 'error');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                submitBtnText.textContent = 'Submit Request';
+                submitSpinner.classList.add('hidden');
             }
         }
 
@@ -1713,6 +2819,12 @@
             if (form) {
                 form.reset();
             }
+            // Hide all warnings and summary
+            document.getElementById('startDateWeekendWarning')?.classList.add('hidden');
+            document.getElementById('endDateWeekendWarning')?.classList.add('hidden');
+            document.getElementById('vacationDaysSummary')?.classList.add('hidden');
+            document.getElementById('returnToWorkContainer')?.classList.add('hidden');
+            document.getElementById('returnDateGapWarning')?.classList.add('hidden');
         }
 
         // Load sidebar stats when Create section is shown
@@ -1881,41 +2993,6 @@
                             <div class="bg-white rounded-lg p-3 border border-blue-100">
                                 <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Manager</div>
                                 <div class="text-sm font-medium text-slate-900">${profile.manager}</div>
-                            </div>
-                        `;
-                    }
-                    
-                    // Employment Duration
-                    if (profile.date_of_employment) {
-                        const empDate = new Date(profile.date_of_employment);
-                        const formattedDate = empDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                        detailsHTML += `
-                            <div class="bg-white rounded-lg p-3 border border-blue-100">
-                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Employment Date</div>
-                                <div class="text-sm font-medium text-slate-900">${formattedDate}</div>
-                            </div>
-                        `;
-                    }
-                    
-                    if (profile.years_of_employment !== null && profile.years_of_employment !== undefined) {
-                        const years = profile.years_of_employment;
-                        const months = profile.months_of_employment || 0;
-                        let durationText = '';
-                        if (years > 0) {
-                            durationText = `${years} ${years === 1 ? 'year' : 'years'}`;
-                            if (months > 0) {
-                                durationText += `, ${months} ${months === 1 ? 'month' : 'months'}`;
-                            }
-                        } else if (months > 0) {
-                            durationText = `${months} ${months === 1 ? 'month' : 'months'}`;
-                        } else {
-                            durationText = 'Less than 1 month';
-                        }
-                        
-                        detailsHTML += `
-                            <div class="bg-white rounded-lg p-3 border border-blue-100">
-                                <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Time with Company</div>
-                                <div class="text-sm font-medium text-slate-900">${durationText}</div>
                             </div>
                         `;
                     }

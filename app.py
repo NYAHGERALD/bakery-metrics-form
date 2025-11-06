@@ -72,6 +72,10 @@ def get_db_connection():
     conn = None
     try:
         conn = psycopg2.connect(**DATABASE_CONFIG)
+        # Set timezone to Central Time (Dallas, TX)
+        with conn.cursor() as cur:
+            cur.execute("SET TIME ZONE 'America/Chicago'")
+        conn.commit()
         yield conn
     except Exception as e:
         if conn:
@@ -10524,32 +10528,58 @@ def mark_notification_read(notification_id):
     """Mark a notification as read."""
     try:
         user_id = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
         
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
             
-            # Get employee_id from user_id
-            cur.execute("""
-                SELECT id FROM employees WHERE user_id = %s
-            """, (user_id,))
+            # Build update query based on role
+            if user_role == 'admin':
+                # Admin can mark any notification as read
+                cur.execute("""
+                    UPDATE notifications
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (notification_id,))
+            elif user_role == 'supervisor':
+                # Supervisor can mark notifications from their assigned employees as read
+                cur.execute("""
+                    UPDATE notifications n
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    FROM employees e
+                    WHERE n.id = %s 
+                    AND n.user_id = e.id 
+                    AND e.supervisor_id = %s
+                """, (notification_id, user_id))
+            else:
+                # Regular employee can only mark their own notifications as read
+                # Get employee_id from user_id
+                cur.execute("""
+                    SELECT id FROM employees WHERE user_id = %s
+                """, (user_id,))
+                
+                employee = cur.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found.'
+                    }), 404
+                
+                employee_id = employee['id']
+                
+                # Update notification as read (only if it belongs to this employee)
+                cur.execute("""
+                    UPDATE notifications
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND user_id = %s
+                """, (notification_id, employee_id))
             
-            employee = cur.fetchone()
-            
-            if not employee:
+            if cur.rowcount == 0:
                 return jsonify({
                     'success': False,
-                    'message': 'Employee not found.'
+                    'message': 'Notification not found or you do not have permission to mark it as read.'
                 }), 404
-            
-            employee_id = employee['id']
-            
-            # Update notification as read (only if it belongs to this employee)
-            cur.execute("""
-                UPDATE notifications
-                SET is_read = TRUE,
-                    read_at = CURRENT_TIMESTAMP
-                WHERE id = %s AND user_id = %s
-            """, (notification_id, employee_id))
             
             conn.commit()
             
@@ -10571,32 +10601,52 @@ def mark_all_notifications_read():
     """Mark all notifications as read for current user."""
     try:
         user_id = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
         
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=RealDictCursor)
             
-            # Get employee_id from user_id
-            cur.execute("""
-                SELECT id FROM employees WHERE user_id = %s
-            """, (user_id,))
-            
-            employee = cur.fetchone()
-            
-            if not employee:
-                return jsonify({
-                    'success': False,
-                    'message': 'Employee not found.'
-                }), 404
-            
-            employee_id = employee['id']
-            
-            # Update all unread notifications
-            cur.execute("""
-                UPDATE notifications
-                SET is_read = TRUE,
-                    read_at = CURRENT_TIMESTAMP
-                WHERE user_id = %s AND is_read = FALSE
-            """, (employee_id,))
+            # Build update query based on role
+            if user_role == 'admin':
+                # Admin can mark all notifications as read
+                cur.execute("""
+                    UPDATE notifications
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    WHERE is_read = FALSE
+                """)
+            elif user_role == 'supervisor':
+                # Supervisor can mark all notifications from their assigned employees as read
+                cur.execute("""
+                    UPDATE notifications n
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    FROM employees e
+                    WHERE n.user_id = e.id 
+                    AND e.supervisor_id = %s
+                    AND n.is_read = FALSE
+                """, (user_id,))
+            else:
+                # Regular employee can only mark their own notifications as read
+                # Get employee_id from user_id
+                cur.execute("""
+                    SELECT id FROM employees WHERE user_id = %s
+                """, (user_id,))
+                
+                employee = cur.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found.'
+                    }), 404
+                
+                employee_id = employee['id']
+                
+                # Update all unread notifications
+                cur.execute("""
+                    UPDATE notifications
+                    SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+                    WHERE user_id = %s AND is_read = FALSE
+                """, (employee_id,))
             
             conn.commit()
             
@@ -10611,6 +10661,78 @@ def mark_all_notifications_read():
             'success': False,
             'message': 'An unexpected error occurred.'
         }), 500
+
+
+@app.route('/api/notifications/<int:notification_id>', methods=['DELETE'])
+@login_required
+def delete_notification(notification_id):
+    """Delete a notification."""
+    try:
+        user_id = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Build delete query based on role
+            if user_role == 'admin':
+                # Admin can delete any notification
+                cur.execute("""
+                    DELETE FROM notifications
+                    WHERE id = %s
+                """, (notification_id,))
+            elif user_role == 'supervisor':
+                # Supervisor can delete notifications from their assigned employees
+                cur.execute("""
+                    DELETE FROM notifications n
+                    USING employees e
+                    WHERE n.id = %s 
+                    AND n.user_id = e.id 
+                    AND e.supervisor_id = %s
+                """, (notification_id, user_id))
+            else:
+                # Regular employee can only delete their own notifications
+                # Get employee_id from user_id
+                cur.execute("""
+                    SELECT id FROM employees WHERE user_id = %s
+                """, (user_id,))
+                
+                employee = cur.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found.'
+                    }), 404
+                
+                employee_id = employee['id']
+                
+                # Delete notification (only if it belongs to this employee)
+                cur.execute("""
+                    DELETE FROM notifications
+                    WHERE id = %s AND user_id = %s
+                """, (notification_id, employee_id))
+            
+            if cur.rowcount == 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Notification not found or you do not have permission to delete it.'
+                }), 404
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Notification deleted successfully.'
+            })
+
+    except Exception as e:
+        logger.error(f"Error in delete_notification endpoint: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'An unexpected error occurred.'
+        }), 500
+
 
 # Error Handlers
 @app.errorhandler(404)
@@ -12982,6 +13104,131 @@ def get_user_status():
         }), 500
 
 
+# ==================== USER SETTINGS API ====================
+
+@app.route('/api/user-settings', methods=['GET'])
+@login_required
+def get_user_settings():
+    """Get all settings for the current user"""
+    user_id = session.get('user_id')
+    
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT setting_key, setting_value, updated_at
+                    FROM user_settings
+                    WHERE user_id = %s
+                    ORDER BY setting_key
+                """, (user_id,))
+                
+                settings = cur.fetchall()
+                
+                # Convert to dictionary for easier access
+                settings_dict = {
+                    setting['setting_key']: {
+                        'value': setting['setting_value'],
+                        'updated_at': setting['updated_at'].isoformat() if setting['updated_at'] else None
+                    }
+                    for setting in settings
+                }
+                
+                return jsonify({
+                    'success': True,
+                    'settings': settings_dict
+                })
+                
+    except Exception as e:
+        logger.error(f"Error fetching user settings: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Error fetching settings'
+        }), 500
+
+
+@app.route('/api/user-settings', methods=['POST'])
+@login_required
+def save_user_settings():
+    """Save or update user settings"""
+    user_id = session.get('user_id')
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'success': False,
+            'message': 'No settings data provided'
+        }), 400
+    
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                # Save or update each setting
+                for setting_key, setting_value in data.items():
+                    cur.execute("""
+                        INSERT INTO user_settings (user_id, setting_key, setting_value, updated_at)
+                        VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                        ON CONFLICT (user_id, setting_key)
+                        DO UPDATE SET 
+                            setting_value = EXCLUDED.setting_value,
+                            updated_at = CURRENT_TIMESTAMP
+                    """, (user_id, setting_key, str(setting_value)))
+                
+                conn.commit()
+                
+                logger.info(f"User {user_id} updated {len(data)} settings")
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Settings saved successfully',
+                    'updated_count': len(data)
+                })
+                
+    except Exception as e:
+        logger.error(f"Error saving user settings: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Error saving settings'
+        }), 500
+
+
+@app.route('/api/user-settings/<setting_key>', methods=['GET'])
+@login_required
+def get_user_setting(setting_key):
+    """Get a specific setting for the current user"""
+    user_id = session.get('user_id')
+    
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT setting_value, updated_at
+                    FROM user_settings
+                    WHERE user_id = %s AND setting_key = %s
+                """, (user_id, setting_key))
+                
+                setting = cur.fetchone()
+                
+                if setting:
+                    return jsonify({
+                        'success': True,
+                        'setting_key': setting_key,
+                        'setting_value': setting['setting_value'],
+                        'updated_at': setting['updated_at'].isoformat() if setting['updated_at'] else None
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Setting not found'
+                    }), 404
+                
+    except Exception as e:
+        logger.error(f"Error fetching user setting {setting_key}: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Error fetching setting'
+        }), 500
+
+
 @app.route('/api/week-average', methods=['GET'])
 @login_required
 @password_change_required
@@ -13737,6 +13984,7 @@ def create_vacation_request():
         leave_type = data['leave_type'].lower()
         start_date = data['start_date']
         end_date = data['end_date']
+        return_to_work = data.get('return_to_work', None)
         reason = data['reason']
         coverage_plan = data.get('coverage_plan', None)
         emergency_phone = data.get('emergency_phone', None)
@@ -13786,6 +14034,7 @@ def create_vacation_request():
                         leave_type,
                         start_date,
                         end_date,
+                        return_to_work,
                         reason,
                         coverage_plan,
                         emergency_phone,
@@ -13801,7 +14050,7 @@ def create_vacation_request():
                         created_at,
                         updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
                     ) RETURNING id, created_at
                 """, (
                     employee_id,
@@ -13809,6 +14058,7 @@ def create_vacation_request():
                     leave_type,
                     start_date,
                     end_date,
+                    return_to_work,
                     reason,
                     coverage_plan,
                     emergency_phone,
@@ -14288,6 +14538,143 @@ def get_vacation_details(vacation_id):
         return jsonify({
             'success': False,
             'message': str(e)
+        }), 500
+
+
+@app.route('/api/vacation/<int:vacation_id>', methods=['PUT'])
+@login_required
+def update_vacation_request(vacation_id):
+    """Update a vacation request (only allowed for pending requests)"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'No data provided'
+            }), 400
+        
+        # Extract and validate fields
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        auto_return_date = data.get('auto_return_date')
+        leave_type = data.get('leave_type', 'vacation')
+        reason = data.get('reason', '')
+        
+        if not start_date or not end_date:
+            return jsonify({
+                'success': False,
+                'message': 'Start date and end date are required'
+            }), 400
+        
+        # Parse dates
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid date format. Use YYYY-MM-DD'
+            }), 400
+        
+        # Validate date range
+        if end < start:
+            return jsonify({
+                'success': False,
+                'message': 'End date must be after or equal to start date'
+            }), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Check if vacation exists and is pending
+                cur.execute("""
+                    SELECT id, status, employee_id 
+                    FROM vacation 
+                    WHERE id = %s
+                """, (vacation_id,))
+                
+                vacation = cur.fetchone()
+                
+                if not vacation:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Vacation request not found'
+                    }), 404
+                
+                # Only allow editing pending requests
+                if vacation['status'] != 'pending':
+                    return jsonify({
+                        'success': False,
+                        'message': 'Only pending requests can be edited'
+                    }), 403
+                
+                # Update the vacation request (duration_days is auto-calculated by database)
+                cur.execute("""
+                    UPDATE vacation
+                    SET 
+                        start_date = %s,
+                        end_date = %s,
+                        leave_type = %s,
+                        reason = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                    RETURNING id, employee_id, start_date, end_date, duration_days
+                """, (start_date, end_date, leave_type, reason, vacation_id))
+                
+                updated_vacation = cur.fetchone()
+                conn.commit()
+                
+                # Calculate duration for activity log
+                duration_days = 0
+                current = start
+                while current <= end:
+                    if current.weekday() < 5:  # Monday = 0, Friday = 4
+                        duration_days += 1
+                    current += timedelta(days=1)
+                
+                # Log the modification in activity log
+                try:
+                    cur.execute("""
+                        INSERT INTO vacation_activity_log (
+                            vacation_id,
+                            employee_id,
+                            activity_type,
+                            start_date,
+                            end_date,
+                            duration_days,
+                            leave_type,
+                            status
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        vacation_id,
+                        vacation['employee_id'],
+                        'modified',
+                        start_date,
+                        end_date,
+                        duration_days,
+                        leave_type,
+                        'pending'
+                    ))
+                    conn.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log vacation modification: {log_error}")
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Vacation request updated successfully',
+                    'vacation': {
+                        'id': updated_vacation['id'],
+                        'start_date': updated_vacation['start_date'].strftime('%Y-%m-%d'),
+                        'end_date': updated_vacation['end_date'].strftime('%Y-%m-%d'),
+                        'duration_days': updated_vacation['duration_days']
+                    }
+                })
+                
+    except Exception as e:
+        logger.error(f"Update vacation request error: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
         }), 500
 
 
@@ -15416,23 +15803,49 @@ def mark_vacation_notification_read(notification_id):
     """Mark a vacation notification as read"""
     try:
         user_uuid = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
         
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get employee ID from UUID
-                cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
-                employee = cursor.fetchone()
+                # Build update query based on role
+                if user_role == 'admin':
+                    # Admin can mark any notification as read
+                    cursor.execute("""
+                        UPDATE notifications
+                        SET is_read = TRUE, read_at = NOW()
+                        WHERE id = %s
+                    """, (notification_id,))
+                elif user_role == 'supervisor':
+                    # Supervisor can mark notifications from their assigned employees as read
+                    cursor.execute("""
+                        UPDATE notifications n
+                        SET is_read = TRUE, read_at = NOW()
+                        FROM employees e
+                        WHERE n.id = %s 
+                        AND n.user_id = e.id 
+                        AND e.supervisor_id = %s
+                    """, (notification_id, user_uuid))
+                else:
+                    # Regular employee can only mark their own notifications as read
+                    cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
+                    employee = cursor.fetchone()
+                    
+                    if not employee:
+                        return jsonify({'success': False, 'message': 'Employee not found'}), 404
+                    
+                    employee_id = employee['id']
+                    
+                    cursor.execute("""
+                        UPDATE notifications
+                        SET is_read = TRUE, read_at = NOW()
+                        WHERE id = %s AND user_id = %s
+                    """, (notification_id, employee_id))
                 
-                if not employee:
-                    return jsonify({'success': False, 'message': 'Employee not found'}), 404
-                
-                employee_id = employee['id']
-                
-                cursor.execute("""
-                    UPDATE notifications
-                    SET is_read = TRUE, read_at = NOW()
-                    WHERE id = %s AND user_id = %s
-                """, (notification_id, employee_id))
+                if cursor.rowcount == 0:
+                    return jsonify({
+                        'success': False, 
+                        'message': 'Notification not found or you do not have permission to mark it as read'
+                    }), 404
                 
                 conn.commit()
                 
@@ -15449,23 +15862,43 @@ def mark_all_vacation_notifications_read():
     """Mark all vacation notifications as read for the current user"""
     try:
         user_uuid = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
         
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get employee ID from UUID
-                cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
-                employee = cursor.fetchone()
-                
-                if not employee:
-                    return jsonify({'success': False, 'message': 'Employee not found'}), 404
-                
-                employee_id = employee['id']
-                
-                cursor.execute("""
-                    UPDATE notifications
-                    SET is_read = TRUE, read_at = NOW()
-                    WHERE user_id = %s AND is_read = FALSE
-                """, (employee_id,))
+                # Build update query based on role
+                if user_role == 'admin':
+                    # Admin can mark all notifications as read
+                    cursor.execute("""
+                        UPDATE notifications
+                        SET is_read = TRUE, read_at = NOW()
+                        WHERE is_read = FALSE
+                    """)
+                elif user_role == 'supervisor':
+                    # Supervisor can mark all notifications from their assigned employees as read
+                    cursor.execute("""
+                        UPDATE notifications n
+                        SET is_read = TRUE, read_at = NOW()
+                        FROM employees e
+                        WHERE n.user_id = e.id 
+                        AND e.supervisor_id = %s
+                        AND n.is_read = FALSE
+                    """, (user_uuid,))
+                else:
+                    # Regular employee can only mark their own notifications as read
+                    cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
+                    employee = cursor.fetchone()
+                    
+                    if not employee:
+                        return jsonify({'success': False, 'message': 'Employee not found'}), 404
+                    
+                    employee_id = employee['id']
+                    
+                    cursor.execute("""
+                        UPDATE notifications
+                        SET is_read = TRUE, read_at = NOW()
+                        WHERE user_id = %s AND is_read = FALSE
+                    """, (employee_id,))
                 
                 conn.commit()
                 
@@ -15482,26 +15915,50 @@ def delete_vacation_notification(notification_id):
     """Delete a vacation notification"""
     try:
         user_uuid = session.get('user_id')
+        user_role = session.get('user_role', '').lower()
         
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get employee ID from UUID
-                cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
-                employee = cursor.fetchone()
+                # Build delete query based on role
+                if user_role == 'admin':
+                    # Admin can delete any notification
+                    cursor.execute("""
+                        DELETE FROM notifications
+                        WHERE id = %s
+                    """, (notification_id,))
+                elif user_role == 'supervisor':
+                    # Supervisor can delete notifications from their assigned employees
+                    cursor.execute("""
+                        DELETE FROM notifications n
+                        USING employees e
+                        WHERE n.id = %s 
+                        AND n.user_id = e.id 
+                        AND e.supervisor_id = %s
+                    """, (notification_id, user_uuid))
+                else:
+                    # Regular employee can only delete their own notifications
+                    cursor.execute("SELECT id FROM employees WHERE user_id = %s", (user_uuid,))
+                    employee = cursor.fetchone()
+                    
+                    if not employee:
+                        return jsonify({'success': False, 'message': 'Employee not found'}), 404
+                    
+                    employee_id = employee['id']
+                    
+                    cursor.execute("""
+                        DELETE FROM notifications
+                        WHERE id = %s AND user_id = %s
+                    """, (notification_id, employee_id))
                 
-                if not employee:
-                    return jsonify({'success': False, 'message': 'Employee not found'}), 404
-                
-                employee_id = employee['id']
-                
-                cursor.execute("""
-                    DELETE FROM notifications
-                    WHERE id = %s AND user_id = %s
-                """, (notification_id, employee_id))
+                if cursor.rowcount == 0:
+                    return jsonify({
+                        'success': False, 
+                        'message': 'Notification not found or you do not have permission to delete it'
+                    }), 404
                 
                 conn.commit()
                 
-                return jsonify({'success': True, 'message': 'Notification deleted'})
+                return jsonify({'success': True, 'message': 'Notification deleted successfully'})
                 
     except Exception as e:
         logger.error(f"Delete vacation notification error: {e}")
@@ -15694,9 +16151,21 @@ def get_my_vacation_activity():
                 
                 activities = cursor.fetchall()
                 
+                # Convert date objects to strings
+                activities_list = []
+                for activity in activities:
+                    activity_dict = dict(activity)
+                    if activity_dict.get('start_date'):
+                        activity_dict['start_date'] = activity_dict['start_date'].strftime('%Y-%m-%d')
+                    if activity_dict.get('end_date'):
+                        activity_dict['end_date'] = activity_dict['end_date'].strftime('%Y-%m-%d')
+                    if activity_dict.get('activity_timestamp'):
+                        activity_dict['activity_timestamp'] = activity_dict['activity_timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+                    activities_list.append(activity_dict)
+                
                 return jsonify({
                     'success': True,
-                    'activities': activities
+                    'activities': activities_list
                 })
                 
     except Exception as e:
@@ -15747,9 +16216,21 @@ def get_my_upcoming_vacations():
                 
                 vacations = cursor.fetchall()
                 
+                # Convert date objects to strings
+                vacations_list = []
+                for vac in vacations:
+                    vac_dict = dict(vac)
+                    if vac_dict.get('start_date'):
+                        vac_dict['start_date'] = vac_dict['start_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('end_date'):
+                        vac_dict['end_date'] = vac_dict['end_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('created_at'):
+                        vac_dict['created_at'] = vac_dict['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+                    vacations_list.append(vac_dict)
+                
                 return jsonify({
                     'success': True,
-                    'vacations': vacations
+                    'vacations': vacations_list
                 })
                 
     except Exception as e:
@@ -15798,9 +16279,21 @@ def get_my_pending_requests():
                 
                 vacations = cursor.fetchall()
                 
+                # Convert date objects to strings
+                vacations_list = []
+                for vac in vacations:
+                    vac_dict = dict(vac)
+                    if vac_dict.get('start_date'):
+                        vac_dict['start_date'] = vac_dict['start_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('end_date'):
+                        vac_dict['end_date'] = vac_dict['end_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('created_at'):
+                        vac_dict['created_at'] = vac_dict['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+                    vacations_list.append(vac_dict)
+                
                 return jsonify({
                     'success': True,
-                    'vacations': vacations
+                    'vacations': vacations_list
                 })
                 
     except Exception as e:
@@ -15853,9 +16346,23 @@ def get_my_recent_activity():
                 
                 vacations = cursor.fetchall()
                 
+                # Convert date objects to strings
+                vacations_list = []
+                for vac in vacations:
+                    vac_dict = dict(vac)
+                    if vac_dict.get('start_date'):
+                        vac_dict['start_date'] = vac_dict['start_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('end_date'):
+                        vac_dict['end_date'] = vac_dict['end_date'].strftime('%Y-%m-%d')
+                    if vac_dict.get('created_at'):
+                        vac_dict['created_at'] = vac_dict['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+                    if vac_dict.get('decided_at'):
+                        vac_dict['decided_at'] = vac_dict['decided_at'].strftime('%Y-%m-%d %H:%M:%S')
+                    vacations_list.append(vac_dict)
+                
                 return jsonify({
                     'success': True,
-                    'vacations': vacations
+                    'vacations': vacations_list
                 })
                 
     except Exception as e:
@@ -16477,6 +16984,319 @@ def get_asset_by_id(asset_id):
         return jsonify({
             'success': False,
             'error': str(e)
+        }), 500
+
+
+# ==================== HELP CENTER API ====================
+
+@app.route('/api/help-center', methods=['GET'])
+def get_help_center():
+    """Get Help Center content and FAQs"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get active help center configuration
+                cursor.execute("""
+                    SELECT * FROM help_center 
+                    WHERE is_active = TRUE 
+                    LIMIT 1
+                """)
+                help_center = cursor.fetchone()
+                
+                if not help_center:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Help center configuration not found'
+                    }), 404
+                
+                # Get active FAQs ordered by display_order
+                cursor.execute("""
+                    SELECT id, question, answer, display_order
+                    FROM help_center_faqs
+                    WHERE help_center_id = %s AND is_active = TRUE
+                    ORDER BY display_order ASC
+                """, (help_center['id'],))
+                faqs = cursor.fetchall()
+                
+                return jsonify({
+                    'success': True,
+                    'data': {
+                        'quick_start': {
+                            'title': help_center['quick_start_title'],
+                            'items': [
+                                help_center['quick_start_item_1'],
+                                help_center['quick_start_item_2'],
+                                help_center['quick_start_item_3']
+                            ]
+                        },
+                        'need_help': {
+                            'title': help_center['need_help_title'],
+                            'description': help_center['need_help_description'],
+                            'items': [
+                                help_center['need_help_item_1'],
+                                help_center['need_help_item_2'],
+                                help_center['need_help_item_3']
+                            ]
+                        },
+                        'support_contact': {
+                            'phone': help_center['support_phone'],
+                            'email': help_center['support_email'],
+                            'hours': help_center['support_hours']
+                        },
+                        'support_tickets_enabled': help_center['enable_support_tickets'],
+                        'faqs': [
+                            {
+                                'id': faq['id'],
+                                'question': faq['question'],
+                                'answer': faq['answer'],
+                                'order': faq['display_order']
+                            } for faq in faqs
+                        ]
+                    }
+                })
+                
+    except Exception as e:
+        logger.error(f"Get help center error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/help-center/faqs', methods=['GET'])
+def get_help_center_faqs():
+    """Get all active FAQs"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT f.id, f.question, f.answer, f.display_order
+                    FROM help_center_faqs f
+                    JOIN help_center h ON f.help_center_id = h.id
+                    WHERE f.is_active = TRUE AND h.is_active = TRUE
+                    ORDER BY f.display_order ASC
+                """)
+                faqs = cursor.fetchall()
+                
+                return jsonify({
+                    'success': True,
+                    'faqs': [
+                        {
+                            'id': faq['id'],
+                            'question': faq['question'],
+                            'answer': faq['answer'],
+                            'order': faq['display_order']
+                        } for faq in faqs
+                    ]
+                })
+                
+    except Exception as e:
+        logger.error(f"Get FAQs error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/support-tickets', methods=['POST'])
+@login_required
+def create_support_ticket():
+    """Create a new support ticket"""
+    try:
+        data = request.get_json()
+        user_uuid = session.get('user_id')
+        
+        # Validate required fields
+        if not data.get('subject') or not data.get('description'):
+            return jsonify({
+                'success': False,
+                'message': 'Subject and description are required'
+            }), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get employee information
+                cursor.execute("""
+                    SELECT id, name, email 
+                    FROM employees 
+                    WHERE user_id = %s
+                """, (user_uuid,))
+                employee = cursor.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found'
+                    }), 404
+                
+                # Generate unique ticket number
+                cursor.execute("SELECT generate_ticket_number()")
+                ticket_number = cursor.fetchone()['generate_ticket_number']
+                
+                # Insert support ticket
+                cursor.execute("""
+                    INSERT INTO support_tickets (
+                        ticket_number, employee_id, employee_name, employee_email,
+                        subject, description, category, priority, status
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, ticket_number, created_at
+                """, (
+                    ticket_number,
+                    employee['id'],
+                    employee['name'],
+                    employee['email'],
+                    data['subject'],
+                    data['description'],
+                    data.get('category', 'General'),
+                    data.get('priority', 'Medium'),
+                    'Open'
+                ))
+                
+                ticket = cursor.fetchone()
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Support ticket created successfully',
+                    'ticket': {
+                        'id': ticket['id'],
+                        'ticket_number': ticket['ticket_number'],
+                        'created_at': ticket['created_at'].isoformat()
+                    }
+                })
+                
+    except Exception as e:
+        logger.error(f"Create support ticket error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/support-tickets/my-tickets', methods=['GET'])
+@login_required
+def get_my_tickets():
+    """Get support tickets for the logged-in employee"""
+    try:
+        user_uuid = session.get('user_id')
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get employee ID
+                cursor.execute("""
+                    SELECT id FROM employees WHERE user_id = %s
+                """, (user_uuid,))
+                employee = cursor.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found'
+                    }), 404
+                
+                # Get employee's tickets
+                cursor.execute("""
+                    SELECT 
+                        id, ticket_number, subject, description, category,
+                        priority, status, assigned_to_name, resolution,
+                        created_at, updated_at, resolved_at
+                    FROM support_tickets
+                    WHERE employee_id = %s
+                    ORDER BY created_at DESC
+                """, (employee['id'],))
+                
+                tickets = cursor.fetchall()
+                
+                return jsonify({
+                    'success': True,
+                    'tickets': [
+                        {
+                            'id': t['id'],
+                            'ticket_number': t['ticket_number'],
+                            'subject': t['subject'],
+                            'description': t['description'],
+                            'category': t['category'],
+                            'priority': t['priority'],
+                            'status': t['status'],
+                            'assigned_to': t['assigned_to_name'],
+                            'resolution': t['resolution'],
+                            'created_at': t['created_at'].isoformat() if t['created_at'] else None,
+                            'updated_at': t['updated_at'].isoformat() if t['updated_at'] else None,
+                            'resolved_at': t['resolved_at'].isoformat() if t['resolved_at'] else None
+                        } for t in tickets
+                    ]
+                })
+                
+    except Exception as e:
+        logger.error(f"Get my tickets error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/support-tickets/<int:ticket_id>', methods=['GET'])
+@login_required
+def get_ticket(ticket_id):
+    """Get a specific support ticket"""
+    try:
+        user_uuid = session.get('user_id')
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get employee ID
+                cursor.execute("""
+                    SELECT id FROM employees WHERE user_id = %s
+                """, (user_uuid,))
+                employee = cursor.fetchone()
+                
+                if not employee:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Employee not found'
+                    }), 404
+                
+                # Get ticket (only if it belongs to the employee)
+                cursor.execute("""
+                    SELECT 
+                        id, ticket_number, subject, description, category,
+                        priority, status, assigned_to_name, resolution,
+                        created_at, updated_at, resolved_at
+                    FROM support_tickets
+                    WHERE id = %s AND employee_id = %s
+                """, (ticket_id, employee['id']))
+                
+                ticket = cursor.fetchone()
+                
+                if not ticket:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Ticket not found'
+                    }), 404
+                
+                return jsonify({
+                    'success': True,
+                    'ticket': {
+                        'id': ticket['id'],
+                        'ticket_number': ticket['ticket_number'],
+                        'subject': ticket['subject'],
+                        'description': ticket['description'],
+                        'category': ticket['category'],
+                        'priority': ticket['priority'],
+                        'status': ticket['status'],
+                        'assigned_to': ticket['assigned_to_name'],
+                        'resolution': ticket['resolution'],
+                        'created_at': ticket['created_at'].isoformat() if ticket['created_at'] else None,
+                        'updated_at': ticket['updated_at'].isoformat() if ticket['updated_at'] else None,
+                        'resolved_at': ticket['resolved_at'].isoformat() if ticket['resolved_at'] else None
+                    }
+                })
+                
+    except Exception as e:
+        logger.error(f"Get ticket error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
         }), 500
 
 
