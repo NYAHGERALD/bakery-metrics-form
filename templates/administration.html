@@ -813,9 +813,14 @@
                 <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
             </button>
             <h1 class="text-lg font-bold text-gray-800">Admin Dashboard</h1>
-            <button onclick="openProfileModal()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <i data-lucide="user-circle" class="w-6 h-6 text-gray-700"></i>
-            </button>
+            <div class="flex items-center space-x-2">
+                <a href="/admin-login" class="p-2 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 rounded-lg transition-all">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i>
+                </a>
+                <button onclick="openProfileModal()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                    <i data-lucide="user-circle" class="w-6 h-6 text-gray-700"></i>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1047,6 +1052,12 @@
                             </p>
                         </div>
                         <div class="flex items-center space-x-4">
+                            <!-- Admin Login Button -->
+                            <a href="/admin-login" class="hidden sm:flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>
+                                Admin Login
+                            </a>
+                            
                             <button class="relative p-2 hover:bg-gray-100/50 rounded-lg transition-colors">
                                 <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
                                 <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-dot">
@@ -2749,18 +2760,18 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="form-group">
-                                <label class="form-label">Email Address <span class="text-red-500">*</span></label>
-                                <input id="email" type="email" required
+                                <label class="form-label" id="emailLabel">Email Address</label>
+                                <input id="email" type="email" 
                                     class="form-input" placeholder="user@example.com"
                                     autocomplete="email">
-                                <p class="form-help">This will be used for login</p>
+                                <p class="form-help" id="emailHelp">Optional for employee role only</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Phone Number</label>
-                                <input id="phone" type="tel" 
-                                    class="form-input" placeholder="(555) 123-4567"
+                                <label class="form-label">Phone Number <span class="text-red-500">*</span></label>
+                                <input id="phone" type="tel" required
+                                    class="form-input" placeholder="5551234567"
                                     autocomplete="tel">
-                                <p class="form-help">Optional contact number</p>
+                                <p class="form-help">Contact number - This will be used for login</p>
                             </div>
                         </div>
                     </div>
@@ -3126,15 +3137,15 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="form-group">
-                                        <label class="form-label">Email Address <span class="text-red-500">*</span></label>
-                                        <input id="empEmail" type="email" required
+                                        <label class="form-label">Email Address</label>
+                                        <input id="empEmail" type="email"
                                             class="form-input" placeholder="employee@bakery.com"
                                             autocomplete="off">
-                                        <p class="form-help">Work email address</p>
+                                        <p class="form-help">Personal email address</p>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Phone Number</label>
-                                        <input id="empPhone" type="tel" 
+                                        <label class="form-label">Phone Number <span class="text-red-500">*</span></label>
+                                        <input id="empPhone" required type="tel" 
                                             class="form-input" placeholder="(555) 123-4567"
                                             autocomplete="off">
                                         <p class="form-help">Contact phone number</p>
@@ -4574,10 +4585,49 @@
             setTimeout(() => {
                 // Auto-generate password when modal opens
                 generateSecurePassword();
+                // Update email requirement based on default role
+                updateEmailRequirement();
             }, 100);
             
             document.getElementById('userModal').classList.remove('hidden');
         }
+
+        // Handle email field requirement based on role selection
+        function updateEmailRequirement() {
+            const roleSelect = document.getElementById('role');
+            const emailInput = document.getElementById('email');
+            const emailLabel = document.getElementById('emailLabel');
+            const emailHelp = document.getElementById('emailHelp');
+            
+            if (roleSelect && emailInput && emailLabel) {
+                const selectedRole = roleSelect.value;
+                
+                if (selectedRole === 'employee') {
+                    // Email is optional for employee role
+                    emailInput.removeAttribute('required');
+                    emailLabel.innerHTML = 'Email Address';
+                    if (emailHelp) emailHelp.textContent = 'Optional for employee role';
+                } else if (selectedRole) {
+                    // Email is required for all other roles
+                    emailInput.setAttribute('required', 'required');
+                    emailLabel.innerHTML = 'Email Address <span class="text-red-500">*</span>';
+                    if (emailHelp) emailHelp.textContent = 'Required for this role';
+                } else {
+                    // No role selected yet
+                    emailInput.removeAttribute('required');
+                    emailLabel.innerHTML = 'Email Address';
+                    if (emailHelp) emailHelp.textContent = 'Select a role first';
+                }
+            }
+        }
+
+        // Add event listener to role dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role');
+            if (roleSelect) {
+                roleSelect.addEventListener('change', updateEmailRequirement);
+            }
+        });
 
         // Edit user
         function editUser(userId) {
@@ -4602,7 +4652,8 @@
 
             // Initialize modal for editing user
             setTimeout(() => {
-                // Modal is ready for user interaction
+                // Update email requirement based on selected role
+                updateEmailRequirement();
             }, 100);
 
             document.getElementById('userModal').classList.remove('hidden');
@@ -5238,6 +5289,16 @@
         document.getElementById('userForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            // Get role value
+            const role = document.getElementById('role').value;
+            const email = document.getElementById('email').value.trim();
+            
+            // Validate email requirement based on role
+            if (role !== 'employee' && !email) {
+                showError('Email is required for all roles except "employee"');
+                return;
+            }
+
             // Validate passwords for new users - minimal validation only
             if (!currentEditingUserId) {
                 const password = document.getElementById('password').value;
@@ -5260,9 +5321,9 @@
             const formData = {
                 first_name: document.getElementById('firstName').value.trim(),
                 last_name: document.getElementById('lastName').value.trim(),
-                email: document.getElementById('email').value.trim(),
+                email: email || null,  // Allow null for employee role
                 phone: document.getElementById('phone').value.trim() || null,
-                role: document.getElementById('role').value,
+                role: role,
                 is_active: document.getElementById('isActive').checked
             };
 
@@ -5798,7 +5859,7 @@
 
                     if (users.length > 0) {
                         dropdown.innerHTML = '<option value="">No user account linked</option>' +
-                            users.map(u => `<option value="${u.id}">${u.email} - ${u.first_name} ${u.last_name}</option>`).join('');
+                            users.map(u => `<option value="${u.last_name}">${u.phone || 'No phone'} - ${u.first_name} ${u.last_name}</option>`).join('');
                         console.log('User dropdown populated with', users.length, 'user/employee accounts'); // Debug log
                     } else {
                         dropdown.innerHTML = '<option value="">No user account linked</option><option disabled>No users available</option>';
@@ -5918,8 +5979,20 @@
                     loadVacationSchedule(years, hours);
 
                     // Set selected user if linked
-                    if (emp.user_id) {
-                        document.getElementById('empUserId').value = emp.user_id;
+                    if (emp.userLastName) {
+                        // Use last name to select from dropdown
+                        document.getElementById('empUserId').value = emp.userLastName;
+                    } else if (emp.user_id) {
+                        // Fallback: if we have user_id but no last name, try to find by user_id
+                        // This is for backward compatibility
+                        const dropdown = document.getElementById('empUserId');
+                        const options = dropdown.options;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i].value === emp.user_id) {
+                                dropdown.selectedIndex = i;
+                                break;
+                            }
+                        }
                     }
 
                     document.getElementById('employeeModal').classList.remove('hidden');

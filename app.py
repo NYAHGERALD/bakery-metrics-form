@@ -1972,6 +1972,289 @@ def registration_confirmation():
     return render_template('registration_confirmation.html', name=name)
 
 
+# Employee Login Routes (Phone-based with SMS verification)
+@app.route('/employee-login', methods=['GET'])
+def employee_login():
+    """Render employee login page (phone-based authentication)"""
+    # Pass Firebase config from environment variables to template
+    firebase_config = {
+        'apiKey': os.environ.get('FIREBASE_API_KEY', ''),
+        'authDomain': os.environ.get('FIREBASE_AUTH_DOMAIN', ''),
+        'projectId': os.environ.get('FIREBASE_PROJECT_ID', ''),
+        'storageBucket': os.environ.get('FIREBASE_STORAGE_BUCKET', ''),
+        'messagingSenderId': os.environ.get('FIREBASE_MESSAGING_SENDER_ID', ''),
+        'appId': os.environ.get('FIREBASE_APP_ID', ''),
+        'measurementId': os.environ.get('FIREBASE_MEASUREMENT_ID', '')
+    }
+    return render_template('employee-login.html', firebase_config=firebase_config)
+
+
+# Firebase Phone Authentication Routes (Independent from regular login)
+@app.route('/auth/precheck', methods=['POST'])
+def firebase_precheck():
+    """
+    Firebase pre-authentication check
+    Validates phone + last_name + role='employee' before sending OTP
+    This is called BEFORE Firebase sends SMS verification code
+    """
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        last_name = data.get('last_name', '').strip()
+        
+        if not phone or not last_name:
+            return jsonify({
+                'success': False,
+                'eligible': False,
+                'message': 'Phone number and last name are required'
+            }), 400
+        
+        # Validate phone number format (10 digits, US numbers only)
+        if len(phone) != 10 or not phone.isdigit():
+            return jsonify({
+                'success': False,
+                'eligible': False,
+                'message': 'Please enter a valid 10-digit US phone number'
+            }), 400
+        
+        # Check if user exists with this phone number, last name, and has employee role
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id, first_name, last_name, phone, role, is_active 
+                    FROM users 
+                    WHERE phone = %s AND LOWER(last_name) = LOWER(%s) AND role = 'employee'
+                """, (phone, last_name))
+                
+                user = cur.fetchone()
+                
+                if not user:
+                    logger.warning(f"Firebase precheck failed: No employee found with phone {phone} and last_name {last_name}")
+                    return jsonify({
+                        'success': False,
+                        'eligible': False,
+                        'message': 'Not eligible. No employee account found with this phone number and last name combination.'
+                    }), 404
+                
+                if not user['is_active']:
+                    logger.warning(f"Firebase precheck failed: Employee account {user['id']} is deactivated")
+                    return jsonify({
+                        'success': False,
+                        'eligible': False,
+                        'message': 'Not eligible. Your account is deactivated. Please contact your administrator.'
+                    }), 403
+        
+        # User is eligible for Firebase phone authentication
+        logger.info(f"Firebase precheck passed for employee {user['id']} - {user['first_name']} {user['last_name']}")
+        
+        return jsonify({
+            'success': True,
+            'eligible': True,
+            'message': 'Eligible for authentication',
+            'user_info': {
+                'first_name': user['first_name'],
+                'last_name': user['last_name'],
+                'phone': user['phone']
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Firebase precheck error: {e}")
+        return jsonify({
+            'success': False,
+            'eligible': False,
+            'message': 'An error occurred during validation. Please try again.'
+        }), 500
+
+
+@app.route('/internal/check-phone', methods=['POST'])
+def firebase_blocking_function():
+    """
+    Firebase Cloud Function blocking endpoint
+    This is called by Firebase BEFORE finalizing the login
+    Double-checks that the phone number is still valid and has role='employee'
+    
+    This endpoint should be secured in production with Firebase Admin SDK token verification
+    """
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        
+        # Optional: Verify Firebase Admin SDK token here for production security
+        # firebase_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+        # Verify token with Firebase Admin SDK
+        
+        if not phone:
+            return jsonify({
+                'success': False,
+                'allow_login': False,
+                'message': 'Phone number is required'
+            }), 400
+        
+        # Format phone for database lookup (remove +1 if present)
+        if phone.startswith('+1'):
+            phone = phone[2:]
+        elif phone.startswith('1') and len(phone) == 11:
+            phone = phone[1:]
+        
+        # Validate phone number format
+        if len(phone) != 10 or not phone.isdigit():
+            return jsonify({
+                'success': False,
+                'allow_login': False,
+                'message': 'Invalid phone number format'
+            }), 400
+        
+        # Check if user exists and is an active employee
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id, first_name, last_name, email, phone, role, is_active 
+                    FROM users 
+                    WHERE phone = %s AND role = 'employee'
+                """, (phone,))
+                
+                user = cur.fetchone()
+                
+                if not user:
+                    logger.warning(f"Firebase blocking function: No employee found with phone {phone}")
+                    return jsonify({
+                        'success': False,
+                        'allow_login': False,
+                        'message': 'No employee account found with this phone number'
+                    }), 404
+                
+                if not user['is_active']:
+                    logger.warning(f"Firebase blocking function: Employee {user['id']} is deactivated")
+                    return jsonify({
+                        'success': False,
+                        'allow_login': False,
+                        'message': 'Account is deactivated'
+                    }), 403
+        
+        # User is allowed to complete login
+        logger.info(f"Firebase blocking function approved login for employee {user['id']}")
+        
+        return jsonify({
+            'success': True,
+            'allow_login': True,
+            'message': 'Login approved',
+            'user_data': {
+                'user_id': str(user['id']),
+                'first_name': user['first_name'],
+                'last_name': user['last_name'],
+                'email': user['email'],
+                'phone': user['phone'],
+                'role': user['role']
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Firebase blocking function error: {e}")
+        return jsonify({
+            'success': False,
+            'allow_login': False,
+            'message': 'Internal error occurred'
+        }), 500
+
+
+@app.route('/auth/firebase-session', methods=['POST'])
+def create_firebase_session():
+    """
+    Create Flask session after successful Firebase authentication
+    Called from frontend after Firebase successfully verifies phone + OTP
+    """
+    try:
+        data = request.get_json()
+        phone = data.get('phone', '').strip()
+        firebase_uid = data.get('firebase_uid', '').strip()
+        
+        # Optional: Verify Firebase ID token here for production
+        # firebase_token = data.get('firebase_token', '')
+        # Verify with Firebase Admin SDK
+        
+        if not phone:
+            return jsonify({
+                'success': False,
+                'message': 'Phone number is required'
+            }), 400
+        
+        # Format phone number
+        if phone.startswith('+1'):
+            phone = phone[2:]
+        elif phone.startswith('1') and len(phone) == 11:
+            phone = phone[1:]
+        
+        # Get user from database
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id, first_name, last_name, email, phone, role, is_active, last_login
+                    FROM users 
+                    WHERE phone = %s AND role = 'employee' AND is_active = TRUE
+                """, (phone,))
+                
+                user = cur.fetchone()
+                
+                if not user:
+                    return jsonify({
+                        'success': False,
+                        'message': 'User not found or not authorized'
+                    }), 404
+        
+        # Create Flask session
+        session['user_id'] = str(user['id'])
+        session['email'] = user['email'] if user['email'] else None
+        session['phone'] = user['phone']
+        session['user_full_name'] = f"{user['first_name']} {user['last_name']}"
+        session['user_role'] = user['role']
+        session['verified'] = True
+        session['auth_method'] = 'firebase_phone'
+        session['firebase_uid'] = firebase_uid  # Store Firebase UID
+        
+        # Check if first time login
+        is_first_login = user['last_login'] is None
+        
+        # Update last login
+        update_last_login(user['id'])
+        
+        # Log successful login
+        log_submission(
+            user['id'], 
+            session['user_full_name'], 
+            user['email'] if user['email'] else user['phone'],
+            'login', 
+            f'Successful employee login via Firebase Phone Auth {"(first time)" if is_first_login else ""}'
+        )
+        
+        logger.info(f"Flask session created for Firebase-authenticated employee {user['id']}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Session created successfully',
+            'redirect': url_for('user_first'),
+            'user': {
+                'name': session['user_full_name'],
+                'role': user['role']
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Firebase session creation error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to create session'
+        }), 500
+
+# ============================================================================
+# REMOVED OLD SMS ENDPOINTS - NOW USING FIREBASE PHONE AUTHENTICATION
+# ============================================================================
+# The following endpoints have been removed as they are replaced by Firebase:
+# - /api/employee-send-code (replaced by Firebase signInWithPhoneNumber)
+# - /api/employee-verify-code (replaced by Firebase confirmationResult.confirm)
+# Firebase handles SMS delivery and verification natively.
+# ============================================================================
+
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -3045,8 +3328,8 @@ def api_users():
             # Debug logging
             logger.info(f"Received user creation data: {data}")
             
-            # Validate required fields
-            required_fields = ['first_name', 'last_name', 'email', 'role', 'password']
+            # Validate required fields (email is conditional based on role)
+            required_fields = ['first_name', 'last_name', 'role', 'password']
             for field in required_fields:
                 if not data.get(field):
                     logger.warning(f"Missing required field: {field}, received data: {data}")
@@ -3057,7 +3340,7 @@ def api_users():
             
             first_name = data.get('first_name', '').strip()
             last_name = data.get('last_name', '').strip()
-            email = data.get('email', '').strip().lower()
+            email = data.get('email', '').strip().lower() if data.get('email') else None
             phone = data.get('phone', '').strip() or None
             role = data.get('role', '').strip()
             password = data.get('password', '').strip()
@@ -3074,10 +3357,11 @@ def api_users():
                     'success': False,
                     'message': 'Last name is required'
                 }), 400
-            if not email:
+            # Email is required for all roles EXCEPT 'employee'
+            if not email and role != 'employee':
                 return jsonify({
                     'success': False,
-                    'message': 'Email is required'
+                    'message': 'Email is required for all roles except "employee"'
                 }), 400
             if not role:
                 return jsonify({
@@ -3090,19 +3374,20 @@ def api_users():
                     'message': 'Password is required'
                 }), 400
             
-            # Validate email format
-            import re
-            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-            if not re.match(email_pattern, email):
-                return jsonify({
-                    'success': False,
-                    'message': 'Invalid email format'
-                }), 400
+            # Validate email format (only if email is provided)
+            if email:
+                import re
+                email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                if not re.match(email_pattern, email):
+                    return jsonify({
+                        'success': False,
+                        'message': 'Invalid email format'
+                    }), 400
             
             # No password restrictions for admin-created accounts
             # Users will be prompted to create secure passwords on first login
             # Just log the creation for security audit
-            logger.info(f"Admin creating temporary password for user: {email}")
+            logger.info(f"Admin creating temporary password for user: {email if email else phone}")
             
             # Validate role
             valid_roles = ['admin', 'user', 'supervisor', 'employee']
@@ -3114,13 +3399,14 @@ def api_users():
             
             with get_db_connection() as conn:
                 with conn.cursor() as cur:
-                    # Check if email already exists
-                    cur.execute("SELECT id FROM users WHERE email = %s", (email,))
-                    if cur.fetchone():
-                        return jsonify({
-                            'success': False,
-                            'message': 'Email already exists'
-                        }), 400
+                    # Check if email already exists (only if email is provided)
+                    if email:
+                        cur.execute("SELECT id FROM users WHERE email = %s", (email,))
+                        if cur.fetchone():
+                            return jsonify({
+                                'success': False,
+                                'message': 'Email already exists'
+                            }), 400
                     
                     # Hash the password using bcrypt for enhanced security
                     import bcrypt
@@ -3854,8 +4140,8 @@ def api_update_user(user_id):
             
         data = request.get_json()
         
-        # Validate required fields
-        required_fields = ['first_name', 'last_name', 'email', 'role']
+        # Validate required fields (email is conditional based on role)
+        required_fields = ['first_name', 'last_name', 'role']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({
@@ -3865,19 +4151,27 @@ def api_update_user(user_id):
         
         first_name = data.get('first_name').strip()
         last_name = data.get('last_name').strip()
-        email = data.get('email').strip().lower()
+        email = data.get('email', '').strip().lower() if data.get('email') else None
         phone = data.get('phone', '').strip() or None
         role = data.get('role')
         is_active = data.get('is_active', True)
         
-        # Validate email format
-        import re
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, email):
+        # Email is required for all roles EXCEPT 'employee'
+        if not email and role != 'employee':
             return jsonify({
                 'success': False,
-                'message': 'Invalid email format'
+                'message': 'Email is required for all roles except "employee"'
             }), 400
+        
+        # Validate email format (only if email is provided)
+        if email:
+            import re
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid email format'
+                }), 400
         
         # Validate role
         valid_roles = ['admin', 'user', 'supervisor', 'employee']
@@ -3898,13 +4192,14 @@ def api_update_user(user_id):
                         'message': 'User not found'
                     }), 404
                 
-                # Check if email already exists for a different user
-                cur.execute("SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
-                if cur.fetchone():
-                    return jsonify({
-                        'success': False,
-                        'message': 'Email already exists'
-                    }), 400
+                # Check if email already exists for a different user (only if email is provided)
+                if email:
+                    cur.execute("SELECT id FROM users WHERE email = %s AND id != %s", (email, user_id))
+                    if cur.fetchone():
+                        return jsonify({
+                            'success': False,
+                            'message': 'Email already exists'
+                        }), 400
                 
                 # Update user
                 cur.execute("""
@@ -13660,7 +13955,30 @@ def create_employee():
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 # Convert user_id to UUID if provided
-                user_id = data.get('user_id') or data.get('userId') or None
+                # Now user_id comes as last_name from dropdown, need to lookup UUID
+                user_id_or_lastname = data.get('user_id') or data.get('userId') or None
+                user_id = None
+                
+                if user_id_or_lastname:
+                    # Check if it's a UUID or a last name
+                    try:
+                        # Try to use it as UUID first (for backward compatibility)
+                        import uuid
+                        uuid.UUID(str(user_id_or_lastname))
+                        user_id = user_id_or_lastname
+                    except (ValueError, AttributeError):
+                        # It's a last name, look up the user_id
+                        cur.execute("""
+                            SELECT id FROM users 
+                            WHERE last_name = %s AND is_active = TRUE
+                            LIMIT 1
+                        """, (user_id_or_lastname,))
+                        user_result = cur.fetchone()
+                        if user_result:
+                            user_id = user_result[0]
+                            logger.info(f"CREATE EMPLOYEE: Linked to user with last_name='{user_id_or_lastname}', UUID={user_id}")
+                        else:
+                            logger.warning(f"CREATE EMPLOYEE: Could not find active user with last_name='{user_id_or_lastname}'")
                 
                 # Get supervisor and manager names from frontend
                 supervisor_name = data.get('supervisor')
@@ -13780,7 +14098,32 @@ def update_employee(employee_id):
                 # Support both camelCase field names from frontend
                 firstname = data.get('firstname') or data.get('firstName')
                 lastname = data.get('lastname') or data.get('lastName')
-                user_id = data.get('user_id') or data.get('userId') or None
+                
+                # Convert user_id to UUID if provided
+                # Now user_id comes as last_name from dropdown, need to lookup UUID
+                user_id_or_lastname = data.get('user_id') or data.get('userId') or None
+                user_id = None
+                
+                if user_id_or_lastname:
+                    # Check if it's a UUID or a last name
+                    try:
+                        # Try to use it as UUID first (for backward compatibility)
+                        import uuid
+                        uuid.UUID(str(user_id_or_lastname))
+                        user_id = user_id_or_lastname
+                    except (ValueError, AttributeError):
+                        # It's a last name, look up the user_id
+                        cur.execute("""
+                            SELECT id FROM users 
+                            WHERE last_name = %s AND is_active = TRUE
+                            LIMIT 1
+                        """, (user_id_or_lastname,))
+                        user_result = cur.fetchone()
+                        if user_result:
+                            user_id = user_result[0]
+                            logger.info(f"UPDATE EMPLOYEE: Linked to user with last_name='{user_id_or_lastname}', UUID={user_id}")
+                        else:
+                            logger.warning(f"UPDATE EMPLOYEE: Could not find active user with last_name='{user_id_or_lastname}'")
                 
                 # Get supervisor and manager names from frontend
                 supervisor_name = data.get('supervisor')

@@ -192,7 +192,24 @@
                 
                 <!-- CTA Buttons -->
                 <div class="hidden md:flex items-center space-x-3">
-                    <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg hover:from-yellow-300 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">Login</a>
+                    <a href="/employee-login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Employee Login
+                    </a>
+                    <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg hover:from-yellow-300 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                        Leader Login
+                    </a>
+                    <a href="/admin-login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Admin Login
+                    </a>
                 </div>
                 
                 <!-- Mobile menu button -->
@@ -237,8 +254,14 @@
                 -->
                 
                 <div class="border-t border-white/10 pt-4 mt-4">
+                    <a href="/employee-login" class="block px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 transform hover:scale-105 text-center">
+                        <i class="fas fa-user mr-2"></i>Employee Login
+                    </a>
                     <a href="/login" class="block mt-2 px-4 py-3 text-base font-semibold text-gray-900 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg hover:from-yellow-300 hover:to-orange-400 transition-all duration-200 transform hover:scale-105 text-center">
-                        <i class="fas fa-user-plus mr-2"></i>Login
+                        <i class="fas fa-shield-alt mr-2"></i>Leader Login
+                    </a>
+                    <a href="/admin-login" class="block mt-2 px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 text-center">
+                        <i class="fas fa-lock mr-2"></i>Admin Login
                     </a>
                 </div>
             </div>
