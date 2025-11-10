@@ -64,6 +64,37 @@
 
                 <!-- User Profile -->
                 <div class="flex items-center space-x-4">
+                    <!-- Language Switcher -->
+                    <div class="relative language-dropdown">
+                        <button id="languageBtn" class="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200">
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                            </svg>
+                            <span id="currentLang" class="text-sm font-medium text-gray-700">English</span>
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="languageMenu" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <button data-lang="en" class="lang-option flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <span class="mr-2">🇺🇸</span>
+                                    <span>English</span>
+                                    <svg class="ml-auto w-4 h-4 text-blue-600 hidden check-icon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button data-lang="es" class="lang-option flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <span class="mr-2">🇪🇸</span>
+                                    <span>Español</span>
+                                    <svg class="ml-auto w-4 h-4 text-blue-600 hidden check-icon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <span class="text-sm text-gray-500">{{ user_full_name or 'Elena Rodriguez' }}</span>
                     <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
                         <span class="text-white text-sm font-medium">{{ (user_full_name or 'Elena Rodriguez')[:2].upper() }}</span>
@@ -244,6 +275,14 @@
         });
     </script>
 
-    {% block extra_js %}{% endblock %}
+        {% block extra_js %}{% endblock %}
+    
+    <!-- Professional Translation System -->
+    <script src="{{ url_for('static', filename='js/professional-translate.js') }}"></script>    <script src="{{ url_for('static', filename='js/auto-translate.js') }}"></script>
+
+</body>
+</html>    <script src="{{ url_for('static', filename='js/auto-translate.js') }}"></script>
+
+
 </body>
 </html>

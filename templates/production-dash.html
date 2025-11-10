@@ -18,7 +18,9 @@
     /* Light borders for other columns */
     table td:not(:nth-child(1)):not(:nth-child(8)):not(:nth-child(15)):not(:last-child) { border-right: 1px solid #d1d5db; } /* border-gray-300 */
 </style>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen"></body>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">    <script src="{{ url_for('static', filename='js/professional-translate.js') }}"></script>    <script src="{{ url_for('static', filename='js/auto-translate.js') }}"></script>
+
+</body>
     {% extends "dashboard.html" %}
     {% block content %}
 
@@ -454,6 +456,8 @@
         });
     });
 </script>
-{% endblock %}
+{% endblock %}    <script src="{{ url_for('static', filename='js/professional-translate.js') }}"></script>    <script src="{{ url_for('static', filename='js/auto-translate.js') }}"></script>
+
+
 </body>
 </html>

@@ -69,6 +69,21 @@
             animation: shine 4s linear infinite;
         }
         
+        /* Mobile Language Select Styling */
+        #mobileLangSelect {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.25rem;
+            padding-right: 2.5rem;
+        }
+        
+        #mobileLangSelect option {
+            background-color: #1e293b;
+            color: white;
+        }
+        
         .production-link {
             animation: glow-pulse-red 2s ease-in-out infinite;
             background: linear-gradient(90deg, #ef4444, #ec4899, #8b5cf6, #ef4444);
@@ -139,38 +154,91 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 md:h-20 items-center justify-between">
                 <!-- Logo -->
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-3 flex-shrink-0">
                     <img src="{{ url_for('static', filename='logo.png') }}" alt="DASHMET Logo" class="h-10 w-10 md:h-12 md:w-12 object-contain">
                     <span class="text-xl md:text-2xl font-bold text-white">DASHMET</span>
                 </div>
                 
                 <!-- Desktop Navigation -->
-                <div class="hidden md:flex md:space-x-2">
-                    <a href="#features" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Features</a>
-                    <a href="#about" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">About</a>
-                    <a href="#reviews" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Reviews</a>
+                <div class="hidden md:flex md:space-x-6 lg:space-x-8">
+                    <a href="#features" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/30">Features</a>
+                    <a href="#about" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/30">About</a>
+                    <a href="#reviews" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/30">Reviews</a>
                 </div>
                 
                 <!-- CTA Buttons -->
-                <div class="hidden md:flex items-center space-x-3">
-                    <a href="/employee-login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        Employee Login
-                    </a>
-                    <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg hover:from-yellow-300 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                        Leader Login
-                    </a>
-                    <a href="/admin-login" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                        Admin Login
-                    </a>
+                <div class="hidden md:flex items-center space-x-3 flex-shrink-0">
+                    <!-- Language Switcher Dropdown -->
+                    <div class="relative language-dropdown">
+                        <button id="languageBtn" class="flex items-center space-x-2 px-3 py-2 bg-white/10 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200 border border-white/20">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                            </svg>
+                            <span id="currentLang" class="text-sm font-medium text-white">EN</span>
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="languageMenu" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <button data-lang="en" class="lang-option flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <span class="mr-2">🇺🇸</span>
+                                    <span>English</span>
+                                    <svg class="ml-auto w-4 h-4 text-blue-600 hidden check-icon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button data-lang="es" class="lang-option flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <span class="mr-2">🇪🇸</span>
+                                    <span>Español</span>
+                                    <svg class="ml-auto w-4 h-4 text-blue-600 hidden check-icon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Login Dropdown -->
+                    <div class="relative login-dropdown">
+                        <button id="loginBtn" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-lg hover:from-yellow-300 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                            Login
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="loginMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-2">
+                                <a href="/employee-login" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 transition-all duration-200 group">
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 mr-3 group-hover:scale-110 transition-transform duration-200">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="font-medium">Employee Login</span>
+                                </a>
+                                <a href="/login" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-orange-50 transition-all duration-200 group">
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 mr-3 group-hover:scale-110 transition-transform duration-200">
+                                        <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="font-medium">Leader Login</span>
+                                </a>
+                                <a href="/admin-login" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 transition-all duration-200 group">
+                                    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 mr-3 group-hover:scale-110 transition-transform duration-200">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="font-medium">Admin Login</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Mobile menu button -->
@@ -198,7 +266,18 @@
                     <i class="fas fa-star mr-3 text-purple-400"></i>Reviews
                 </a>
                 
-                <div class="border-t border-white/10 pt-4 mt-4">
+                <!-- Language Switcher Mobile -->
+                <div class="border-t border-white/10 pt-4 mt-4 mb-4">
+                    <div class="px-4">
+                        <label class="block text-sm font-medium text-white/90 mb-2">Language / Idioma</label>
+                        <select id="mobileLangSelect" class="w-full px-4 py-2 bg-white/10 text-white rounded-lg backdrop-blur-sm border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <option value="en" selected>🇺🇸 English</option>
+                            <option value="es">🇪🇸 Español</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="border-t border-white/10 pt-4">
                     <a href="/employee-login" class="block px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 transform hover:scale-105 text-center">
                         <i class="fas fa-user mr-2"></i>Employee Login
                     </a>
@@ -607,6 +686,9 @@
         </div>
     </footer>
 
+    <!-- Professional Translation Script -->
+    <script src="{{ url_for('static', filename='js/professional-translate.js') }}"></script>
+
     <!-- JavaScript for functionality -->
     <script>
         console.log('Reviews script loaded successfully'); // Debug log
@@ -869,6 +951,24 @@
             document.body.classList.remove('keyboard-navigation');
         });
 
+        // Login dropdown toggle
+        const loginBtn = document.getElementById('loginBtn');
+        const loginMenu = document.getElementById('loginMenu');
+        
+        if (loginBtn && loginMenu) {
+            loginBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                loginMenu.classList.toggle('hidden');
+            });
+            
+            // Close login dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!loginBtn.contains(e.target) && !loginMenu.contains(e.target)) {
+                    loginMenu.classList.add('hidden');
+                }
+            });
+        }
+
         // Mobile menu toggle (enhanced implementation)
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -991,6 +1091,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-    </style>
+    </style>    <script src="{{ url_for('static', filename='js/auto-translate.js') }}"></script>
+
 </body>
 </html>
