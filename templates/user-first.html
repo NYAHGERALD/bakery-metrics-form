@@ -600,7 +600,15 @@
         <div id="overview-section" class="animate-slide-in">
             <!-- Quick Stats Card -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h3 class="text-lg font-bold text-slate-900 mb-4">Quick Stats</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-slate-900">Quick Stats</h3>
+                    <div id="statsRefreshIndicator" class="hidden">
+                        <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-slate-600">Pending Requests</span>
@@ -2059,8 +2067,41 @@
         }
 
         // Load my vacation stats
+        // Auto-refresh for stats
+        let statsRefreshInterval = null;
+        
+        function startStatsAutoRefresh() {
+            // Clear any existing interval
+            if (statsRefreshInterval) {
+                clearInterval(statsRefreshInterval);
+            }
+            
+            // Refresh every 10 seconds (10000 ms)
+            statsRefreshInterval = setInterval(() => {
+                console.log('Auto-refreshing vacation stats...');
+                loadMyVacationStats();
+            }, 10000);
+            
+            console.log('Auto-refresh started for vacation stats (10 seconds interval)');
+        }
+        
+        function stopStatsAutoRefresh() {
+            if (statsRefreshInterval) {
+                clearInterval(statsRefreshInterval);
+                statsRefreshInterval = null;
+                console.log('Auto-refresh stopped for vacation stats');
+            }
+        }
+
         async function loadMyVacationStats() {
+            const indicator = document.getElementById('statsRefreshIndicator');
+            
             try {
+                // Show refresh indicator
+                if (indicator) {
+                    indicator.classList.remove('hidden');
+                }
+                
                 const response = await fetch('/api/vacation/my-stats');
                 const data = await response.json();
                 
@@ -2069,10 +2110,24 @@
                 if (data.success && data.stats) {
                     const stats = data.stats;
                     
-                    // Update Quick Stats
-                    document.getElementById('dashPendingCount').textContent = stats.pending ?? 0;
-                    document.getElementById('dashApprovedCount').textContent = stats.approved_count ?? 0;
-                    document.getElementById('dashDaysUsed').textContent = stats.days_used ?? 0;
+                    // Update Quick Stats with smooth transition
+                    const pendingEl = document.getElementById('dashPendingCount');
+                    const approvedEl = document.getElementById('dashApprovedCount');
+                    const daysUsedEl = document.getElementById('dashDaysUsed');
+                    
+                    // Add a subtle pulse animation when value changes
+                    const updateValue = (element, newValue) => {
+                        const oldValue = element.textContent;
+                        if (oldValue !== String(newValue)) {
+                            element.classList.add('animate-pulse');
+                            setTimeout(() => element.classList.remove('animate-pulse'), 500);
+                        }
+                        element.textContent = newValue;
+                    };
+                    
+                    updateValue(pendingEl, stats.pending ?? 0);
+                    updateValue(approvedEl, stats.approved_count ?? 0);
+                    updateValue(daysUsedEl, stats.days_used ?? 0);
                     
                     console.log('My vacation stats loaded successfully', stats);
                 } else {
@@ -2088,6 +2143,13 @@
                 document.getElementById('dashPendingCount').textContent = '0';
                 document.getElementById('dashApprovedCount').textContent = '0';
                 document.getElementById('dashDaysUsed').textContent = '0';
+            } finally {
+                // Hide refresh indicator after a brief moment
+                setTimeout(() => {
+                    if (indicator) {
+                        indicator.classList.add('hidden');
+                    }
+                }, 300);
             }
         }
 
@@ -2690,6 +2752,9 @@
             loadMyVacationStats();
             loadMyUpcomingVacations(); // Load the default tab (upcoming)
             
+            // Start auto-refresh for stats
+            startStatsAutoRefresh();
+            
             // Pre-load blackout periods for validation
             loadBlackoutPeriodsForValidation();
             // Pre-load vacation settings for validation
@@ -3116,17 +3181,38 @@
             submitSpinner.classList.remove('hidden');
             
             try {
+                const startDateValue = document.getElementById('startDate').value;
+                const endDateValue = document.getElementById('endDate').value;
+                
+                // Calculate working days (excluding weekends and blackout periods)
+                const durationData = calculateWorkingDays(parseLocalDate(startDateValue), parseLocalDate(endDateValue));
+                const calculatedDays = durationData.workingDays;
+                
+                console.log('Duration calculation:', {
+                    start: startDateValue,
+                    end: endDateValue,
+                    workingDays: calculatedDays,
+                    weekendDays: durationData.weekendDays,
+                    blackoutDays: durationData.blackoutDays
+                });
+                
+                // Ensure we have at least 1 day
+                const finalDays = calculatedDays > 0 ? calculatedDays : 1;
+                
                 const formData = {
                     employee_id: employeeId,
                     leave_type: document.getElementById('leaveType').value,
-                    start_date: document.getElementById('startDate').value,
-                    end_date: document.getElementById('endDate').value,
+                    start_date: startDateValue,
+                    end_date: endDateValue,
+                    duration_days: finalDays,
                     return_to_work: document.getElementById('returnDate').value || null,
                     reason: document.getElementById('reason').value,
                     coverage_plan: document.getElementById('coveragePlan').value || null,
                     emergency_email: document.getElementById('emergencyEmail').value || null,
                     emergency_phone: document.getElementById('emergencyPhone').value || null
                 };
+                
+                console.log('Submitting vacation request:', formData);
                 
                 // Check for blackout period violations before submitting
                 const startDate = parseLocalDate(formData.start_date);

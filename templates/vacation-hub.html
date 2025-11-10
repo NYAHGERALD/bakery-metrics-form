@@ -1963,6 +1963,9 @@
         function showSection(sectionName, event) {
             if (event) event.preventDefault();
             
+            // Update current section tracker
+            currentSection = sectionName;
+            
             // Hide all sections
             document.querySelectorAll('[id$="-section"]').forEach(section => {
                 section.classList.add('hidden');
@@ -1988,7 +1991,17 @@
             }
 
             // Load section-specific data
-            if (sectionName === 'activity') {
+            if (sectionName === 'overview') {
+                // Load vacation stats
+                loadVacationStats();
+                // Load pending vacations
+                loadPendingVacations();
+                // Show the first tab (upcoming) by default
+                const upcomingTab = document.querySelector('.tab-btn[onclick*="upcoming"]');
+                if (upcomingTab) {
+                    upcomingTab.click();
+                }
+            } else if (sectionName === 'activity') {
                 loadActivityLog();
             } else if (sectionName === 'constraints') {
                 loadVacationSettings();
@@ -2229,7 +2242,9 @@
             event.target.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
 
             // Load data for specific tabs
-            if (tabName === 'conflicts') {
+            if (tabName === 'pending') {
+                loadPendingVacations();
+            } else if (tabName === 'conflicts') {
                 loadConflicts();
             } else if (tabName === 'constraints') {
                 loadWorkAreaSettings();
@@ -2248,11 +2263,27 @@
         }
 
         function parseLocalDateTime(datetimeString) {
-            // Parse YYYY-MM-DD HH:MM:SS format to local datetime without timezone issues
-            // Expected format: "2025-11-04 14:31:00"
-            const [datePart, timePart] = datetimeString.split(' ');
+            // Parse datetime string to local datetime without timezone issues
+            // Supports formats: "2025-11-04 14:31:00" or "2025-11-04T14:31:00"
+            if (!datetimeString) {
+                return new Date(); // Return current date if undefined
+            }
+            
+            // Replace 'T' with space to handle ISO format
+            const normalizedString = datetimeString.replace('T', ' ');
+            
+            // Split by space to get date and time parts
+            const parts = normalizedString.split(' ');
+            if (parts.length < 2) {
+                // If no time part, just parse the date
+                return new Date(datetimeString);
+            }
+            
+            const [datePart, timePart] = parts;
             const [year, month, day] = datePart.split('-').map(num => parseInt(num, 10));
-            const [hour, minute, second] = timePart.split(':').map(num => parseInt(num, 10));
+            const timeComponents = timePart.split(':').map(num => parseInt(num, 10));
+            const [hour, minute, second] = [...timeComponents, 0, 0].slice(0, 3); // Default to 0 if missing
+            
             return new Date(year, month - 1, day, hour, minute, second);
         }
 
@@ -4656,19 +4687,43 @@
                     indicator.classList.remove('hidden');
                 }
                 
+                console.log('Fetching pending vacations from API...');
                 const response = await fetch('/api/vacation/pending');
                 const data = await response.json();
                 
+                console.log('API response:', data);
+                
                 if (data.success && data.vacations) {
+                    console.log('Pending vacations received:', data.vacations.length);
                     // Store data in pagination state
                     paginationState.pending.allData = data.vacations;
                     paginationState.pending.currentPage = 1;
                     renderPaginatedData('pending');
                 } else {
                     console.error('Failed to load pending vacations:', data.message);
+                    // Show empty state
+                    const container = document.getElementById('pending-content');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="text-center py-12 text-slate-500">
+                                <p class="text-lg font-medium">Unable to load pending requests</p>
+                                <p class="text-sm">${data.message || 'Please try again later'}</p>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
                 console.error('Error loading pending vacations:', error);
+                // Show error state
+                const container = document.getElementById('pending-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-12 text-slate-500">
+                            <p class="text-lg font-medium">Error loading requests</p>
+                            <p class="text-sm">${error.message}</p>
+                        </div>
+                    `;
+                }
             } finally {
                 // Hide refresh indicator after a brief moment
                 setTimeout(() => {
@@ -4681,6 +4736,7 @@
 
         // Auto-refresh for pending vacations
         let pendingVacationsRefreshInterval = null;
+        let currentSection = 'overview'; // Track current section
         
         function startPendingVacationsAutoRefresh() {
             // Clear any existing interval
@@ -4712,9 +4768,13 @@
         // Render pending vacations in the UI
         function renderPendingVacations(vacations) {
             const container = document.getElementById('pending-content');
-            if (!container) return;
+            if (!container) {
+                console.error('pending-content container not found');
+                return;
+            }
             
-            if (paginationState.pending.allData.length === 0) {
+            // Validate vacations is an array
+            if (!vacations || !Array.isArray(vacations) || vacations.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
                         <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4726,6 +4786,8 @@
                 `;
                 return;
             }
+            
+            console.log('Rendering pending vacations:', vacations.length);
             
             container.innerHTML = vacations.map(vac => {
                 const initials = `${vac.firstname?.[0] || ''}${vac.lastname?.[0] || ''}`.toUpperCase();
@@ -5403,6 +5465,21 @@
                     return;
                 }
                 
+                // Calculate working days (excluding weekends and blackout periods)
+                const durationData = calculateWorkingDays(parseLocalDate(startDate), parseLocalDate(endDate));
+                const calculatedDays = durationData.workingDays;
+                
+                console.log('Duration calculation for edit:', {
+                    start: startDate,
+                    end: endDate,
+                    workingDays: calculatedDays,
+                    weekendDays: durationData.weekendDays,
+                    blackoutDays: durationData.blackoutDays
+                });
+                
+                // Ensure we have at least 1 day
+                const finalDays = calculatedDays > 0 ? calculatedDays : 1;
+                
                 // Submit the update
                 const response = await fetch(`/api/vacation/${vacationId}`, {
                     method: 'PUT',
@@ -5413,9 +5490,16 @@
                         start_date: startDate,
                         end_date: endDate,
                         auto_return_date: autoReturnDate,
+                        duration_days: finalDays,
                         leave_type: leaveType,
                         reason: reason
                     })
+                });
+                
+                console.log('Edit request payload:', {
+                    start_date: startDate,
+                    end_date: endDate,
+                    duration_days: finalDays
                 });
                 
                 const data = await response.json();

@@ -14327,6 +14327,7 @@ def create_vacation_request():
         leave_type = data['leave_type'].lower()
         start_date = data['start_date']
         end_date = data['end_date']
+        duration_days = data.get('duration_days')  # Accept duration_days from frontend
         return_to_work = data.get('return_to_work', None)
         reason = data['reason']
         coverage_plan = data.get('coverage_plan', None)
@@ -14369,7 +14370,28 @@ def create_vacation_request():
                     'reason': 'Request created'
                 }]
                 
-                # Insert vacation request
+                # If duration_days not provided, calculate it (basic calculation without blackouts)
+                if duration_days is None or duration_days == 0:
+                    try:
+                        start_dt = datetime.strptime(start_date, '%Y-%m-%d').date()
+                        end_dt = datetime.strptime(end_date, '%Y-%m-%d').date()
+                        duration_days = 0
+                        current = start_dt
+                        while current <= end_dt:
+                            if current.weekday() < 5:  # Monday = 0, Friday = 4
+                                duration_days += 1
+                            current += timedelta(days=1)
+                        # Ensure we have at least 1 day if dates are valid
+                        if duration_days == 0 and start_dt <= end_dt:
+                            duration_days = 1
+                    except Exception as e:
+                        logger.error(f"Error calculating duration_days: {e}")
+                        duration_days = 1  # Default to 1 day
+                
+                # Ensure duration_days is an integer and not None
+                duration_days = int(duration_days) if duration_days else 1
+                
+                # Insert vacation request with calculated duration_days
                 cur.execute("""
                     INSERT INTO vacation (
                         employee_id,
@@ -14377,6 +14399,7 @@ def create_vacation_request():
                         leave_type,
                         start_date,
                         end_date,
+                        duration_days,
                         return_to_work,
                         reason,
                         coverage_plan,
@@ -14393,7 +14416,7 @@ def create_vacation_request():
                         created_at,
                         updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW()
                     ) RETURNING id, created_at
                 """, (
                     employee_id,
@@ -14401,6 +14424,7 @@ def create_vacation_request():
                     leave_type,
                     start_date,
                     end_date,
+                    duration_days,
                     return_to_work,
                     reason,
                     coverage_plan,
@@ -14903,6 +14927,7 @@ def update_vacation_request(vacation_id):
         auto_return_date = data.get('auto_return_date')
         leave_type = data.get('leave_type', 'vacation')
         reason = data.get('reason', '')
+        duration_days = data.get('duration_days')  # Accept duration_days from frontend
         
         if not start_date or not end_date:
             return jsonify({
@@ -14951,18 +14976,34 @@ def update_vacation_request(vacation_id):
                         'message': 'Only pending requests can be edited'
                     }), 403
                 
-                # Update the vacation request (duration_days is auto-calculated by database)
+                # If duration_days not provided, calculate it (basic calculation without blackouts)
+                if duration_days is None or duration_days == 0:
+                    duration_days = 0
+                    current = start
+                    while current <= end:
+                        if current.weekday() < 5:  # Monday = 0, Friday = 4
+                            duration_days += 1
+                        current += timedelta(days=1)
+                    # Ensure we have at least 1 day if dates are valid
+                    if duration_days == 0 and start <= end:
+                        duration_days = 1
+                
+                # Ensure duration_days is an integer and not None
+                duration_days = int(duration_days) if duration_days else 1
+                
+                # Update the vacation request with calculated duration_days
                 cur.execute("""
                     UPDATE vacation
                     SET 
                         start_date = %s,
                         end_date = %s,
+                        duration_days = %s,
                         leave_type = %s,
                         reason = %s,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                     RETURNING id, employee_id, start_date, end_date, duration_days
-                """, (start_date, end_date, leave_type, reason, vacation_id))
+                """, (start_date, end_date, duration_days, leave_type, reason, vacation_id))
                 
                 updated_vacation = cur.fetchone()
                 conn.commit()
