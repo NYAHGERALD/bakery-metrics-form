@@ -9,7 +9,7 @@
     <meta property="og:title" content="Bakery Metrics - Transform Your Bakery Operations">
     <meta property="og:description" content="Professional analytics platform for modern bakeries. Track metrics, manage inventory, and optimize performance.">
     <meta property="og:type" content="website">
-    <title>Bakery Metrics - Transforming Our Bakery Operations</title>
+    <title>DASHMET - Transforming your Operations</title>
     
     <!-- Tailwind CSS -->
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
@@ -140,11 +140,7 @@
             <div class="flex h-16 md:h-20 items-center justify-between">
                 <!-- Logo -->
                 <div class="flex items-center space-x-3">
-                    <div class="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 shadow-lg ring-2 ring-white/20">
-                        <svg class="h-6 w-6 md:h-7 md:w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="DASHMET Logo" class="h-10 w-10 md:h-12 md:w-12 object-contain">
                     <span class="text-xl md:text-2xl font-bold text-white">DASHMET</span>
                 </div>
                 
@@ -153,41 +149,6 @@
                     <a href="#features" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Features</a>
                     <a href="#about" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">About</a>
                     <a href="#reviews" class="px-4 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm">Reviews</a>
-                    
-                    <!-- Special Bakery Button with Animation 
-                    <a href="/dashboard" class="bakery-link relative px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 animate-pulse hover:animate-none border-2 border-white/30 hover:border-white/60 backdrop-blur-sm">
-                        <span class="relative z-10 flex items-center">
-                            <svg class="w-4 h-4 mr-2 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
-                            </svg>
-                            BAKERY
-                        </span>
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                    </a>
-                    
-                   
-                    <a href="/production-dashboard" class="production-link relative px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 animate-pulse hover:animate-none border-2 border-white/30 hover:border-white/60 backdrop-blur-sm">
-                        <span class="relative z-10 flex items-center">
-                            <svg class="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                            PRODUCTION
-                        </span>
-                        <div class="absolute inset-0 bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                    </a>
-                    
-                   
-                    <a href="/vacation-hub" class="relative px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 hover:animate-pulse border-2 border-white/30 hover:border-white/60 backdrop-blur-sm">
-                        <span class="relative z-10 flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            VACATION
-                        </span>
-                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                    </a>
-                    -->
                 </div>
                 
                 <!-- CTA Buttons -->
@@ -237,22 +198,6 @@
                     <i class="fas fa-star mr-3 text-purple-400"></i>Reviews
                 </a>
                 
-                <!-- Special Bakery Link for Mobile
-                <a href="/dashboard" class="block px-4 py-3 mt-3 text-base font-bold text-white bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-lg hover:from-blue-400 hover:via-cyan-400 hover:to-teal-400 transition-all duration-300 transform hover:translate-x-2 hover:scale-105 animate-pulse hover:animate-none border-2 border-white/30 hover:border-white/60 shadow-lg">
-                    <i class="fas fa-store mr-3 text-yellow-300 animate-bounce"></i>🏪 BAKERY
-                </a>
-                
-                 
-                <a href="/production-dashboard" class="block px-4 py-3 mt-2 text-base font-bold text-white bg-gradient-to-r from-red-500 via-pink-500 to-purple-500 rounded-lg hover:from-red-400 hover:via-pink-400 hover:to-purple-400 transition-all duration-300 transform hover:translate-x-2 hover:scale-105 animate-pulse hover:animate-none border-2 border-white/30 hover:border-white/60 shadow-lg">
-                    <i class="fas fa-industry mr-3 text-yellow-300 animate-spin"></i>🏭 PRODUCTION
-                </a>
-                
-                 
-                <a href="/vacation-hub" class="block px-4 py-3 mt-2 text-base font-bold text-white bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-lg hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 transition-all duration-300 transform hover:translate-x-2 hover:scale-105 border-2 border-white/30 hover:border-white/60 shadow-lg">
-                    <i class="fas fa-calendar-alt mr-3 text-yellow-300"></i>🏖️ VACATION
-                </a>
-                -->
-                
                 <div class="border-t border-white/10 pt-4 mt-4">
                     <a href="/employee-login" class="block px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 transform hover:scale-105 text-center">
                         <i class="fas fa-user mr-2"></i>Employee Login
@@ -285,17 +230,17 @@
                         <h1 id="hero-heading" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6">
                             Transform Your 
                             <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                                Bakery Operations
+                                Operations
                             </span>
                         </h1>
                         
                         <p class="text-lg md:text-xl text-white/90 leading-8 mb-8 mx-auto max-w-3xl">
-                            Our professional analytics platform to Track metrics, verify inventory, and optimize performance with enterprise-grade tools.
+                            A complete solution to monitor performance, verify inventory, and manage vacation requests, powered by enterprise-level tools.
                         </p>
                         
                         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                             <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105 hover:shadow-xl">
-                                Get Started Today
+                                Login to Get Started Today
                             </a>
                             <a href="#features" class="inline-flex items-center justify-center rounded-lg border-2 border-white px-8 py-4 text-lg font-semibold text-white hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
                                 Learn More
@@ -320,7 +265,7 @@
                 <div class="text-center mb-16">
                     <h2 id="features-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6">Powerful Features</h2>
                     <p class="text-lg md:text-xl text-gray-600 leading-8 mx-auto max-w-3xl">
-                        Everything you need to optimize your bakery operations with industry-leading tools and insights.
+                        Empower your team with the tools and insights you need to track, analyze, and elevate your operational performance.
                     </p>
                 </div>
                 
@@ -335,6 +280,9 @@
                         <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Real-time Analytics</h3>
                         <p class="text-gray-600 leading-7">
                             Monitor OEE, production metrics, and waste with beautiful, interactive dashboards that provide actionable insights.
+                        </p>
+                         <p class="text-gray-600 leading-7">
+                            We also provide vacation management tools for supervisors and managers: employees can request time off, check availability, and receive real-time updates on their vacation request status.
                         </p>
                     </article>
                     
@@ -399,7 +347,7 @@
                         </div>
                         <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4">Security & Compliance</h3>
                         <p class="text-gray-600 leading-7">
-                            Enterprise-grade security, data encryption, and compliance monitoring for food safety standards.
+                            Your data protected with enterprise-level security, end-to-end encryption, and strict compliance standards.
                         </p>
                     </article>
                 </div>
@@ -413,14 +361,14 @@
                     <div>
                         <h2 id="about-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6 md:mb-8">About Bakery Metrics</h2>
                         <p class="text-lg md:text-xl text-gray-600 leading-8 mb-6 md:mb-8">
-                            We're dedicated to transforming how our bakery department operate through data-driven insights and modern technology. Our platform helps bakery manager and supervisors make informed decisions, reduce waste, and optimize production and equipment efficiency.
+                            We're dedicated to transforming how your department operate through data-driven insights and modern technology. Our platform helps manager and supervisors make informed decisions, reduce waste, and optimize production and equipment efficiency.
                         </p>
                         <p class="text-lg md:text-xl text-gray-600 leading-8 mb-8 md:mb-12">
-                            With years of experience in bakery operations and food production, we understand the unique challenges faced by modern bakeries and have built our solution to address them directly.
+                            With years of experience in food production, we understand the unique challenges faced by modern companies and have built our solution to address them directly.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 md:px-8 py-3 md:py-4 text-base font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
-                                Start Your journey here
+                                Login to Start Your journey here
                             </a>
                         </div>
                     </div>
@@ -457,7 +405,7 @@
                         What Our Users Say
                     </h2>
                     <p class="text-lg md:text-xl text-gray-600 leading-8 mb-8 max-w-3xl mx-auto">
-                        See what other Leads Supervisors and Managers are saying about their experience with our platform.
+                        See what other Supervisors and Managers are saying about their experience with our platform.
                     </p>
                     
                     <!-- Average Rating Display -->
@@ -592,11 +540,11 @@
             <div class="mx-auto max-w-4xl text-center px-4 sm:px-6 lg:px-8">
                 <h2 id="cta-heading" class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-6 md:mb-8">Ready to Optimize Your Process?</h2>
                 <p class="text-lg md:text-xl text-white/90 leading-8 mb-8 md:mb-12">
-                    Join our current users who are already using our platform to improve efficiency and reduce waste.
+                    Join our current users who are already using our platform.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center">
                     <a href="/login" class="inline-flex items-center justify-center rounded-lg bg-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105">
-                        Start Here
+                        Login to Start today
                     </a>
                 </div>
             </div>
@@ -610,12 +558,8 @@
                 <!-- Company Info -->
                 <div class="md:col-span-1">
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                        <span class="text-xl font-bold text-white">Bakery Metrics</span>
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="DASHMET Logo" class="w-10 h-10 object-contain">
+                        <span class="text-xl font-bold text-white">DASHMET</span>
                     </div>
                     <p class="text-gray-400 mb-6 leading-relaxed">
                         Professional analytics platform. Transform your operations with data-driven insights.
@@ -625,7 +569,7 @@
                 
                 <!-- Product Links -->
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-6">The Bakery</h3>
+                    <h3 class="text-lg font-semibold text-white mb-6">DASHMET</h3>
                     <ul class="space-y-3">
                         <li><a href="#features" class="text-gray-400 hover:text-white transition-colors duration-200">Features</a></li>
                         <li><a href="/security-policy" class="text-gray-400 hover:text-white transition-colors duration-200">Security</a></li>
@@ -657,7 +601,7 @@
             <!-- Footer Bottom -->
             <div class="border-t border-gray-800 pt-8 md:pt-12 text-center">
                 <p class="text-gray-400 text-base md:text-lg">
-                    &copy; 2025 Bakery Metrics. All rights reserved. Created by Gerald Nyah.
+                    &copy; 2025 DASHMET. All rights reserved. Created by Gerald Nyah.
                 </p>
             </div>
         </div>
