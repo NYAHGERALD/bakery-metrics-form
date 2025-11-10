@@ -701,6 +701,174 @@
         #contentOverlay .animate-pulse {
             animation: float 3s ease-in-out infinite;
         }
+
+        /* Logout Modal Styles - Glass Morphism */
+        .logout-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            animation: modalFadeIn 0.3s ease-out;
+            padding: 1rem;
+        }
+
+        .logout-modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-modal {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.25) 0%, 
+                rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .logout-modal h2 {
+            color: white;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-modal p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Gradient Spinner Animation */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .logout-spinner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #60a5fa 0deg,
+                #a78bfa 90deg,
+                #f0abfc 180deg,
+                #60a5fa 360deg
+            );
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .logout-spinner::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Decorative dots */
+        .logout-dots {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .logout-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .logout-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .logout-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .logout-modal {
+                padding: 2rem 1.5rem;
+                border-radius: 1.25rem;
+                max-width: 90%;
+            }
+            
+            .logout-modal h2 {
+                font-size: 1.5rem;
+            }
+            
+            .logout-modal p {
+                font-size: 0.95rem;
+            }
+            
+            .logout-spinner {
+                width: 45px;
+                height: 45px;
+            }
+        }
     </style>
 </head>
 
@@ -1026,7 +1194,7 @@
                                         <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
                                         <span class="text-sm text-gray-700">Profile</span>
                                     </a>
-                                    <a href="/"
+                                    <a href="javascript:void(0);" onclick="handleLogout()"
                                         class="flex items-center space-x-2 px-3 py-3 hover:bg-red-50 rounded-xl text-danger-600 transition-colors">
                                         <i data-lucide="log-out" class="w-4 h-4"></i>
                                         <span class="text-sm">Logout</span>
@@ -3997,7 +4165,51 @@
             }
         }
 
+        // Handle Logout
+        async function handleLogout() {
+            // Show logout modal
+            const logoutModal = document.getElementById('logoutModal');
+            logoutModal.classList.add('active');
+            
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    // Wait a bit for user to see the message, then redirect
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    logoutModal.classList.remove('active');
+                    showToast('Error logging out. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error logging out:', error);
+                logoutModal.classList.remove('active');
+                showToast('Error logging out. Please try again.', 'error');
+            }
+        }
+
     </script>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="logout-modal-overlay">
+        <div class="logout-modal">
+            <h2>Logging You Out</h2>
+            <p>Bye! See you again soon.</p>
+            <div class="logout-spinner"></div>
+            <div class="logout-dots">
+                <div class="logout-dot"></div>
+                <div class="logout-dot"></div>
+                <div class="logout-dot"></div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

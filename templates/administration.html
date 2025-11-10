@@ -802,6 +802,377 @@
                 background: rgba(79, 70, 229, 0.3) !important;
             }
         }
+
+        /* Logout Modal Styles - Glass Morphism */
+        .logout-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            animation: modalFadeIn 0.3s ease-out;
+            padding: 1rem;
+        }
+
+        .logout-modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-modal {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.25) 0%, 
+                rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .logout-modal h2 {
+            color: white;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-modal p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Gradient Spinner Animation */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .logout-spinner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #60a5fa 0deg,
+                #a78bfa 90deg,
+                #f0abfc 180deg,
+                #60a5fa 360deg
+            );
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .logout-spinner::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Decorative dots */
+        .logout-dots {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .logout-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .logout-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .logout-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Avatar Dropdown Styles */
+        .avatar-initial {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .avatar-initial:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .avatar-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            min-width: 240px;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .avatar-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .avatar-dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .avatar-dropdown-header p {
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .avatar-dropdown-menu {
+            padding: 0.5rem;
+        }
+
+        .avatar-dropdown-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .avatar-dropdown-item:hover {
+            background: #f3f4f6;
+            transform: translateX(2px);
+        }
+
+        .avatar-dropdown-item i {
+            width: 16px;
+            height: 16px;
+            margin-right: 0.75rem;
+        }
+
+        .avatar-dropdown-item.danger {
+            color: #dc2626;
+        }
+
+        .avatar-dropdown-item.danger:hover {
+            background: #fee2e2;
+        }
+
+        /* Avatar Dropdown Styles */
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .avatar-circle:hover {
+            transform: scale(1.05);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .avatar-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 240px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .avatar-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .avatar-dropdown-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            color: white;
+        }
+
+        .avatar-dropdown-header .name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .avatar-dropdown-header .role {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .avatar-dropdown-menu {
+            padding: 0.5rem 0;
+        }
+
+        .avatar-dropdown-item {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            color: #374151;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        .avatar-dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+        .avatar-dropdown-item i {
+            width: 18px;
+            height: 18px;
+            margin-right: 0.75rem;
+        }
+
+        .avatar-dropdown-divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 0.25rem 0;
+        }
+
+        .avatar-dropdown-item.danger {
+            color: #dc2626;
+        }
+
+        .avatar-dropdown-item.danger:hover {
+            background: #fee2e2;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .logout-modal {
+                padding: 2rem 1.5rem;
+                border-radius: 1.25rem;
+                max-width: 90%;
+            }
+            
+            .logout-modal h2 {
+                font-size: 1.5rem;
+            }
+            
+            .logout-modal p {
+                font-size: 0.95rem;
+            }
+            
+            .logout-spinner {
+                width: 45px;
+                height: 45px;
+            }
+
+            .avatar-dropdown {
+                width: 200px;
+            }
+        }
     </style>
 </head>
 
@@ -1016,22 +1387,6 @@
                             <p class="text-xs text-slate-400">Administrator</p>
                         </div>
                     </div>
-                    
-                    <!-- Profile and Logout Buttons -->
-                    <div class="space-y-2">
-                        <button onclick="openProfileModal()" 
-                            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                            <i data-lucide="user-circle" class="w-4 h-4 mr-2 inline"></i>
-                            Profile Settings
-                        </button>
-                        <form method="POST" action="/logout">
-                            <button type="submit"
-                                class="w-full btn-danger text-white px-4 py-2 rounded-lg text-sm font-medium">
-                                <i data-lucide="log-out" class="w-4 h-4 mr-2 inline"></i>
-                                Logout
-                            </button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </aside>
@@ -1051,13 +1406,7 @@
                             <p id="pageSubtitle" class="text-sm text-gray-600 mt-1">Manage your bakery analytics system
                             </p>
                         </div>
-                        <div class="flex items-center space-x-4">
-                            <!-- Admin Login Button -->
-                            <a href="/admin-login" class="hidden sm:flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                <i data-lucide="shield-check" class="w-4 h-4 mr-2"></i>
-                                Admin Login
-                            </a>
-                            
+                        <div class="flex items-center space-x-4"> 
                             <button class="relative p-2 hover:bg-gray-100/50 rounded-lg transition-colors">
                                 <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
                                 <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-dot">
@@ -1073,6 +1422,30 @@
                                         <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
                                         Settings
                                     </button>
+                                </div>
+                            </div>
+                            
+                            <!-- User Avatar with Dropdown -->
+                            <div class="relative">
+                                <div class="avatar-initial" onclick="toggleAvatarDropdown()" id="userAvatar">
+                                    {{ session['user_full_name'][0:1].upper() if session.get('user_full_name') else 'A' }}
+                                </div>
+                                <!-- Avatar Dropdown -->
+                                <div id="avatarDropdown" class="avatar-dropdown">
+                                    <div class="avatar-dropdown-header">
+                                        <p class="text-sm font-semibold text-gray-900">{{ session['user_full_name'] or 'Admin User' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ session['user_email'] or 'admin@bakery.com' }}</p>
+                                    </div>
+                                    <div class="avatar-dropdown-menu">
+                                        <button onclick="console.log('Profile button clicked'); event.stopPropagation(); openProfileModal(); toggleAvatarDropdown();" class="avatar-dropdown-item">
+                                            <i data-lucide="user-circle"></i>
+                                            Profile Settings
+                                        </button>
+                                        <button onclick="console.log('Logout button clicked'); event.stopPropagation(); toggleAvatarDropdown(); handleLogout();" class="avatar-dropdown-item danger">
+                                            <i data-lucide="log-out"></i>
+                                            Logout
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1445,10 +1818,19 @@
                                 <h3 class="text-lg font-semibold text-gray-900">Employee Management</h3>
                                 <p class="text-sm text-gray-600 mt-1">Manage employee records, assignments, and details</p>
                             </div>
-                            <button onclick="showAddEmployeeModal()"
-                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
-                                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
-                                Add Employee
+                            <button id="addEmployeeBtn" onclick="showAddEmployeeModal()"
+                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium relative">
+                                <span id="addEmployeeBtnContent" class="flex items-center">
+                                    <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                                    Add Employee
+                                </span>
+                                <span id="addEmployeeBtnLoading" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
                             </button>
                         </div>
 
@@ -1520,10 +1902,19 @@
                             </div>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
                             <p class="text-gray-500 mb-6">Get started by adding your first employee to the system.</p>
-                            <button onclick="showAddEmployeeModal()"
-                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
-                                <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
-                                Add First Employee
+                            <button id="addEmployeeBtnMobile" onclick="showAddEmployeeModal()"
+                                class="btn-primary text-white px-6 py-3 rounded-xl font-medium relative">
+                                <span id="addEmployeeBtnMobileContent" class="flex items-center">
+                                    <i data-lucide="user-plus" class="w-4 h-4 mr-2 inline"></i>
+                                    Add First Employee
+                                </span>
+                                <span id="addEmployeeBtnMobileLoading" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -3101,6 +3492,40 @@
                         <form id="employeeForm" class="space-y-8" autocomplete="off">
                             <input type="hidden" id="employeeId" value="">
 
+                            <!-- Select Existing User Section -->
+                            <div class="space-y-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="users" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900">Select Existing User (Optional)</h4>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Choose User from Database</label>
+                                    <select id="existingUserDropdown" class="form-input bg-white">
+                                        <option value="">-- Select a user to auto-fill information --</option>
+                                    </select>
+                                    <p class="form-help text-blue-600">
+                                        <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                                        Select an existing user with role 'user' or 'employee' to automatically fill their information below
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Validation Messages -->
+                            <div id="employeeValidationMessages" class="space-y-3 hidden">
+                                <!-- Existing Employee Check Message -->
+                                <div id="existingEmployeeMessage" class="hidden p-4 rounded-lg border-2 transition-all duration-300">
+                                    <div class="flex items-start space-x-3">
+                                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p id="existingEmployeeMessageText" class="text-sm font-medium"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Personal Information Section -->
                             <div class="space-y-6">
                                 <div class="flex items-center space-x-3 mb-6">
@@ -3334,6 +3759,16 @@
                                         <!-- Will be populated dynamically with users -->
                                     </select>
                                     <p class="form-help">Link this employee to an existing user account for system access</p>
+                                    
+                                    <!-- User Account Link Validation Message (directly below the dropdown) -->
+                                    <div id="userLinkValidationMessage" class="hidden mt-3 p-4 rounded-lg border-2 transition-all duration-300">
+                                        <div class="flex items-start space-x-3">
+                                            <i data-lucide="link" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                                            <div class="flex-1">
+                                                <p id="userLinkValidationMessageText" class="text-sm font-medium"></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4">
@@ -4690,12 +5125,34 @@
             dropdown.classList.toggle('hidden');
         }
 
-        // Close dropdown when clicking outside
+        // Avatar Dropdown Functions
+        function toggleAvatarDropdown() {
+            const dropdown = document.getElementById('avatarDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('settingsDropdown');
-            const button = document.getElementById('settingsDropdownBtn');
-            if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
-                dropdown.classList.add('hidden');
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            const settingsButton = document.getElementById('settingsDropdownBtn');
+            const avatarDropdown = document.getElementById('avatarDropdown');
+            const avatarButton = document.getElementById('userAvatar');
+            
+            // Close settings dropdown
+            if (settingsDropdown && settingsButton && !settingsDropdown.contains(event.target) && !settingsButton.contains(event.target)) {
+                settingsDropdown.classList.add('hidden');
+            }
+            
+            // Close avatar dropdown only if clicking outside (not on dropdown items)
+            if (avatarDropdown && avatarButton) {
+                // Check if click is outside both avatar button and dropdown
+                const clickedOutside = !avatarDropdown.contains(event.target) && !avatarButton.contains(event.target);
+                // Check if click is on a dropdown item (which will handle closing itself)
+                const clickedDropdownItem = event.target.closest('.avatar-dropdown-item');
+                
+                if (clickedOutside && !clickedDropdownItem) {
+                    avatarDropdown.classList.remove('active');
+                }
             }
         });
 
@@ -5741,32 +6198,76 @@
 
         // Show add employee modal
         async function showAddEmployeeModal() {
-            currentEditingEmployeeId = null;
-            document.getElementById('employeeModalTitle').textContent = 'Add New Employee';
-            document.getElementById('employeeSubmitButtonText').textContent = 'Create Employee';
-            document.getElementById('employeeForm').reset();
-            document.getElementById('employeeId').value = '';
-            
-            // Clear vacation schedule
-            clearVacationSchedule();
-            
-            // Hide warning message
-            const warningDiv = document.getElementById('vacationScheduleWarning');
-            if (warningDiv) {
-                warningDiv.classList.add('hidden');
+            // Show loading state on all Add Employee buttons
+            const btnIds = ['addEmployeeBtn', 'addEmployeeBtnMobile'];
+            btnIds.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.disabled = true;
+                    const content = document.getElementById(btnId + 'Content');
+                    const loading = document.getElementById(btnId + 'Loading');
+                    if (content) content.classList.add('hidden');
+                    if (loading) loading.classList.remove('hidden');
+                }
+            });
+
+            try {
+                currentEditingEmployeeId = null;
+                document.getElementById('employeeModalTitle').textContent = 'Add New Employee';
+                document.getElementById('employeeSubmitButtonText').textContent = 'Create Employee';
+                document.getElementById('employeeForm').reset();
+                document.getElementById('employeeId').value = '';
+                
+                // Clear vacation schedule
+                clearVacationSchedule();
+                
+                // Hide warning message
+                const warningDiv = document.getElementById('vacationScheduleWarning');
+                if (warningDiv) {
+                    warningDiv.classList.add('hidden');
+                }
+
+                // Load existing users for auto-fill dropdown
+                await populateExistingUserDropdown();
+                
+                // Load users for linking
+                await populateUserDropdown();
+                
+                // Load supervisors and managers
+                await populateSupervisorDropdown();
+                await populateManagerDropdown();
+                
+                // Load assets data for dropdowns
+                await populateEmployeeDropdowns();
+
+                // Hide validation messages on new modal
+                hideValidationMessages();
+
+                // Add event listeners for real-time validation
+                setupEmployeeValidationListeners();
+
+                document.getElementById('employeeModal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading employee modal:', error);
+                alert('Failed to load employee form. Please try again.');
+            } finally {
+                // Remove loading state from all buttons
+                btnIds.forEach(btnId => {
+                    const btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.disabled = false;
+                        const content = document.getElementById(btnId + 'Content');
+                        const loading = document.getElementById(btnId + 'Loading');
+                        if (content) content.classList.remove('hidden');
+                        if (loading) loading.classList.add('hidden');
+                    }
+                });
+                
+                // Re-render Lucide icons
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
             }
-
-            // Load users for linking
-            await populateUserDropdown();
-            
-            // Load supervisors and managers
-            await populateSupervisorDropdown();
-            await populateManagerDropdown();
-            
-            // Load assets data for dropdowns
-            await populateEmployeeDropdowns();
-
-            document.getElementById('employeeModal').classList.remove('hidden');
         }
         
         // Populate employee form dropdowns from assets
@@ -5935,6 +6436,249 @@
             }
         }
 
+        // Populate existing user dropdown for auto-fill
+        async function populateExistingUserDropdown() {
+            try {
+                console.log('Loading users for auto-fill dropdown...'); // Debug log
+                // Filter to show users with role='user' or role='employee'
+                const response = await fetch('/api/users?role=user,employee');
+                const data = await response.json();
+                
+                console.log('Existing users API response:', data); // Debug log
+
+                if (data.success) {
+                    const users = data.users || [];
+                    const dropdown = document.getElementById('existingUserDropdown');
+                    
+                    console.log('Found users for auto-fill:', users.length); // Debug log
+
+                    if (users.length > 0) {
+                        dropdown.innerHTML = '<option value="">-- Select a user to auto-fill information --</option>' +
+                            users.map(u => {
+                                const phone = u.phone || 'No phone';
+                                const email = u.email || 'No email';
+                                return `<option value="${u.id}" data-user='${JSON.stringify(u)}'>${u.first_name} ${u.last_name} (${phone}) - ${email}</option>`;
+                            }).join('');
+                        console.log('Existing user dropdown populated with', users.length, 'users'); // Debug log
+                        
+                        // Add event listener for auto-fill
+                        dropdown.addEventListener('change', handleExistingUserSelection);
+                    } else {
+                        dropdown.innerHTML = '<option value="">-- Select a user to auto-fill information --</option><option disabled>No users available</option>';
+                        console.warn('No users with role=user or employee found'); // Debug log
+                    }
+                } else {
+                    console.error('Failed to load users for auto-fill:', data.message); // Debug log
+                }
+            } catch (error) {
+                console.error('Error loading users for auto-fill:', error);
+            }
+        }
+
+        // Handle existing user selection and auto-fill form
+        function handleExistingUserSelection(event) {
+            const selectedOption = event.target.selectedOptions[0];
+            
+            if (!selectedOption || !selectedOption.value) {
+                // Clear form if no user selected
+                hideValidationMessages();
+                return;
+            }
+
+            try {
+                const userData = JSON.parse(selectedOption.getAttribute('data-user'));
+                console.log('Auto-filling form with user data:', userData); // Debug log
+
+                // Fill Personal Information
+                document.getElementById('empFirstName').value = userData.first_name || '';
+                document.getElementById('empLastName').value = userData.last_name || '';
+
+                // Fill Contact Information
+                // If email is null, leave it empty
+                document.getElementById('empEmail').value = userData.email || '';
+                document.getElementById('empPhone').value = userData.phone || '';
+
+                console.log('Form auto-filled successfully'); // Debug log
+                
+                // Check for existing employee with same phone and last name
+                checkExistingEmployee(userData.phone, userData.last_name);
+            } catch (error) {
+                console.error('Error auto-filling form:', error);
+            }
+        }
+
+        // Check if employee already exists in database
+        async function checkExistingEmployee(phone, lastName) {
+            if (!phone || !lastName) {
+                hideValidationMessages();
+                return;
+            }
+
+            try {
+                console.log('Checking for existing employee with phone:', phone, 'and last name:', lastName);
+                
+                const response = await fetch('/api/employees');
+                const data = await response.json();
+
+                if (data.success && data.employees) {
+                    // API returns phonenumber and lastname (lowercase)
+                    const existingEmployee = data.employees.find(emp => 
+                        emp.phonenumber === phone && emp.lastname.toLowerCase() === lastName.toLowerCase()
+                    );
+
+                    console.log('Existing employee check result:', existingEmployee); // Debug log
+
+                    const messagesContainer = document.getElementById('employeeValidationMessages');
+                    const messageDiv = document.getElementById('existingEmployeeMessage');
+                    const messageText = document.getElementById('existingEmployeeMessageText');
+
+                    messagesContainer.classList.remove('hidden');
+                    messageDiv.classList.remove('hidden');
+
+                    if (existingEmployee) {
+                        // Employee already exists - show warning
+                        messageDiv.className = 'p-4 rounded-lg border-2 bg-red-50 border-red-300 transition-all duration-300';
+                        messageDiv.querySelector('[data-lucide="alert-circle"]').className = 'w-5 h-5 flex-shrink-0 mt-0.5 text-red-600';
+                        messageText.className = 'text-sm font-medium text-red-800';
+                        messageText.innerHTML = `<strong>⚠️ Warning:</strong> An employee with this phone number (${phone}) and last name (${lastName}) already exists in the system. Employee ID: ${existingEmployee.id}`;
+                        
+                        // Re-render lucide icons
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    } else {
+                        // No existing employee - show success message
+                        messageDiv.className = 'p-4 rounded-lg border-2 bg-green-50 border-green-300 transition-all duration-300';
+                        messageDiv.querySelector('[data-lucide="alert-circle"]').className = 'w-5 h-5 flex-shrink-0 mt-0.5 text-green-600';
+                        messageText.className = 'text-sm font-medium text-green-800';
+                        messageText.innerHTML = `<strong>✓ All Clear:</strong> This is the first time this employee is being created. No issues found. You are good to go!`;
+                        
+                        // Re-render lucide icons
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking existing employee:', error);
+            }
+        }
+
+        // Validate user account link matches current employee
+        function validateUserAccountLink() {
+            const empFirstName = document.getElementById('empFirstName').value.trim();
+            const empLastName = document.getElementById('empLastName').value.trim();
+            const empPhone = document.getElementById('empPhone').value.trim();
+            const selectedUserLastName = document.getElementById('empUserId').value;
+
+            const messageDiv = document.getElementById('userLinkValidationMessage');
+            const messageText = document.getElementById('userLinkValidationMessageText');
+
+            if (!empLastName || !selectedUserLastName || selectedUserLastName === '') {
+                // Hide message if no data to compare
+                if (messageDiv) {
+                    messageDiv.classList.add('hidden');
+                }
+                return;
+            }
+
+            messageDiv.classList.remove('hidden');
+
+            if (selectedUserLastName === empLastName) {
+                // Last names match - show success
+                messageDiv.className = 'mt-3 p-4 rounded-lg border-2 bg-green-50 border-green-300 transition-all duration-300';
+                messageDiv.querySelector('[data-lucide="link"]').className = 'w-5 h-5 flex-shrink-0 mt-0.5 text-green-600';
+                messageText.className = 'text-sm font-medium text-green-800';
+                messageText.innerHTML = `<strong>✓ Match Confirmed:</strong> The linked user account matches this employee's last name (${empLastName}). Everything looks good!`;
+            } else {
+                // Last names don't match - show warning
+                messageDiv.className = 'mt-3 p-4 rounded-lg border-2 bg-yellow-50 border-yellow-300 transition-all duration-300';
+                messageDiv.querySelector('[data-lucide="link"]').className = 'w-5 h-5 flex-shrink-0 mt-0.5 text-yellow-600';
+                messageText.className = 'text-sm font-medium text-yellow-800';
+                messageText.innerHTML = `<strong>⚠️ Mismatch Detected:</strong> The selected user account last name (${selectedUserLastName}) does not match the employee's last name (${empLastName}). Please verify this is the correct user account.`;
+            }
+
+            // Re-render lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Hide validation messages
+        function hideValidationMessages() {
+            const messagesContainer = document.getElementById('employeeValidationMessages');
+            const existingEmployeeMessage = document.getElementById('existingEmployeeMessage');
+            const userLinkMessage = document.getElementById('userLinkValidationMessage');
+            
+            if (messagesContainer) {
+                messagesContainer.classList.add('hidden');
+            }
+            if (existingEmployeeMessage) {
+                existingEmployeeMessage.classList.add('hidden');
+            }
+            if (userLinkMessage) {
+                userLinkMessage.classList.add('hidden');
+            }
+        }
+
+        // Setup event listeners for real-time validation
+        function setupEmployeeValidationListeners() {
+            // Remove existing listeners to prevent duplicates
+            const empLastName = document.getElementById('empLastName');
+            const empPhone = document.getElementById('empPhone');
+            const empUserId = document.getElementById('empUserId');
+
+            // Clone and replace to remove old listeners
+            if (empLastName) {
+                const newEmpLastName = empLastName.cloneNode(true);
+                empLastName.parentNode.replaceChild(newEmpLastName, empLastName);
+                
+                newEmpLastName.addEventListener('input', debounce(function() {
+                    const phone = document.getElementById('empPhone').value.trim();
+                    const lastName = this.value.trim();
+                    if (phone && lastName) {
+                        checkExistingEmployee(phone, lastName);
+                    }
+                    validateUserAccountLink();
+                }, 500));
+            }
+
+            if (empPhone) {
+                const newEmpPhone = empPhone.cloneNode(true);
+                empPhone.parentNode.replaceChild(newEmpPhone, empPhone);
+                
+                newEmpPhone.addEventListener('input', debounce(function() {
+                    const lastName = document.getElementById('empLastName').value.trim();
+                    const phone = this.value.trim();
+                    if (phone && lastName) {
+                        checkExistingEmployee(phone, lastName);
+                    }
+                }, 500));
+            }
+
+            if (empUserId) {
+                const newEmpUserId = empUserId.cloneNode(true);
+                empUserId.parentNode.replaceChild(newEmpUserId, empUserId);
+                
+                newEmpUserId.addEventListener('change', function() {
+                    validateUserAccountLink();
+                });
+            }
+        }
+
+        // Debounce helper function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func.apply(this, args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // Edit employee
         async function editEmployee(employeeId) {
             try {
@@ -5994,6 +6738,12 @@
                             }
                         }
                     }
+
+                    // Setup validation listeners for edit mode too
+                    setupEmployeeValidationListeners();
+
+                    // Hide validation messages in edit mode (optional - remove if you want validation in edit)
+                    hideValidationMessages();
 
                     document.getElementById('employeeModal').classList.remove('hidden');
                 } else {
@@ -7808,15 +8558,26 @@
 
         // Admin Profile Modal Functions
         function openProfileModal() {
+            console.log('openProfileModal called');
             const modal = document.getElementById('profileModal');
+            console.log('profileModal element:', modal);
+            if (!modal) {
+                console.error('Profile modal not found!');
+                return;
+            }
+            console.log('Modal classes before:', modal.classList.toString());
             modal.classList.remove('hidden');
+            console.log('Modal classes after:', modal.classList.toString());
             document.body.style.overflow = 'hidden';
+            console.log('Body overflow set to hidden');
             
             // Load admin profile data
             loadAdminProfile();
             
             // Refresh icons
             lucide.createIcons();
+            
+            console.log('Profile modal should now be visible');
         }
 
         function closeProfileModal() {
@@ -9387,6 +10148,57 @@
                 `;
             }
         }
+
+        // Handle Logout
+        async function handleLogout() {
+            console.log('handleLogout called');
+            // Show logout modal
+            const logoutModal = document.getElementById('logoutModal');
+            console.log('logoutModal element:', logoutModal);
+            
+            if (!logoutModal) {
+                console.error('Logout modal not found!');
+                // Fallback to direct logout
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    });
+                    if (response.ok) {
+                        window.location.href = '/';
+                    }
+                } catch (error) {
+                    console.error('Error logging out:', error);
+                }
+                return;
+            }
+            
+            logoutModal.classList.add('active');
+            console.log('Modal classes:', logoutModal.classList);
+            
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    // Wait a bit for user to see the message, then redirect
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    logoutModal.classList.remove('active');
+                    alert('Error logging out. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error logging out:', error);
+                logoutModal.classList.remove('active');
+                alert('Error logging out. Please try again.');
+            }
+        }
     </script>
 
     <!-- Support Ticket Details Modal -->
@@ -9654,7 +10466,7 @@
     </div>
 
     <!-- Admin Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 z-50 hidden">
+    <div id="profileModal" class="fixed inset-0 hidden" style="z-index: 9999;">
         <!-- Enhanced Glassy Blueish Backdrop -->
         <div class="fixed inset-0 bg-gradient-to-br from-purple-500/30 via-blue-500/20 to-indigo-500/30 backdrop-blur-md transition-all duration-300" onclick="closeProfileModal()"></div>
         
@@ -9883,6 +10695,20 @@
 
     <!-- Accessibility announcements -->
     <div aria-live="assertive" aria-atomic="true" class="sr-only" id="accessibilityAnnouncements"></div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="logout-modal-overlay">
+        <div class="logout-modal">
+            <h2>Logging You Out</h2>
+            <p>Bye! See you again soon.</p>
+            <div class="logout-spinner"></div>
+            <div class="logout-dots">
+                <div class="logout-dot"></div>
+                <div class="logout-dot"></div>
+                <div class="logout-dot"></div>
+            </div>
+        </div>
+    </div>
 
 </body>
 
