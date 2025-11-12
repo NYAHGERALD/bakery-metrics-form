@@ -140,6 +140,29 @@
                 transform: translateX(200%) translateY(200%) rotate(-45deg);
             }
         }
+
+        /* Video background optimizations */
+        #heroVideo {
+            filter: brightness(0.65) contrast(1.15);
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #heroVideo.loaded {
+            opacity: 1;
+        }
+        
+        /* Ensure smooth video rendering */
+        video {
+            -webkit-backface-visibility: hidden;
+            -webkit-perspective: 1000;
+            backface-visibility: hidden;
+            perspective: 1000;
+        }
+        
+        /* Loading state for video */
+        .video-loading {
+            opacity: 0;
+        }
     </style>
 </head>
 
@@ -296,11 +319,38 @@
     <main id="main-content">
         <!-- Hero Section -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" aria-labelledby="hero-heading">
-            <!-- Animated background elements -->
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-white/10 blur-3xl animate-pulse"></div>
-                <div class="absolute bottom-1/4 left-1/4 h-48 w-48 rounded-full bg-white/10 blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
-                <div class="absolute top-1/2 left-1/2 h-36 w-36 rounded-full bg-white/10 blur-3xl animate-pulse" style="animation-delay: 4s;"></div>
+            <!-- Video Background -->
+            <div class="absolute inset-0 w-full h-full overflow-hidden">
+                <video 
+                    id="heroVideo"
+                    class="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover"
+                    autoplay 
+                    muted 
+                    loop 
+                    playsinline
+                    preload="metadata"
+                    poster="{{ url_for('static', filename='videos/hero-bg-poster.jpg') }}"
+                    aria-hidden="true">
+                    <!-- WebM for modern browsers (better compression) -->
+                    <source src="{{ url_for('static', filename='videos/hero-bg.webm') }}" type="video/webm">
+                    <!-- MP4 for broader compatibility -->
+                    <source src="{{ url_for('static', filename='videos/hero-bg.mp4') }}" type="video/mp4">
+                    <!-- Fallback message for browsers that don't support video -->
+                    Your browser does not support the video tag.
+                </video>
+                
+                <!-- Gradient overlay for better text readability and brand consistency -->
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/80 via-purple-900/75 to-pink-900/80"></div>
+                
+                <!-- Additional darkening layer for better text contrast -->
+                <div class="absolute inset-0 bg-black/30"></div>
+                
+                <!-- Animated accent elements (visible over video) -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div class="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-white/5 blur-3xl animate-pulse"></div>
+                    <div class="absolute bottom-1/4 left-1/4 h-48 w-48 rounded-full bg-white/5 blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+                    <div class="absolute top-1/2 left-1/2 h-36 w-36 rounded-full bg-white/5 blur-3xl animate-pulse" style="animation-delay: 4s;"></div>
+                </div>
             </div>
             
             <div class="relative z-10 w-full pt-16">
@@ -910,7 +960,80 @@
             }
             
             loadReviews(1);
+            
+            // Initialize hero video with optimizations
+            initHeroVideo();
         });
+
+        // Hero Video Initialization and Optimization
+        function initHeroVideo() {
+            const video = document.getElementById('heroVideo');
+            if (!video) return;
+
+            // Start with video hidden for smooth loading
+            video.classList.add('video-loading');
+
+            // Check if user prefers reduced motion (accessibility)
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            // Check connection speed and device type
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            const slowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
+
+            // Disable video on slow connections or if user prefers reduced motion
+            if (prefersReducedMotion || slowConnection) {
+                video.style.display = 'none';
+                console.log('Video disabled: reduced motion or slow connection');
+                return;
+            }
+
+            // Lazy load video on mobile to save bandwidth
+            if (isMobile) {
+                video.preload = 'none';
+                
+                // Load video when user scrolls near hero section
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            video.load();
+                            observer.disconnect();
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                observer.observe(video);
+            }
+
+            // Handle video loaded
+            video.addEventListener('loadeddata', () => {
+                video.classList.remove('video-loading');
+                video.classList.add('loaded');
+                console.log('Hero video loaded successfully');
+            });
+
+            // Handle video errors gracefully
+            video.addEventListener('error', (e) => {
+                console.warn('Video failed to load:', e);
+                video.style.display = 'none';
+                // Fallback to gradient background (already in CSS)
+            });
+
+            // Ensure video plays (some browsers require user interaction)
+            video.play().catch((error) => {
+                console.log('Autoplay prevented:', error);
+                // Video will show poster image instead
+            });
+
+            // Pause video when page is hidden to save resources
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    video.pause();
+                } else {
+                    video.play().catch(() => {});
+                }
+            });
+        }
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
