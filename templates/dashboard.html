@@ -2363,6 +2363,30 @@
         // Chart configuration and rendering functions
         let chartOEE, chartWaste, chartOEEFirstShift, chartWasteFirstShift, chartOEESecondShift, chartWasteSecondShift;
 
+        // Global KPI targets - will be loaded from admin settings
+        let kpiTargets = {
+            oee: { die_cut_1: 70, die_cut_2: 70, total: 70 },
+            volume: { die_cut_1: 6000, die_cut_2: 6000, total: 12000 },
+            waste: { die_cut_1: 3.75, die_cut_2: 3.75, total: 3.75 }
+        };
+
+        // Load KPI targets from admin settings
+        async function loadKPITargets() {
+            try {
+                const response = await fetch('/api/kpi-targets/public');
+                const data = await response.json();
+                
+                if (data.success && data.targets) {
+                    kpiTargets = data.targets;
+                    console.log('📊 Dashboard: KPI targets loaded from admin settings:', kpiTargets);
+                } else {
+                    console.log('📊 Dashboard: Using default KPI targets');
+                }
+            } catch (error) {
+                console.warn('📊 Dashboard: Failed to load KPI targets, using defaults:', error);
+            }
+        }
+
         function renderMetricChart({ ctxId, title, data, target, yLabel, bgColor, barColor, lineColor, reverseColorLogic = false }) {
             const values = data.map(Number);
             const colors = values.map(v => {
@@ -2529,7 +2553,7 @@
                     ctxId: 'chartOEE',
                     title: 'OEE (%)',
                     data: result.oee || [0, 0, 0, 0, 0],
-                    target: 70,
+                    target: kpiTargets.oee?.total || 70,
                     yLabel: 'OEE (%)',
                     bgColor: '#f8fafc',
                     barColor: '#3b82f6',
@@ -2540,7 +2564,7 @@
                     ctxId: 'chartWaste',
                     title: 'Waste (%)',
                     data: result.waste || [0, 0, 0, 0, 0],
-                    target: 3.75,
+                    target: kpiTargets.waste?.total || 3.75,
                     yLabel: 'Waste (%)',
                     bgColor: '#f8fafc',
                     barColor: '#ef4444',
@@ -2552,7 +2576,7 @@
                     ctxId: 'chartOEEFirstShift',
                     title: 'OEE (1st Shift)',
                     data: result.oeeFirstShift || [0, 0, 0, 0, 0],
-                    target: 70,
+                    target: kpiTargets.oee?.total || 70,
                     yLabel: 'OEE (%)',
                     bgColor: '#f8fafc',
                     barColor: '#3b82f6',
@@ -2563,7 +2587,7 @@
                     ctxId: 'chartWasteFirstShift',
                     title: 'Waste (1st Shift)',
                     data: result.wasteFirstShift || [0, 0, 0, 0, 0],
-                    target: 3.75,
+                    target: kpiTargets.waste?.total || 3.75,
                     yLabel: 'Waste (%)',
                     bgColor: '#f8fafc',
                     barColor: '#ef4444',
@@ -2575,7 +2599,7 @@
                     ctxId: 'chartOEESecondShift',
                     title: 'OEE (2nd Shift)',
                     data: result.oeeSecondShift || [0, 0, 0, 0, 0],
-                    target: 70,
+                    target: kpiTargets.oee?.total || 70,
                     yLabel: 'OEE (%)',
                     bgColor: '#f8fafc',
                     barColor: '#22c55e',
@@ -2586,7 +2610,7 @@
                     ctxId: 'chartWasteSecondShift',
                     title: 'Waste (2nd Shift)',
                     data: result.wasteSecondShift || [0, 0, 0, 0, 0],
-                    target: 3.75,
+                    target: kpiTargets.waste?.total || 3.75,
                     yLabel: 'Waste (%)',
                     bgColor: '#f8fafc',
                     barColor: '#ef4444',
@@ -2720,15 +2744,15 @@
                 // Check if we have valid data - the API returns KPI data directly, no 'success' field
                 // Accept either avgOEE, avgWaste or totalWaste as indicators that KPI data is present.
                 if (kpis && (kpis.avgOEE !== undefined || kpis.avgWaste !== undefined || kpis.totalWaste !== undefined)) {
-                    // Enhanced target values - check if targets come from database, otherwise use defaults
+                    // Enhanced target values - use admin-set targets from kpiTargets global variable
                     const targets = {
                         oee: { 
-                            first: kpis.oeeTarget || 70, 
-                            second: kpis.oeeTarget || 70 
+                            first: kpiTargets.oee?.total || 70, 
+                            second: kpiTargets.oee?.total || 70 
                         },
                         waste: { 
-                            first: kpis.wasteTarget || 3.75, 
-                            second: kpis.wasteTarget || 3.75 
+                            first: kpiTargets.waste?.total || 3.75, 
+                            second: kpiTargets.waste?.total || 3.75 
                         },
                         uptime: { 
                             first: kpis.uptimeTarget || 90, 
@@ -3121,6 +3145,9 @@
             overlay.classList.remove('hidden');
 
             try {
+                // Load KPI targets first (needed by charts and performance targets)
+                await loadKPITargets();
+                
                 // Load all dashboard data concurrently
                 await Promise.all([
                     loadDashboardCharts(),
@@ -3143,6 +3170,9 @@
         // Refresh all dashboard data
         async function refreshAllDashboardData() {
             try {
+                // Reload KPI targets first in case admin changed them
+                await loadKPITargets();
+                
                 await Promise.all([
                     loadDashboardCharts(),
                     loadDashboardKPIs(),

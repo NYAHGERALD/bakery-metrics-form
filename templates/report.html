@@ -195,7 +195,7 @@
               </td>
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
-                <div class="text-sm text-gray-600">≥ 70%</div>
+                <div id="targetOeeDieCut1" class="text-sm text-gray-600">≥ 70%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="oeeDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -213,7 +213,7 @@
             <tr class="hover:bg-blue-50/50 transition-all duration-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
-                <div class="text-sm text-gray-600">≥ 70%</div>
+                <div id="targetOeeDieCut2" class="text-sm text-gray-600">≥ 70%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="oeeDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -231,7 +231,7 @@
             <tr class="hover:bg-blue-50/50 transition-all duration-200 border-b-4 border-gray-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-black text-gray-900">Total</div>
-                <div class="text-sm text-gray-600">≥ 70%</div>
+                <div id="targetOeeTotal" class="text-sm text-gray-600">≥ 70%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="oeeTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -262,7 +262,7 @@
               </td>
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
-                <div class="text-sm text-gray-600">≥ 6,000 lbs</div>
+                <div id="targetVolumeDieCut1" class="text-sm text-gray-600">≥ 6,000 lbs</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="volumeDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -280,7 +280,7 @@
             <tr class="hover:bg-emerald-50/50 transition-all duration-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
-                <div class="text-sm text-gray-600">≥ 6,000 lbs</div>
+                <div id="targetVolumeDieCut2" class="text-sm text-gray-600">≥ 6,000 lbs</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="volumeDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -298,7 +298,7 @@
             <tr class="hover:bg-emerald-50/50 transition-all duration-200 border-b-4 border-gray-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-black text-gray-900">Total</div>
-                <div class="text-sm text-gray-600">≥ 12,000 lbs</div>
+                <div id="targetVolumeTotal" class="text-sm text-gray-600">≥ 12,000 lbs</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="volumeTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -329,7 +329,7 @@
               </td>
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 1</div>
-                <div class="text-sm text-gray-600">≤ 3.75%</div>
+                <div id="targetWasteDieCut1" class="text-sm text-gray-600">≤ 3.75%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="wasteDieCut1FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -347,7 +347,7 @@
             <tr class="hover:bg-red-50/50 transition-all duration-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-semibold text-gray-900">Die Cut 2</div>
-                <div class="text-sm text-gray-600">≤ 3.75%</div>
+                <div id="targetWasteDieCut2" class="text-sm text-gray-600">≤ 3.75%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="wasteDieCut2FirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -365,7 +365,7 @@
             <tr class="hover:bg-red-50/50 transition-all duration-200">
               <td class="px-6 py-3">
                 <div class="text-sm font-black text-gray-900">Total</div>
-                <div class="text-sm text-gray-600">≤ 3.75%</div>
+                <div id="targetWasteTotal" class="text-sm text-gray-600">≤ 3.75%</div>
               </td>
               <td class="px-6 py-3 bg-blue-50/30">
                 <span id="wasteTotalFirstShift" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600">-</span>
@@ -640,13 +640,80 @@
     // Global state for Week Summary button toggle
     let isShowingWeekAverage = false;
 
+    // Global KPI targets - will be loaded from API
+    let kpiTargets = {
+      oee: { die_cut_1: 70, die_cut_2: 70, total: 70 },
+      volume: { die_cut_1: 6000, die_cut_2: 6000, total: 12000 },
+      waste: { die_cut_1: 3.75, die_cut_2: 3.75, total: 3.75 }
+    };
+
+    // Load KPI targets from API
+    async function loadKPITargets() {
+      try {
+        const response = await fetch('/api/kpi-targets/public');
+        const data = await response.json();
+        
+        if (data.success && data.targets) {
+          kpiTargets = data.targets;
+          console.log('📊 DEBUG: KPI targets loaded from API:', kpiTargets);
+          
+          // Update the target display text in the table
+          updateTargetDisplayText();
+        }
+      } catch (error) {
+        console.warn('📊 WARNING: Failed to load KPI targets, using defaults:', error);
+      }
+    }
+
+    // Update the target display text in the table
+    function updateTargetDisplayText() {
+      console.log('📊 DEBUG: Updating target display text with:', kpiTargets);
+      
+      // Format number with commas for display
+      function formatNumber(num) {
+        return num.toLocaleString();
+      }
+      
+      // OEE targets (≥ value%)
+      const oeeTarget1 = kpiTargets.oee?.die_cut_1 || 70;
+      const oeeTarget2 = kpiTargets.oee?.die_cut_2 || 70;
+      const oeeTargetTotal = kpiTargets.oee?.total || 70;
+      
+      document.getElementById('targetOeeDieCut1').textContent = `≥ ${oeeTarget1}%`;
+      document.getElementById('targetOeeDieCut2').textContent = `≥ ${oeeTarget2}%`;
+      document.getElementById('targetOeeTotal').textContent = `≥ ${oeeTargetTotal}%`;
+      
+      // Volume targets (≥ value lbs)
+      const volumeTarget1 = kpiTargets.volume?.die_cut_1 || 6000;
+      const volumeTarget2 = kpiTargets.volume?.die_cut_2 || 6000;
+      const volumeTargetTotal = kpiTargets.volume?.total || 12000;
+      
+      document.getElementById('targetVolumeDieCut1').textContent = `≥ ${formatNumber(volumeTarget1)} lbs`;
+      document.getElementById('targetVolumeDieCut2').textContent = `≥ ${formatNumber(volumeTarget2)} lbs`;
+      document.getElementById('targetVolumeTotal').textContent = `≥ ${formatNumber(volumeTargetTotal)} lbs`;
+      
+      // Waste targets (≤ value%)
+      const wasteTarget1 = kpiTargets.waste?.die_cut_1 || 3.75;
+      const wasteTarget2 = kpiTargets.waste?.die_cut_2 || 3.75;
+      const wasteTargetTotal = kpiTargets.waste?.total || 3.75;
+      
+      document.getElementById('targetWasteDieCut1').textContent = `≤ ${wasteTarget1}%`;
+      document.getElementById('targetWasteDieCut2').textContent = `≤ ${wasteTarget2}%`;
+      document.getElementById('targetWasteTotal').textContent = `≤ ${wasteTargetTotal}%`;
+      
+      console.log('📊 DEBUG: Target display text updated successfully');
+    }
+
     // Set timestamps
     document.getElementById('reportTimestamp').textContent = new Date().toLocaleString();
     document.getElementById('lastUpdate').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
 
     // Initialize all components - TABLE-FOCUSED ANALYTICS
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
       console.log('📊 DEBUG: DOM loaded, initializing table-focused analytics...');
+
+      // Load KPI targets first before other data
+      await loadKPITargets();
 
       initializeFilters();
       loadMetricsData();
@@ -949,23 +1016,34 @@
     function checkAndShowCongratulationMessage(data) {
       const congratulationMsg = document.getElementById('congratulationMessage');
 
-      // Check if ALL BOTH SHIFTS values meet their targets (all rows should be green)
-      const oee1Target = (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70);
-      const oee2Target = (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70);
-      const oeeTotalTarget = (data.total_oee && data.total_oee >= 70);
+      // Get dynamic targets
+      const oeeTarget1 = kpiTargets.oee?.die_cut_1 || 70;
+      const oeeTarget2 = kpiTargets.oee?.die_cut_2 || 70;
+      const oeeTargetTotal = kpiTargets.oee?.total || 70;
+      const volumeTarget1 = kpiTargets.volume?.die_cut_1 || 6000;
+      const volumeTarget2 = kpiTargets.volume?.die_cut_2 || 6000;
+      const volumeTargetTotal = kpiTargets.volume?.total || 12000;
+      const wasteTarget1 = kpiTargets.waste?.die_cut_1 || 3.75;
+      const wasteTarget2 = kpiTargets.waste?.die_cut_2 || 3.75;
+      const wasteTargetTotal = kpiTargets.waste?.total || 3.75;
+
+      // Check if ALL BOTH SHIFTS values meet their dynamic targets (all rows should be green)
+      const oee1Target = (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= oeeTarget1);
+      const oee2Target = (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= oeeTarget2);
+      const oeeTotalTarget = (data.total_oee && data.total_oee >= oeeTargetTotal);
       
-      const volume1Target = (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000);
-      const volume2Target = (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000);
-      const volumeTotalTarget = (data.total_production && data.total_production >= 12000);
+      const volume1Target = (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= volumeTarget1);
+      const volume2Target = (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= volumeTarget2);
+      const volumeTotalTargetMet = (data.total_production && data.total_production >= volumeTargetTotal);
       
-      const waste1Target = (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75);
-      const waste2Target = (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75);
-      const wasteTotalTarget = (data.total_waste_percent && data.total_waste_percent <= 3.75);
+      const waste1Target = (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= wasteTarget1);
+      const waste2Target = (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= wasteTarget2);
+      const wasteTotalTarget = (data.total_waste_percent && data.total_waste_percent <= wasteTargetTotal);
 
       // Array of all target checks for easier verification
       const allTargets = [
         oee1Target, oee2Target, oeeTotalTarget,
-        volume1Target, volume2Target, volumeTotalTarget,
+        volume1Target, volume2Target, volumeTotalTargetMet,
         waste1Target, waste2Target, wasteTotalTarget
       ];
 
@@ -974,7 +1052,7 @@
 
       console.log('📊 DEBUG: Congratulation check - All targets met:', allTargetsMet, {
         oee1: oee1Target, oee2: oee2Target, oeeTotal: oeeTotalTarget,
-        volume1: volume1Target, volume2: volume2Target, volumeTotal: volumeTotalTarget,
+        volume1: volume1Target, volume2: volume2Target, volumeTotal: volumeTotalTargetMet,
         waste1: waste1Target, waste2: waste2Target, wasteTotal: wasteTotalTarget
       });
 
@@ -1044,10 +1122,15 @@
     function updateMetricCards(data) {
       console.log('📊 DEBUG: Updating metric cards with data:', data);
       
+      // Get dynamic targets
+      const oeeTarget = kpiTargets.oee?.total || 70;
+      const wasteTarget = kpiTargets.waste?.total || 3.75;
+      const volumeTarget = kpiTargets.volume?.total || 12000;
+      
       // OEE Card
       const oeeValue = parseFloat(data.oeeCurrentValue) || 0;
       document.getElementById('oeeCurrentValue').textContent = oeeValue.toFixed(1);
-      updateStatusBadge('oeeStatusCard', data.oeeStatus || (oeeValue >= 70 ? 'Target Met' : 'Below Target'), oeeValue >= 70);
+      updateStatusBadge('oeeStatusCard', data.oeeStatus || (oeeValue >= oeeTarget ? 'Target Met' : 'Below Target'), oeeValue >= oeeTarget);
 
       // Update OEE trend indicator and vs target text
       const oeeChangeElement = document.getElementById('oeeChange');
@@ -1060,13 +1143,13 @@
       // Update vs target text for OEE
       const oeeVsTarget = oeeChangeElement?.nextElementSibling;
       if (oeeVsTarget) {
-        oeeVsTarget.textContent = data.oeeVsTarget || 'vs target (70%)';
+        oeeVsTarget.textContent = data.oeeVsTarget || `vs target (${oeeTarget}%)`;
       }
 
       // Waste Card
       const wasteValue = parseFloat(data.wasteCurrentValue) || 0;
       document.getElementById('wasteCurrentValue').textContent = wasteValue.toFixed(2);
-      updateStatusBadge('wasteStatusCard', data.wasteStatus || (wasteValue <= 3.75 ? 'Below Target' : 'Above Target'), wasteValue <= 3.75);
+      updateStatusBadge('wasteStatusCard', data.wasteStatus || (wasteValue <= wasteTarget ? 'Below Target' : 'Above Target'), wasteValue <= wasteTarget);
 
       // Update waste trend indicator and vs target text
       const wasteChangeElement = document.getElementById('wasteChange');
@@ -1077,16 +1160,16 @@
       }
       
       // Update vs target text for waste
-      const wasteVsTarget = wasteChangeElement?.nextElementSibling;
-      if (wasteVsTarget) {
-        wasteVsTarget.textContent = data.wasteVsTarget || 'vs target (3.75%)';
+      const wasteVsTargetEl = wasteChangeElement?.nextElementSibling;
+      if (wasteVsTargetEl) {
+        wasteVsTargetEl.textContent = data.wasteVsTarget || `vs target (${wasteTarget}%)`;
       }
 
       // Production Card
       const productionValue = parseFloat(data.productionCurrentValue) || 0;
       document.getElementById('productionCurrentValue').textContent = productionValue.toLocaleString();
-      const productionStatus = data.productionStatus || (productionValue >= 12000 ? 'Above Target' : 'Below Target');
-      updateStatusBadge('productionStatusCard', productionStatus, productionValue >= 12000);
+      const productionStatus = data.productionStatus || (productionValue >= volumeTarget ? 'Above Target' : 'Below Target');
+      updateStatusBadge('productionStatusCard', productionStatus, productionValue >= volumeTarget);
 
       // Update production trend indicator and daily output text
       const productionChangeElement = document.getElementById('productionChange');
@@ -1215,62 +1298,80 @@
     // Update metrics table from a specific record
     function updateMetricsTableFromRecord(data) {
       console.log('📊 DEBUG: Updating table with new structure, data:', data);
+      console.log('📊 DEBUG: Using KPI targets:', kpiTargets);
+
+      // Get dynamic targets
+      const oeeTarget1 = kpiTargets.oee?.die_cut_1 || 70;
+      const oeeTarget2 = kpiTargets.oee?.die_cut_2 || 70;
+      const oeeTargetTotal = kpiTargets.oee?.total || 70;
+      
+      const volumeTarget1 = kpiTargets.volume?.die_cut_1 || 6000;
+      const volumeTarget2 = kpiTargets.volume?.die_cut_2 || 6000;
+      const volumeTargetTotal = kpiTargets.volume?.total || 12000;
+      // For per-shift targets, use half of the total target
+      const volumeTargetPerShift1 = volumeTarget1 / 2;
+      const volumeTargetPerShift2 = volumeTarget2 / 2;
+      const volumeTargetPerShiftTotal = volumeTargetTotal / 2;
+      
+      const wasteTarget1 = kpiTargets.waste?.die_cut_1 || 3.75;
+      const wasteTarget2 = kpiTargets.waste?.die_cut_2 || 3.75;
+      const wasteTargetTotal = kpiTargets.waste?.total || 3.75;
 
       // OEE Section - Die Cut 1
-      updateShiftValue('oeeDieCut1FirstShift', data.first_shift_die_cut1_oee, '%', 70, false);
-      updateShiftValue('oeeDieCut1SecondShift', data.second_shift_die_cut1_oee, '%', 70, false);
-      updateShiftValue('oeeDieCut1Both', data.both_shift_die_cut1_oee, '%', 70, false);
-      updateStatusBadge('oeeDieCut1Status', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= 70), 'oee');
+      updateShiftValue('oeeDieCut1FirstShift', data.first_shift_die_cut1_oee, '%', oeeTarget1, false);
+      updateShiftValue('oeeDieCut1SecondShift', data.second_shift_die_cut1_oee, '%', oeeTarget1, false);
+      updateShiftValue('oeeDieCut1Both', data.both_shift_die_cut1_oee, '%', oeeTarget1, false);
+      updateStatusBadge('oeeDieCut1Status', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= oeeTarget1) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut1_oee && data.both_shift_die_cut1_oee >= oeeTarget1), 'oee');
 
       // OEE Section - Die Cut 2
-      updateShiftValue('oeeDieCut2FirstShift', data.first_shift_die_cut2_oee, '%', 70, false);
-      updateShiftValue('oeeDieCut2SecondShift', data.second_shift_die_cut2_oee, '%', 70, false);
-      updateShiftValue('oeeDieCut2Both', data.both_shift_die_cut2_oee, '%', 70, false);
-      updateStatusBadge('oeeDieCut2Status', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= 70), 'oee');
+      updateShiftValue('oeeDieCut2FirstShift', data.first_shift_die_cut2_oee, '%', oeeTarget2, false);
+      updateShiftValue('oeeDieCut2SecondShift', data.second_shift_die_cut2_oee, '%', oeeTarget2, false);
+      updateShiftValue('oeeDieCut2Both', data.both_shift_die_cut2_oee, '%', oeeTarget2, false);
+      updateStatusBadge('oeeDieCut2Status', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= oeeTarget2) ? 'Target Met' : 'Below Target', (data.both_shift_die_cut2_oee && data.both_shift_die_cut2_oee >= oeeTarget2), 'oee');
 
       // OEE Section - Total (use average values)
-      updateShiftValue('oeeTotalFirstShift', data.first_shift_oee, '%', 70, false);
-      updateShiftValue('oeeTotalSecondShift', data.second_shift_oee, '%', 70, false);
-      updateShiftValue('oeeTotalBoth', data.total_oee, '%', 70, false);
-      updateStatusBadge('oeeTotalStatus', (data.total_oee && data.total_oee >= 70) ? 'Target Met' : 'Below Target', (data.total_oee && data.total_oee >= 70), 'oee');
+      updateShiftValue('oeeTotalFirstShift', data.first_shift_oee, '%', oeeTargetTotal, false);
+      updateShiftValue('oeeTotalSecondShift', data.second_shift_oee, '%', oeeTargetTotal, false);
+      updateShiftValue('oeeTotalBoth', data.total_oee, '%', oeeTargetTotal, false);
+      updateStatusBadge('oeeTotalStatus', (data.total_oee && data.total_oee >= oeeTargetTotal) ? 'Target Met' : 'Below Target', (data.total_oee && data.total_oee >= oeeTargetTotal), 'oee');
 
       // VOLUME Section - Die Cut 1
-      updateShiftValue('volumeDieCut1FirstShift', data.first_shift_die_cut1_lbs, ' lbs', 3000, false, true);
-      updateShiftValue('volumeDieCut1SecondShift', data.second_shift_die_cut1_lbs, ' lbs', 3000, false, true);
-      updateShiftValue('volumeDieCut1Both', data.both_shift_die_cut1_lbs, ' lbs', 6000, false, true);
-      updateStatusBadge('volumeDieCut1Status', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000) ? 'On Target' : 'Below Target', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= 6000));
+      updateShiftValue('volumeDieCut1FirstShift', data.first_shift_die_cut1_lbs, ' lbs', volumeTargetPerShift1, false, true);
+      updateShiftValue('volumeDieCut1SecondShift', data.second_shift_die_cut1_lbs, ' lbs', volumeTargetPerShift1, false, true);
+      updateShiftValue('volumeDieCut1Both', data.both_shift_die_cut1_lbs, ' lbs', volumeTarget1, false, true);
+      updateStatusBadge('volumeDieCut1Status', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= volumeTarget1) ? 'On Target' : 'Below Target', (data.both_shift_die_cut1_lbs && data.both_shift_die_cut1_lbs >= volumeTarget1));
 
       // VOLUME Section - Die Cut 2
-      updateShiftValue('volumeDieCut2FirstShift', data.first_shift_die_cut2_lbs, ' lbs', 3000, false, true);
-      updateShiftValue('volumeDieCut2SecondShift', data.second_shift_die_cut2_lbs, ' lbs', 3000, false, true);
-      updateShiftValue('volumeDieCut2Both', data.both_shift_die_cut2_lbs, ' lbs', 6000, false, true);
-      updateStatusBadge('volumeDieCut2Status', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000) ? 'On Target' : 'Below Target', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= 6000));
+      updateShiftValue('volumeDieCut2FirstShift', data.first_shift_die_cut2_lbs, ' lbs', volumeTargetPerShift2, false, true);
+      updateShiftValue('volumeDieCut2SecondShift', data.second_shift_die_cut2_lbs, ' lbs', volumeTargetPerShift2, false, true);
+      updateShiftValue('volumeDieCut2Both', data.both_shift_die_cut2_lbs, ' lbs', volumeTarget2, false, true);
+      updateStatusBadge('volumeDieCut2Status', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= volumeTarget2) ? 'On Target' : 'Below Target', (data.both_shift_die_cut2_lbs && data.both_shift_die_cut2_lbs >= volumeTarget2));
 
       // VOLUME Section - Total
-      updateShiftValue('volumeTotalFirstShift', data.first_shift_production, ' lbs', 6000, false, true);
-      updateShiftValue('volumeTotalSecondShift', data.second_shift_production, ' lbs', 6000, false, true);
-      updateShiftValue('volumeTotalBoth', data.total_production, ' lbs', 12000, false, true);
-      updateStatusBadge('volumeTotalStatus', (data.total_production && data.total_production >= 12000) ? 'On Target' : 'Below Target', (data.total_production && data.total_production >= 12000));
+      updateShiftValue('volumeTotalFirstShift', data.first_shift_production, ' lbs', volumeTargetPerShiftTotal, false, true);
+      updateShiftValue('volumeTotalSecondShift', data.second_shift_production, ' lbs', volumeTargetPerShiftTotal, false, true);
+      updateShiftValue('volumeTotalBoth', data.total_production, ' lbs', volumeTargetTotal, false, true);
+      updateStatusBadge('volumeTotalStatus', (data.total_production && data.total_production >= volumeTargetTotal) ? 'On Target' : 'Below Target', (data.total_production && data.total_production >= volumeTargetTotal));
 
       // WASTE Section - Die Cut 1
-      updateShiftValue('wasteDieCut1FirstShift', data.first_shift_die_cut1_waste_pct, '%', 3.75, true);
-      updateShiftValue('wasteDieCut1SecondShift', data.second_shift_die_cut1_waste_pct, '%', 3.75, true);
-      updateShiftValue('wasteDieCut1Both', data.both_shift_die_cut1_waste_pct, '%', 3.75, true);
-      updateStatusBadge('wasteDieCut1Status', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= 3.75), 'waste');
+      updateShiftValue('wasteDieCut1FirstShift', data.first_shift_die_cut1_waste_pct, '%', wasteTarget1, true);
+      updateShiftValue('wasteDieCut1SecondShift', data.second_shift_die_cut1_waste_pct, '%', wasteTarget1, true);
+      updateShiftValue('wasteDieCut1Both', data.both_shift_die_cut1_waste_pct, '%', wasteTarget1, true);
+      updateStatusBadge('wasteDieCut1Status', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= wasteTarget1) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut1_waste_pct && data.both_shift_die_cut1_waste_pct <= wasteTarget1), 'waste');
 
       // WASTE Section - Die Cut 2
-      updateShiftValue('wasteDieCut2FirstShift', data.first_shift_die_cut2_waste_pct, '%', 3.75, true);
-      updateShiftValue('wasteDieCut2SecondShift', data.second_shift_die_cut2_waste_pct, '%', 3.75, true);
-      updateShiftValue('wasteDieCut2Both', data.both_shift_die_cut2_waste_pct, '%', 3.75, true);
-      updateStatusBadge('wasteDieCut2Status', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= 3.75), 'waste');
+      updateShiftValue('wasteDieCut2FirstShift', data.first_shift_die_cut2_waste_pct, '%', wasteTarget2, true);
+      updateShiftValue('wasteDieCut2SecondShift', data.second_shift_die_cut2_waste_pct, '%', wasteTarget2, true);
+      updateShiftValue('wasteDieCut2Both', data.both_shift_die_cut2_waste_pct, '%', wasteTarget2, true);
+      updateStatusBadge('wasteDieCut2Status', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= wasteTarget2) ? 'Below Target' : 'Above Target', (data.both_shift_die_cut2_waste_pct && data.both_shift_die_cut2_waste_pct <= wasteTarget2), 'waste');
 
       // WASTE Section - Total (use average values)
-      updateShiftValue('wasteTotalFirstShift', data.first_shift_waste_percent, '%', 3.75, true);
-      updateShiftValue('wasteTotalSecondShift', data.second_shift_waste_percent, '%', 3.75, true);
-      updateShiftValue('wasteTotalBoth', data.total_waste_percent, '%', 3.75, true);
-      updateStatusBadge('wasteTotalStatus', (data.total_waste_percent && data.total_waste_percent <= 3.75) ? 'Below Target' : 'Above Target', (data.total_waste_percent && data.total_waste_percent <= 3.75), 'waste');
+      updateShiftValue('wasteTotalFirstShift', data.first_shift_waste_percent, '%', wasteTargetTotal, true);
+      updateShiftValue('wasteTotalSecondShift', data.second_shift_waste_percent, '%', wasteTargetTotal, true);
+      updateShiftValue('wasteTotalBoth', data.total_waste_percent, '%', wasteTargetTotal, true);
+      updateStatusBadge('wasteTotalStatus', (data.total_waste_percent && data.total_waste_percent <= wasteTargetTotal) ? 'Below Target' : 'Above Target', (data.total_waste_percent && data.total_waste_percent <= wasteTargetTotal), 'waste');
 
-      console.log('📊 DEBUG: Table update completed with individual die cut data mapping');
+      console.log('📊 DEBUG: Table update completed with dynamic KPI targets');
     }
 
     // Update shift-specific values with dynamic color formatting based on targets

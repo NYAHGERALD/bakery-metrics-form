@@ -1261,6 +1261,12 @@
                             FAQ Management
                         </a>
 
+                        <a href="#kpi-targets" onclick="showSection('kpi-targets')" id="nav-kpi-targets"
+                            class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
+                            <i data-lucide="target" class="mr-3 h-5 w-5"></i>
+                            KPI Targets
+                        </a>
+
                         <a href="#email-management" onclick="showSection('email-management')" id="nav-email-management"
                             class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="mail" class="mr-3 h-5 w-5"></i>
@@ -2185,6 +2191,230 @@
                             </div>
                             <div id="faqList" class="space-y-4">
                                 <!-- FAQs will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Targets Section -->
+                <div id="kpi-targets-section" class="section">
+                    <div class="space-y-6">
+                        <!-- KPI Targets Header -->
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                        <div class="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+                                            <i data-lucide="target" class="w-6 h-6 text-white"></i>
+                                        </div>
+                                        KPI Performance Targets
+                                    </h2>
+                                    <p class="text-gray-600 mt-2">Configure target thresholds for OEE, Volume, and Waste metrics. The dashboard will automatically apply color formatting based on these targets.</p>
+                                </div>
+                                <button onclick="saveKPITargets()" id="saveTargetsBtn"
+                                    class="btn-primary text-white px-6 py-3 rounded-xl font-medium flex items-center">
+                                    <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                                    Save All Targets
+                                </button>
+                            </div>
+
+                            <!-- Preview Banner -->
+                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="info" class="w-5 h-5 text-blue-600"></i>
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-800">Target-Based Color Formatting</p>
+                                        <p class="text-xs text-blue-600 mt-1">Values meeting or exceeding targets display in <span class="text-green-600 font-semibold">GREEN</span>. Values below targets display in <span class="text-red-600 font-semibold">RED</span>. For Waste, lower is better.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OEE Targets Card -->
+                        <div class="glass-card rounded-2xl p-6 hover-lift fade-in">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md">
+                                    <i data-lucide="gauge" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">OEE Targets</h3>
+                                    <p class="text-sm text-gray-600">Overall Equipment Effectiveness thresholds</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Die Cut 1 OEE -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 1</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_oee_die_cut_1" step="0.1" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                                            placeholder="70">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Die Cut 2 OEE -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 2</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_oee_die_cut_2" step="0.1" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                                            placeholder="70">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Total OEE -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total OEE</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_oee_total" step="0.1" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                                            placeholder="70">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volume Targets Card -->
+                        <div class="glass-card rounded-2xl p-6 hover-lift fade-in" style="animation-delay: 0.1s;">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-md">
+                                    <i data-lucide="package" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">Volume Targets</h3>
+                                    <p class="text-sm text-gray-600">Production output thresholds (lbs)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Die Cut 1 Volume -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 1 (per shift)</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_volume_die_cut_1" step="100" min="0"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-12"
+                                            placeholder="6000">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">lbs</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Die Cut 2 Volume -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 2 (per shift)</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_volume_die_cut_2" step="100" min="0"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-12"
+                                            placeholder="6000">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">lbs</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Total Volume -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total (both shifts)</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_volume_total" step="100" min="0"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent pr-12"
+                                            placeholder="12000">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">lbs</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≥ value shows GREEN</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Waste Targets Card -->
+                        <div class="glass-card rounded-2xl p-6 hover-lift fade-in" style="animation-delay: 0.2s;">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-md">
+                                    <i data-lucide="trash-2" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">Waste Targets</h3>
+                                    <p class="text-sm text-gray-600">Material waste percentage thresholds (lower is better)</p>
+                                </div>
+                            </div>
+
+                            <!-- Waste Info Banner -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i>
+                                    <p class="text-sm text-amber-800">For waste metrics, values <strong>at or below</strong> the target show <span class="text-green-600 font-semibold">GREEN</span> (good). Values <strong>above</strong> the target show <span class="text-red-600 font-semibold">RED</span> (needs attention).</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Die Cut 1 Waste -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 1</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_waste_die_cut_1" step="0.01" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent pr-10"
+                                            placeholder="3.75">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≤ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Die Cut 2 Waste -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Die Cut 2</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_waste_die_cut_2" step="0.01" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent pr-10"
+                                            placeholder="3.75">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≤ value shows GREEN</p>
+                                </div>
+                                
+                                <!-- Total Waste -->
+                                <div class="bg-white/70 rounded-xl p-5 border border-gray-200">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Waste</label>
+                                    <div class="relative">
+                                        <input type="number" id="target_waste_total" step="0.01" min="0" max="100"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent pr-10"
+                                            placeholder="3.75">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Target: ≤ value shows GREEN</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Target History Card -->
+                        <div class="glass-card rounded-2xl p-6 fade-in" style="animation-delay: 0.3s;">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-3 bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl shadow-md">
+                                        <i data-lucide="history" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">Target Update History</h3>
+                                        <p class="text-sm text-gray-600">Recent changes to KPI targets</p>
+                                    </div>
+                                </div>
+                                <button onclick="loadKPITargetHistory()" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                    Refresh
+                                </button>
+                            </div>
+                            
+                            <div id="targetHistoryList" class="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
+                                <!-- History items will be populated here -->
+                                <div class="text-center py-8 text-gray-500">
+                                    <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 text-gray-400"></i>
+                                    <p>No target changes recorded yet</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4501,6 +4731,7 @@
                 'reviews': 'Reviews Management',
                 'support': 'Support Tickets',
                 'faq': 'FAQ Management',
+                'kpi-targets': 'KPI Targets',
                 'email-management': 'Email Management',
                 'contact-details': 'Contact Details',
                 'legal-documents': 'Legal Documents'
@@ -4514,6 +4745,7 @@
                 'reviews': 'Monitor and manage customer reviews',
                 'support': 'Handle customer support tickets',
                 'faq': 'Manage frequently asked questions',
+                'kpi-targets': 'Configure performance targets for OEE, Volume, and Waste metrics',
                 'email-management': 'Manage email alerts and PDF attachments',
                 'contact-details': 'Manage contact information and support channels',
                 'legal-documents': 'Manage privacy policy, terms of service, and compliance documents'
@@ -4557,6 +4789,9 @@
                         break;
                     case 'faq':
                         await loadFAQs();
+                        break;
+                    case 'kpi-targets':
+                        await loadKPITargets();
                         break;
                     case 'email-management':
                         await loadEmailRecipients();
@@ -9103,6 +9338,210 @@
                 showError('Failed to add FAQ');
             }
         });
+
+        // =============================================================================
+        // KPI TARGETS MANAGEMENT FUNCTIONS
+        // =============================================================================
+        
+        // Load KPI targets from the API
+        async function loadKPITargets() {
+            try {
+                const res = await fetch('/api/kpi-targets');
+                const data = await res.json();
+                
+                if (data.success && data.targets) {
+                    populateKPITargetInputs(data.targets);
+                    await loadKPITargetHistory();
+                } else {
+                    console.warn('No targets data received, using defaults');
+                    populateKPITargetInputs(getDefaultTargets());
+                }
+            } catch (error) {
+                console.error('Error loading KPI targets:', error);
+                showError('Failed to load KPI targets');
+                populateKPITargetInputs(getDefaultTargets());
+            }
+        }
+        
+        // Get default target values
+        function getDefaultTargets() {
+            return {
+                oee: { die_cut_1: { value: 70 }, die_cut_2: { value: 70 }, total: { value: 70 } },
+                volume: { die_cut_1: { value: 6000 }, die_cut_2: { value: 6000 }, total: { value: 12000 } },
+                waste: { die_cut_1: { value: 3.75 }, die_cut_2: { value: 3.75 }, total: { value: 3.75 } }
+            };
+        }
+        
+        // Populate the input fields with target values
+        function populateKPITargetInputs(targets) {
+            // OEE targets
+            if (targets.oee) {
+                setInputValue('target_oee_die_cut_1', targets.oee.die_cut_1?.value ?? 70);
+                setInputValue('target_oee_die_cut_2', targets.oee.die_cut_2?.value ?? 70);
+                setInputValue('target_oee_total', targets.oee.total?.value ?? 70);
+            }
+            
+            // Volume targets
+            if (targets.volume) {
+                setInputValue('target_volume_die_cut_1', targets.volume.die_cut_1?.value ?? 6000);
+                setInputValue('target_volume_die_cut_2', targets.volume.die_cut_2?.value ?? 6000);
+                setInputValue('target_volume_total', targets.volume.total?.value ?? 12000);
+            }
+            
+            // Waste targets
+            if (targets.waste) {
+                setInputValue('target_waste_die_cut_1', targets.waste.die_cut_1?.value ?? 3.75);
+                setInputValue('target_waste_die_cut_2', targets.waste.die_cut_2?.value ?? 3.75);
+                setInputValue('target_waste_total', targets.waste.total?.value ?? 3.75);
+            }
+        }
+        
+        // Helper to safely set input value
+        function setInputValue(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.value = value;
+            }
+        }
+        
+        // Save KPI targets to the API
+        async function saveKPITargets() {
+            const saveBtn = document.getElementById('saveTargetsBtn');
+            const originalContent = saveBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                saveBtn.innerHTML = `
+                    <svg class="animate-spin h-4 w-4 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                `;
+                saveBtn.disabled = true;
+                
+                // Collect all target values
+                const targets = {
+                    oee: {
+                        die_cut_1: parseFloat(document.getElementById('target_oee_die_cut_1')?.value) || 70,
+                        die_cut_2: parseFloat(document.getElementById('target_oee_die_cut_2')?.value) || 70,
+                        total: parseFloat(document.getElementById('target_oee_total')?.value) || 70
+                    },
+                    volume: {
+                        die_cut_1: parseFloat(document.getElementById('target_volume_die_cut_1')?.value) || 6000,
+                        die_cut_2: parseFloat(document.getElementById('target_volume_die_cut_2')?.value) || 6000,
+                        total: parseFloat(document.getElementById('target_volume_total')?.value) || 12000
+                    },
+                    waste: {
+                        die_cut_1: parseFloat(document.getElementById('target_waste_die_cut_1')?.value) || 3.75,
+                        die_cut_2: parseFloat(document.getElementById('target_waste_die_cut_2')?.value) || 3.75,
+                        total: parseFloat(document.getElementById('target_waste_total')?.value) || 3.75
+                    }
+                };
+                
+                const res = await fetch('/api/kpi-targets', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(targets)
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showSuccess(`KPI targets saved successfully! ${data.updated_count} targets updated.`);
+                    await loadKPITargetHistory();
+                } else {
+                    throw new Error(data.message || 'Failed to save targets');
+                }
+            } catch (error) {
+                console.error('Error saving KPI targets:', error);
+                showError(`Failed to save KPI targets: ${error.message}`);
+            } finally {
+                // Restore button state
+                saveBtn.innerHTML = originalContent;
+                saveBtn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+        
+        // Load KPI target change history
+        async function loadKPITargetHistory() {
+            try {
+                const res = await fetch('/api/kpi-targets/history?limit=10');
+                const data = await res.json();
+                
+                const container = document.getElementById('targetHistoryList');
+                if (!container) return;
+                
+                if (data.success && data.history && data.history.length > 0) {
+                    container.innerHTML = data.history.map(h => {
+                        const metricLabel = getMetricLabel(h.metric_type, h.metric_name);
+                        const unit = h.metric_type === 'volume' ? ' lbs' : '%';
+                        const oldVal = h.old_value !== null ? `${h.old_value}${unit}` : 'N/A';
+                        const newVal = `${h.new_value}${unit}`;
+                        const changedAt = new Date(h.changed_at).toLocaleString();
+                        
+                        return `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 ${getMetricTypeColor(h.metric_type)} rounded-lg">
+                                        <i data-lucide="${getMetricTypeIcon(h.metric_type)}" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">${metricLabel}</p>
+                                        <p class="text-xs text-gray-500">${oldVal} → ${newVal}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-600">${h.changed_by || 'System'}</p>
+                                    <p class="text-xs text-gray-400">${changedAt}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    lucide.createIcons();
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i data-lucide="clock" class="w-8 h-8 mx-auto mb-2 text-gray-400"></i>
+                            <p>No target changes recorded yet</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                }
+            } catch (error) {
+                console.error('Error loading KPI target history:', error);
+            }
+        }
+        
+        // Helper functions for displaying history
+        function getMetricLabel(metricType, metricName) {
+            const labels = {
+                oee: { die_cut_1: 'OEE - Die Cut 1', die_cut_2: 'OEE - Die Cut 2', total: 'OEE - Total' },
+                volume: { die_cut_1: 'Volume - Die Cut 1', die_cut_2: 'Volume - Die Cut 2', total: 'Volume - Total' },
+                waste: { die_cut_1: 'Waste - Die Cut 1', die_cut_2: 'Waste - Die Cut 2', total: 'Waste - Total' }
+            };
+            return labels[metricType]?.[metricName] || `${metricType} - ${metricName}`;
+        }
+        
+        function getMetricTypeColor(metricType) {
+            const colors = {
+                oee: 'bg-blue-500',
+                volume: 'bg-emerald-500',
+                waste: 'bg-red-500'
+            };
+            return colors[metricType] || 'bg-gray-500';
+        }
+        
+        function getMetricTypeIcon(metricType) {
+            const icons = {
+                oee: 'gauge',
+                volume: 'package',
+                waste: 'trash-2'
+            };
+            return icons[metricType] || 'target';
+        }
 
         // CRUD operations
         async function deleteAnnouncement(id) {

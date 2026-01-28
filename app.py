@@ -17684,6 +17684,318 @@ def get_ticket(ticket_id):
         }), 500
 
 
+# =============================================================================
+# KPI TARGETS MANAGEMENT ENDPOINTS
+# =============================================================================
+
+@app.route('/api/kpi-targets', methods=['GET'])
+@login_required
+def get_kpi_targets():
+    """Get current KPI target settings"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Check if kpi_targets table exists
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = 'kpi_targets'
+                    )
+                """)
+                table_exists = cursor.fetchone()['exists']
+                
+                if not table_exists:
+                    # Create the table if it doesn't exist
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS kpi_targets (
+                            id SERIAL PRIMARY KEY,
+                            metric_type VARCHAR(50) NOT NULL,
+                            metric_name VARCHAR(100) NOT NULL,
+                            target_value DECIMAL(10, 2) NOT NULL,
+                            unit VARCHAR(20) NOT NULL DEFAULT '%',
+                            comparison_type VARCHAR(10) NOT NULL DEFAULT 'gte',
+                            updated_by VARCHAR(255),
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            UNIQUE(metric_type, metric_name)
+                        )
+                    """)
+                    
+                    # Insert default values
+                    default_targets = [
+                        ('oee', 'die_cut_1', 70.0, '%', 'gte'),
+                        ('oee', 'die_cut_2', 70.0, '%', 'gte'),
+                        ('oee', 'total', 70.0, '%', 'gte'),
+                        ('volume', 'die_cut_1', 6000.0, 'lbs', 'gte'),
+                        ('volume', 'die_cut_2', 6000.0, 'lbs', 'gte'),
+                        ('volume', 'total', 12000.0, 'lbs', 'gte'),
+                        ('waste', 'die_cut_1', 3.75, '%', 'lte'),
+                        ('waste', 'die_cut_2', 3.75, '%', 'lte'),
+                        ('waste', 'total', 3.75, '%', 'lte'),
+                    ]
+                    
+                    for metric_type, metric_name, target_value, unit, comparison_type in default_targets:
+                        cursor.execute("""
+                            INSERT INTO kpi_targets (metric_type, metric_name, target_value, unit, comparison_type)
+                            VALUES (%s, %s, %s, %s, %s)
+                            ON CONFLICT (metric_type, metric_name) DO NOTHING
+                        """, (metric_type, metric_name, target_value, unit, comparison_type))
+                    
+                    conn.commit()
+                
+                # Fetch all current targets
+                cursor.execute("""
+                    SELECT metric_type, metric_name, target_value, unit, comparison_type, updated_by, updated_at
+                    FROM kpi_targets
+                    ORDER BY metric_type, metric_name
+                """)
+                targets = cursor.fetchall()
+                
+                # Organize targets by type
+                organized_targets = {
+                    'oee': {},
+                    'volume': {},
+                    'waste': {}
+                }
+                
+                for target in targets:
+                    metric_type = target['metric_type']
+                    metric_name = target['metric_name']
+                    if metric_type in organized_targets:
+                        organized_targets[metric_type][metric_name] = {
+                            'value': float(target['target_value']),
+                            'unit': target['unit'],
+                            'comparison': target['comparison_type'],
+                            'updated_by': target['updated_by'],
+                            'updated_at': target['updated_at'].isoformat() if target['updated_at'] else None
+                        }
+                
+                return jsonify({
+                    'success': True,
+                    'targets': organized_targets
+                })
+                
+    except Exception as e:
+        logger.error(f"Get KPI targets error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/kpi-targets', methods=['PUT'])
+@login_required
+def update_kpi_targets():
+    """Update KPI target settings"""
+    try:
+        data = request.get_json()
+        user_name = session.get('user_full_name', 'Admin')
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'No data provided'
+            }), 400
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Ensure table exists
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS kpi_targets (
+                        id SERIAL PRIMARY KEY,
+                        metric_type VARCHAR(50) NOT NULL,
+                        metric_name VARCHAR(100) NOT NULL,
+                        target_value DECIMAL(10, 2) NOT NULL,
+                        unit VARCHAR(20) NOT NULL DEFAULT '%',
+                        comparison_type VARCHAR(10) NOT NULL DEFAULT 'gte',
+                        updated_by VARCHAR(255),
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(metric_type, metric_name)
+                    )
+                """)
+                
+                # Ensure history table exists
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS kpi_targets_history (
+                        id SERIAL PRIMARY KEY,
+                        metric_type VARCHAR(50) NOT NULL,
+                        metric_name VARCHAR(100) NOT NULL,
+                        old_value DECIMAL(10, 2),
+                        new_value DECIMAL(10, 2) NOT NULL,
+                        changed_by VARCHAR(255),
+                        changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                updated_count = 0
+                
+                # Process each target type
+                for metric_type in ['oee', 'volume', 'waste']:
+                    if metric_type in data:
+                        metric_data = data[metric_type]
+                        
+                        # Determine unit and comparison type
+                        unit = 'lbs' if metric_type == 'volume' else '%'
+                        comparison_type = 'lte' if metric_type == 'waste' else 'gte'
+                        
+                        for metric_name, value in metric_data.items():
+                            if value is not None:
+                                # Get old value for history
+                                cursor.execute("""
+                                    SELECT target_value FROM kpi_targets
+                                    WHERE metric_type = %s AND metric_name = %s
+                                """, (metric_type, metric_name))
+                                old_record = cursor.fetchone()
+                                old_value = float(old_record['target_value']) if old_record else None
+                                
+                                # Upsert the target
+                                cursor.execute("""
+                                    INSERT INTO kpi_targets (metric_type, metric_name, target_value, unit, comparison_type, updated_by, updated_at)
+                                    VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                                    ON CONFLICT (metric_type, metric_name) 
+                                    DO UPDATE SET target_value = %s, updated_by = %s, updated_at = NOW()
+                                """, (metric_type, metric_name, value, unit, comparison_type, user_name, value, user_name))
+                                
+                                # Record history if value changed
+                                if old_value is None or abs(old_value - float(value)) > 0.001:
+                                    cursor.execute("""
+                                        INSERT INTO kpi_targets_history (metric_type, metric_name, old_value, new_value, changed_by, changed_at)
+                                        VALUES (%s, %s, %s, %s, %s, NOW())
+                                    """, (metric_type, metric_name, old_value, value, user_name))
+                                
+                                updated_count += 1
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Successfully updated {updated_count} targets',
+                    'updated_count': updated_count
+                })
+                
+    except Exception as e:
+        logger.error(f"Update KPI targets error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/kpi-targets/history', methods=['GET'])
+@login_required
+def get_kpi_targets_history():
+    """Get KPI targets change history"""
+    try:
+        limit = request.args.get('limit', 20, type=int)
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Check if history table exists
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = 'kpi_targets_history'
+                    )
+                """)
+                table_exists = cursor.fetchone()['exists']
+                
+                if not table_exists:
+                    return jsonify({
+                        'success': True,
+                        'history': []
+                    })
+                
+                cursor.execute("""
+                    SELECT id, metric_type, metric_name, old_value, new_value, changed_by, changed_at
+                    FROM kpi_targets_history
+                    ORDER BY changed_at DESC
+                    LIMIT %s
+                """, (limit,))
+                
+                history = cursor.fetchall()
+                
+                return jsonify({
+                    'success': True,
+                    'history': [
+                        {
+                            'id': h['id'],
+                            'metric_type': h['metric_type'],
+                            'metric_name': h['metric_name'],
+                            'old_value': float(h['old_value']) if h['old_value'] else None,
+                            'new_value': float(h['new_value']) if h['new_value'] else None,
+                            'changed_by': h['changed_by'],
+                            'changed_at': h['changed_at'].isoformat() if h['changed_at'] else None
+                        } for h in history
+                    ]
+                })
+                
+    except Exception as e:
+        logger.error(f"Get KPI targets history error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/kpi-targets/public', methods=['GET'])
+def get_public_kpi_targets():
+    """Get KPI targets for dashboard (no auth required for report page)"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Check if table exists
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = 'kpi_targets'
+                    )
+                """)
+                table_exists = cursor.fetchone()['exists']
+                
+                if not table_exists:
+                    # Return default values
+                    return jsonify({
+                        'success': True,
+                        'targets': {
+                            'oee': {'die_cut_1': 70.0, 'die_cut_2': 70.0, 'total': 70.0},
+                            'volume': {'die_cut_1': 6000.0, 'die_cut_2': 6000.0, 'total': 12000.0},
+                            'waste': {'die_cut_1': 3.75, 'die_cut_2': 3.75, 'total': 3.75}
+                        }
+                    })
+                
+                cursor.execute("""
+                    SELECT metric_type, metric_name, target_value
+                    FROM kpi_targets
+                """)
+                targets = cursor.fetchall()
+                
+                organized = {
+                    'oee': {'die_cut_1': 70.0, 'die_cut_2': 70.0, 'total': 70.0},
+                    'volume': {'die_cut_1': 6000.0, 'die_cut_2': 6000.0, 'total': 12000.0},
+                    'waste': {'die_cut_1': 3.75, 'die_cut_2': 3.75, 'total': 3.75}
+                }
+                
+                for target in targets:
+                    if target['metric_type'] in organized:
+                        organized[target['metric_type']][target['metric_name']] = float(target['target_value'])
+                
+                return jsonify({
+                    'success': True,
+                    'targets': organized
+                })
+                
+    except Exception as e:
+        logger.error(f"Get public KPI targets error: {e}")
+        # Return default values on error
+        return jsonify({
+            'success': True,
+            'targets': {
+                'oee': {'die_cut_1': 70.0, 'die_cut_2': 70.0, 'total': 70.0},
+                'volume': {'die_cut_1': 6000.0, 'die_cut_2': 6000.0, 'total': 12000.0},
+                'waste': {'die_cut_1': 3.75, 'die_cut_2': 3.75, 'total': 3.75}
+            }
+        })
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5005))
     app.run(host='0.0.0.0', port=port, debug=False)
